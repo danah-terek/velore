@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom'
-import heroImg from "../assets/photoshoot.png";
+import heroImg from "../assets/photoshoot.png"
 import EyewearCard from '../components/eyewear/EyewearCard'
-
+import Testimonials from "../components/Testimonials"
+import AboutUs from "./About"
 export default function Home() {
+
   return (
     <div>
 
@@ -78,7 +80,9 @@ export default function Home() {
         </div>
 
       </section>
+<div >
 
+<<<<<<< HEAD
       {/* AI ASSISTANT SECTION */}
 <section className="px-6 md:px-16 py-16 bg-white">
   
@@ -151,7 +155,19 @@ export default function Home() {
 
 
 
+=======
+>>>>>>> 1d3f16dbf6b62dc8d5c1d0b5e66d2bc0009fdf48
 
-    </div>
+</div>
+
+<Testimonials />
+
+<AboutUs/>
+
+
+
+
+
+          </div>
   );
 }

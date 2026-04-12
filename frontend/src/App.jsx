@@ -31,6 +31,7 @@ function App() {
         <Route path="/blogs" element={<Blogs />} />
         <Route path="/blogs/:id" element={<BlogDetail />} />
         <Route path="/ai-advisor" element={<AIAdvisor />} />
+
       </Routes>
       <Footer/>
     </BrowserRouter>
