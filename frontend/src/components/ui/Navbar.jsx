@@ -31,7 +31,7 @@ export default function Navbar() {
   const navItems = ["Shop", "About", "Blogs", "Contact"];
 
   return (
-    <nav className="bg-transparent border-b border-gray-200 sticky top-0 z-50">
+    <nav className="bg-white/40 border-b border-gray-200 sticky top-0 z-50">
 
       {/* ===== Top Bar ===== */}
       <div className="flex items-center justify-between px-6 py-3">

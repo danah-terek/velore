@@ -11,11 +11,11 @@ import AIAdvisor from './pages/AIAdvisor'
 import Navbar from './components/ui/Navbar'
 import About from './pages/About'
 import Favorite from './pages/Favorite'
+import Footer from './components/ui/Footer'
 function App() {
   return (
     <BrowserRouter>       
      <Navbar/>
-
 
 
       <Routes>
@@ -32,6 +32,7 @@ function App() {
         <Route path="/blogs/:id" element={<BlogDetail />} />
         <Route path="/ai-advisor" element={<AIAdvisor />} />
       </Routes>
+      <Footer/>
     </BrowserRouter>
   )
 }
