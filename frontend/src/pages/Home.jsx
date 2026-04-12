@@ -1,6 +1,8 @@
 import heroImg from "../assets/photoshoot.png";
-
+import Testimonials from "../components/Testimonials";
+import AboutUs from "./About";
 export default function Home() {
+
   return (
     <div>
 
@@ -32,9 +34,19 @@ export default function Home() {
           </div>
         </div>
       </section>
+<div >
 
-      <h1>Hello</h1>
 
-    </div>
+</div>
+
+<Testimonials />
+
+<AboutUs/>
+
+
+
+
+
+          </div>
   );
 }
