@@ -82,7 +82,6 @@ export default function Home() {
       </section>
 <div >
 
-<<<<<<< HEAD
       {/* AI ASSISTANT SECTION */}
 <section className="px-6 md:px-16 py-16 bg-white">
   
@@ -155,8 +154,6 @@ export default function Home() {
 
 
 
-=======
->>>>>>> 1d3f16dbf6b62dc8d5c1d0b5e66d2bc0009fdf48
 
 </div>
 
