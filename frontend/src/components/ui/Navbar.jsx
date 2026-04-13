@@ -1,11 +1,9 @@
-// 
-
 import { useState, useEffect, useRef } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import logo from "../../assets/logoEye-blue.png";
 import { Search, User, Heart, ShoppingCart, Menu, X } from "lucide-react";
 
-export default function Navbar() {
+export default function Navbar({ onCartOpen, onContactOpen }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [currency, setCurrency] = useState("USD");
   const [rates, setRates] = useState({});
@@ -15,8 +13,6 @@ export default function Navbar() {
   const location = useLocation();
 
   const isHome = location.pathname === "/";
-
-  // Transparent mode only applies on home page AND not scrolled
   const isTransparent = isHome && !scrolled;
 
   useEffect(() => {
@@ -25,7 +21,6 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Reset scrolled state when navigating to a new page
   useEffect(() => {
     setScrolled(window.scrollY > 50);
   }, [location.pathname]);
@@ -42,11 +37,47 @@ export default function Navbar() {
     setTimeout(() => inputRef.current?.focus(), 100);
   };
 
-  const navItems = ["Shop", "About", "Blogs", "Contact"];
+  const handleCartClick = () => {
+    if (onCartOpen) {
+      onCartOpen();
+    }
+  };
+
+  const handleContactClick = (e) => {
+    e.preventDefault();
+    if (onContactOpen) {
+      onContactOpen();
+    }
+    setMenuOpen(false);
+  };
+
+  // Handle About click - scroll to about section on home page
+  const handleAboutClick = (e) => {
+    if (location.pathname === '/') {
+      e.preventDefault();
+      const aboutSection = document.getElementById('about-us');
+      if (aboutSection) {
+        aboutSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+    setMenuOpen(false);
+  };
+
+  // Handle Blogs click - scroll to latest news on home page
+  const handleBlogsClick = (e) => {
+    if (location.pathname === '/') {
+      e.preventDefault();
+      const latestNewsSection = document.getElementById('latest-news');
+      if (latestNewsSection) {
+        latestNewsSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+    setMenuOpen(false);
+  };
 
   return (
     <nav
-      className={`sticky top-0 z-50 transition-all duration-500 ${
+      className={`sticky top-0 z-40 transition-all duration-500 ${
         isTransparent ? "bg-transparent" : "bg-white shadow-sm"
       }`}
     >
@@ -63,23 +94,62 @@ export default function Navbar() {
           {menuOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
 
-        {/* Left Links */}
+        {/* Left Links - Desktop */}
         <div className="hidden md:flex gap-6 flex-1">
-          {navItems.map((item) => (
-            <NavLink
-              key={item}
-              to={`/${item.toLowerCase()}`}
-              className={({ isActive }) =>
-                `text-sm transition-colors ${
-                  isTransparent
-                    ? "text-white hover:text-white/70"
-                    : "text-gray-800 hover:text-gray-500"
-                } ${isActive ? "font-semibold" : "font-normal"}`
-              }
-            >
-              {item}
-            </NavLink>
-          ))}
+          <NavLink
+            to="/shop"
+            className={({ isActive }) =>
+              `text-sm transition-colors ${
+                isTransparent
+                  ? "text-white hover:text-white/70"
+                  : "text-gray-800 hover:text-gray-500"
+              } ${isActive ? "font-semibold" : "font-normal"}`
+            }
+          >
+            Shop
+          </NavLink>
+          
+          {/* About - scrolls to about section on home */}
+          <NavLink
+            to="/#about-us"
+            onClick={handleAboutClick}
+            className={({ isActive }) =>
+              `text-sm transition-colors ${
+                isTransparent
+                  ? "text-white hover:text-white/70"
+                  : "text-gray-800 hover:text-gray-500"
+              } ${isActive ? "font-semibold" : "font-normal"}`
+            }
+          >
+            About
+          </NavLink>
+          
+          {/* Blogs - scrolls to latest news on home */}
+          <NavLink
+            to="/#latest-news"
+            onClick={handleBlogsClick}
+            className={({ isActive }) =>
+              `text-sm transition-colors ${
+                isTransparent
+                  ? "text-white hover:text-white/70"
+                  : "text-gray-800 hover:text-gray-500"
+              } ${isActive ? "font-semibold" : "font-normal"}`
+            }
+          >
+            Blogs
+          </NavLink>
+          
+          {/* Contact - opens modal */}
+          <button
+            onClick={handleContactClick}
+            className={`text-sm transition-colors bg-transparent border-none cursor-pointer ${
+              isTransparent
+                ? "text-white hover:text-white/70"
+                : "text-gray-800 hover:text-gray-500"
+            }`}
+          >
+            Contact
+          </button>
         </div>
 
         {/* Logo */}
@@ -128,27 +198,43 @@ export default function Navbar() {
           </div>
 
           {/* Desktop Icons */}
-          {[
-            { icon: User, path: "/login" },
-            { icon: Heart, path: "/favorite" },
-            { icon: ShoppingCart, path: "/checkout" },
-          ].map(({ icon: Icon, path }, index) => (
-            <Link
-              to={path}
-              key={index}
-              className={`hidden md:flex p-1 transition-colors bg-transparent border-none cursor-pointer ${
-                isTransparent
-                  ? "text-white hover:text-white/70"
-                  : "text-gray-700 hover:text-black"
-              }`}
-            >
-              <Icon size={18} />
-            </Link>
-          ))}
+          <Link
+            to="/login"
+            className={`hidden md:flex p-1 transition-colors bg-transparent border-none cursor-pointer ${
+              isTransparent
+                ? "text-white hover:text-white/70"
+                : "text-gray-700 hover:text-black"
+            }`}
+          >
+            <User size={18} />
+          </Link>
+          
+          <Link
+            to="/favorite"
+            className={`hidden md:flex p-1 transition-colors bg-transparent border-none cursor-pointer ${
+              isTransparent
+                ? "text-white hover:text-white/70"
+                : "text-gray-700 hover:text-black"
+            }`}
+          >
+            <Heart size={18} />
+          </Link>
+
+          {/* Desktop Cart */}
+          <button
+            onClick={handleCartClick}
+            className={`hidden md:flex p-1 transition-colors bg-transparent border-none cursor-pointer ${
+              isTransparent
+                ? "text-white hover:text-white/70"
+                : "text-gray-700 hover:text-black"
+            }`}
+          >
+            <ShoppingCart size={18} />
+          </button>
 
           {/* Mobile Cart */}
-          <Link
-            to="/checkout"
+          <button
+            onClick={handleCartClick}
             className={`md:hidden p-1 transition-colors ${
               isTransparent
                 ? "text-white hover:text-white/70"
@@ -156,7 +242,7 @@ export default function Navbar() {
             }`}
           >
             <ShoppingCart size={18} />
-          </Link>
+          </button>
 
           {/* AR button */}
           <Link
@@ -181,22 +267,58 @@ export default function Navbar() {
               : "border-gray-200 bg-white"
           }`}
         >
-          {navItems.map((item) => (
-            <NavLink
-              key={item}
-              to={`/${item.toLowerCase()}`}
-              onClick={() => setMenuOpen(false)}
-              className={({ isActive }) =>
-                `text-sm transition-colors ${
-                  isTransparent
-                    ? "text-white hover:text-white/70"
-                    : "text-gray-800 hover:text-gray-500"
-                } ${isActive ? "font-semibold" : "font-normal"}`
-              }
-            >
-              {item}
-            </NavLink>
-          ))}
+          <NavLink
+            to="/shop"
+            onClick={() => setMenuOpen(false)}
+            className={({ isActive }) =>
+              `text-sm transition-colors ${
+                isTransparent
+                  ? "text-white hover:text-white/70"
+                  : "text-gray-800 hover:text-gray-500"
+              } ${isActive ? "font-semibold" : "font-normal"}`
+            }
+          >
+            Shop
+          </NavLink>
+          
+          <NavLink
+            to="/#about-us"
+            onClick={handleAboutClick}
+            className={({ isActive }) =>
+              `text-sm transition-colors ${
+                isTransparent
+                  ? "text-white hover:text-white/70"
+                  : "text-gray-800 hover:text-gray-500"
+              } ${isActive ? "font-semibold" : "font-normal"}`
+            }
+          >
+            About
+          </NavLink>
+          
+          <NavLink
+            to="/#latest-news"
+            onClick={handleBlogsClick}
+            className={({ isActive }) =>
+              `text-sm transition-colors ${
+                isTransparent
+                  ? "text-white hover:text-white/70"
+                  : "text-gray-800 hover:text-gray-500"
+              } ${isActive ? "font-semibold" : "font-normal"}`
+            }
+          >
+            Blogs
+          </NavLink>
+          
+          <button
+            onClick={handleContactClick}
+            className={`text-left text-sm transition-colors bg-transparent border-none cursor-pointer ${
+              isTransparent
+                ? "text-white hover:text-white/70"
+                : "text-gray-800 hover:text-gray-500"
+            }`}
+          >
+            Contact
+          </button>
 
           <div className="flex items-center gap-4 pt-2 border-t border-gray-200">
             <Link to="/login" onClick={() => setMenuOpen(false)}>

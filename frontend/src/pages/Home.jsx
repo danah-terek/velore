@@ -126,8 +126,8 @@ export default function Home() {
 
 
       {/* About us */}
-      <section className="px-6 md:px-16 py-16">
-        <h2 className="text-2xl font-semibold mb-8">About us</h2>
+      <section id="about-us" className="px-6 md:px-16 py-16 scroll-mt-20">
+  <h2 className="text-2xl font-semibold mb-8">About us</h2>
 
         <div className="flex flex-row items-center gap-6 md:gap-16">
 
@@ -157,17 +157,17 @@ export default function Home() {
 
 
       {/* LATEST NEWS SECTION */}
-      <section className="px-6 md:px-16 py-16">
+      <section id="latest-news" className="px-6 md:px-16 py-16 scroll-mt-20">
         <h2 className="text-2xl font-semibold mb-8">Latest news</h2>
 
         {/* Mobile — horizontal scroll */}
         <div className="flex md:hidden gap-4 overflow-x-auto pb-4 scrollbar-hide">
           {[
-            { id: 1, image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=600", title: "What are type of glasses that suit me" },
+            { id: 1, image: "https://www.warbyparker.com/learn/wp-content/uploads/2025/03/nose-bridge-types.jpg", title: "What are type of glasses that suit me" },
             { id: 2, image: "https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=600", title: "How to protect eyes from UV light" },
             { id: 3, image: "https://images.unsplash.com/photo-1508296695146-257a814070b4?w=600", title: "From lens tech to luxury frames" },
           ].map((blog) => (
-            <Link key={blog.id} to="/blogs" className="min-w-[70vw] flex-shrink-0 relative group overflow-hidden rounded-sm">
+            <Link key={blog.id} to={`/blogs/${blog.id}`} className="min-w-[70vw] flex-shrink-0 relative group overflow-hidden rounded-sm">
               <img src={blog.image} alt={blog.title} className="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-300" />
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
                 <p className="text-white text-sm font-medium">{blog.title}</p>
@@ -179,7 +179,7 @@ export default function Home() {
         {/* Desktop — 3 columns */}
         <div className="hidden md:grid grid-cols-3 gap-6">
           {[
-            { id: 1, image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=600", title: "What are type of glasses that suit me" },
+            { id: 1, image: "https://www.warbyparker.com/learn/wp-content/uploads/2025/03/nose-bridge-types.jpg", title: "What are type of glasses that suit me" },
             { id: 2, image: "https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=600", title: "How to protect eyes from UV light" },
             { id: 3, image: "https://images.unsplash.com/photo-1508296695146-257a814070b4?w=600", title: "From lens tech to luxury frames" },
           ].map((blog) => (

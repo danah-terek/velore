@@ -1,82 +1,71 @@
-import blogImg from "../assets/blogimage.png";
-import { useNavigate } from "react-router-dom";
+// src/pages/Blogs.jsx
+import { Link } from 'react-router-dom'
+
+const allBlogs = [
+  { 
+    id: 1, 
+    title: "What Type of Glasses Suit Me? A Complete Guide", 
+    image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=600", 
+    date: "April 10, 2026", 
+    readTime: "5 min read", 
+    author: "Sarah Johnson" 
+  },
+  { 
+    id: 2, 
+    title: "How to Protect Your Eyes from UV Light", 
+    image: "https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=600", 
+    date: "April 8, 2026", 
+    readTime: "4 min read", 
+    author: "Dr. Michael Chen" 
+  },
+  { 
+    id: 3, 
+    title: "From Lens Tech to Luxury Frames: The Evolution of Eyewear", 
+    image: "https://images.unsplash.com/photo-1508296695146-257a814070b4?w=600", 
+    date: "April 5, 2026", 
+    readTime: "6 min read", 
+    author: "Emma Rodriguez" 
+  },
+]
 
 export default function Blogs() {
-  const navigate = useNavigate();
-
   return (
-    <div className="w-full min-h-screen bg-[#f5f5f5] flex justify-center items-start py-10 px-4">
-
-      <div className="w-full max-w-[900px] relative">
-
-        {/* IMAGE */}
-        <div className="relative w-full h-[300px] md:h-[400px] overflow-hidden">
-          <img
-            src={blogImg}
-            alt="blog"
-            className="w-full h-full object-cover"
-          />
-
-          {/* BACK BUTTON */}
-          <button
-            onClick={() => navigate(-1)}
-            className="absolute top-4 left-4 bg-white/80 backdrop-blur px-3 py-1 rounded-full shadow text-sm hover:bg-white transition"
-          >
-            ←
-          </button>
-        </div>
-
-        {/* CONTENT CARD */}
-        <div className="bg-[#dcdcdc] p-6 md:p-10 -mt-16 md:-mt-24 shadow-lg relative z-10">
-
-          {/* DATE */}
-          <p className="text-sm text-gray-600 mb-4">Mar 4, 2026</p>
-
-          {/* TITLE */}
-          <h1 className="text-2xl md:text-3xl font-bold mb-4 text-gray-800">
-            From lens tech luxury frames
+    <div className="min-h-screen bg-white">
+      <section className="px-6 md:px-16 py-16 bg-gray-50">
+        <div className="max-w-4xl mx-auto text-center">
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            Velore Journal
           </h1>
-
-          {/* TEXT */}
-          <p className="text-gray-700 text-sm md:text-base leading-relaxed mb-4">
-            From lens tech to luxury frames, eyewear has evolved into a perfect blend of
-            innovation and style.
-            <br /><br />
-            Advanced features like blue light protection, anti-reflective coatings, and
-            high-index lightweight lenses ensure maximum comfort and clarity in today's
-            digital world. At the same time, iconic brands such as Ray-Ban, Gucci, and
-            Cartier have transformed frames
+          <p className="text-gray-600 text-lg">
+            Insights on eyewear trends, eye health, and style inspiration
           </p>
-
-          <p className="text-gray-700 text-sm md:text-base leading-relaxed mb-6">
-            into fashion statements, using premium materials and bold designs to express
-            individuality. Modern eyewear is no longer just about correcting vision —
-            it's about enhancing confidence, showcasing personality, and combining
-            smart technology with timeless elegance.
-          </p>
-
-          {/* CONCLUSION */}
-          <h2 className="text-xl md:text-2xl font-bold mb-3 text-gray-800">
-            Conclusion
-          </h2>
-
-          <p className="text-gray-700 text-sm md:text-base leading-relaxed mb-6">
-            Advanced features like blue light protection, anti-reflective coatings, and
-            high-index lightweight lenses ensure maximum comfort and clarity in today's
-            digital world.
-          </p>
-
-          {/* SHARE */}
-          <div className="flex items-center gap-4 text-gray-700">
-            <span className="text-sm font-medium">Share:</span>
-
-            <span className="cursor-pointer hover:underline">FB</span>
-            <span className="cursor-pointer hover:underline">IG</span>
-            <span className="cursor-pointer hover:underline">TW</span>
-          </div>
-
         </div>
-      </div>
+      </section>
+
+      <section className="px-6 md:px-16 py-16">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {allBlogs.map(blog => (
+            <Link key={blog.id} to={`/blogs/${blog.id}`} className="group">
+              <div className="aspect-[4/3] rounded-sm overflow-hidden mb-4">
+                <img 
+                  src={blog.image} 
+                  alt={blog.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+              <div className="flex items-center gap-3 text-xs text-gray-500 mb-2">
+                <span>{blog.date}</span>
+                <span>•</span>
+                <span>{blog.readTime}</span>
+              </div>
+              <h2 className="text-xl font-semibold text-gray-900 group-hover:text-gray-600 transition-colors mb-2">
+                {blog.title}
+              </h2>
+              <p className="text-sm text-gray-600">By {blog.author}</p>
+            </Link>
+          ))}
+        </div>
+      </section>
     </div>
-  );
+  )
 }
