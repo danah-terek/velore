@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 
 export default function EyewearCard({ image, name, price, description, colors }) {
     return (
-        <div className="bg-gray-50 rounded-sm relative flex flex-col w-full">
+        <div className="bg-blue-100 rounded-sm relative flex flex-col w-full">
 
             {/* Virtual Try-on badge */}
             <Link to="/ai-advisor" className="absolute top-3 right-3 bg-white/80 backdrop-blur-sm text-xs px-2 py-1 rounded-full text-gray-600 hover:bg-white transition z-10">
