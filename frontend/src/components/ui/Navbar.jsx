@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import logo from "../../assets/logoEye-blue.png";
 import { Search, User, Heart, ShoppingCart, Menu, X } from "lucide-react";
+import { useFavorites } from "../../context/FavoritesContext";
+
 
 export default function Navbar({ onCartOpen, onContactOpen }) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -11,6 +13,8 @@ export default function Navbar({ onCartOpen, onContactOpen }) {
   const [scrolled, setScrolled] = useState(false);
   const inputRef = useRef(null);
   const location = useLocation();
+
+const{ favorites } = useFavorites();
 
   const isHome = location.pathname === "/";
   const isTransparent = isHome && !scrolled;
@@ -209,16 +213,21 @@ export default function Navbar({ onCartOpen, onContactOpen }) {
             <User size={18} />
           </Link>
           
-          <Link
-            to="/favorite"
-            className={`hidden md:flex p-1 transition-colors bg-transparent border-none cursor-pointer ${
-              isTransparent
-                ? "text-white hover:text-white/70"
-                : "text-gray-700 hover:text-black"
-            }`}
-          >
-            <Heart size={18} />
-          </Link>
+         <Link
+  to="/favorite"
+  className={`hidden md:flex p-1 transition-colors bg-transparent border-none cursor-pointer relative ${
+    isTransparent
+      ? "text-white hover:text-white/70"
+      : "text-gray-700 hover:text-black"
+  }`}
+>
+  <Heart size={18} />
+  {favorites.length > 0 && (
+    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
+      {favorites.length}
+    </span>
+  )}
+</Link>
 
           {/* Desktop Cart */}
           <button
@@ -327,12 +336,20 @@ export default function Navbar({ onCartOpen, onContactOpen }) {
                 className={isTransparent ? "text-white" : "text-gray-700"}
               />
             </Link>
-            <Link to="/favorite" onClick={() => setMenuOpen(false)}>
-              <Heart
-                size={18}
-                className={isTransparent ? "text-white" : "text-gray-700"}
-              />
-            </Link>
+            
+            <Link to="/favorite" onClick={() => setMenuOpen(false)} className="relative">
+  <Heart
+    size={18}
+    className={isTransparent ? "text-white" : "text-gray-700"}
+  />
+  {favorites.length > 0 && (
+    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
+      {favorites.length}
+    </span>
+  )}
+</Link>
+          
+          
           </div>
 
           <select
