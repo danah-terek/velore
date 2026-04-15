@@ -56,9 +56,9 @@ export default function Home() {
         {/* Mobile — horizontal scroll */}
         <div className="flex md:hidden gap-3 overflow-x-auto pb-4 scrollbar-hide">
           {[
-  { id: 'home-1', image: "https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=400", name: "MIU MIU Eyewear logo-print glasses", price: 264, description: "Contemporary eyewear crafted with...", colors: ['#8B0000', '#1E3A8A', '#6B0F1A'] },
-  { id: 'home-2', image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=400", name: "Quill Round Tortoise Glasses for Women", price: 80, description: "Sleek, modern sunglasses featuring a...", colors: ['#8B0000', '#2F4F4F', '#6B0F1A'] },
-  { id: 'home-3', image: "https://images.unsplash.com/photo-1508296695146-257a814070b4?w=400", name: "Semi-rimless rectangular eyeglasses.", price: 45, description: "Refined silhouette with a clean top line...", colors: ['#000000'] },
+  { id: '1', image: "https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=400", name: "MIU MIU Eyewear logo-print glasses", price: 264, description: "Contemporary eyewear crafted with premium acetate.", colors: ['#8B0000', '#1E3A8A', '#2D2D2D'] },
+  { id: '7', image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=400", name: "Quill Round Tortoise Sunglasses", price: 80, description: "Sleek modern sunglasses with tortoise shell finish.", colors: ['#8B0000', '#2F4F4F', '#6B0F1A'] },
+  { id: '2', image: "https://images.unsplash.com/photo-1508296695146-257a814070b4?w=400", name: "Semi-rimless rectangular eyeglasses", price: 45, description: "Refined silhouette with a clean top line.", colors: ['#000000'] },
 ].map((product, index) => (
             <div key={index} className="w-[45vw] flex-shrink-0">
               <EyewearCard {...product} />
@@ -69,11 +69,11 @@ export default function Home() {
         {/* Desktop — 4 cards per row, wraps to new line */}
         <div className="hidden md:grid grid-cols-4 gap-6">
           {[
-  { id: 'home-1', image: "https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=400", name: "MIU MIU Eyewear logo-print glasses", price: 264, description: "Contemporary eyewear crafted with...", colors: ['#8B0000', '#1E3A8A', '#6B0F1A'] },
-  { id: 'home-2', image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=400", name: "Quill Round Tortoise Glasses for Women", price: 80, description: "Sleek, modern sunglasses featuring a...", colors: ['#8B0000', '#2F4F4F', '#6B0F1A'] },
-  { id: 'home-3', image: "https://images.unsplash.com/photo-1508296695146-257a814070b4?w=400", name: "Semi-rimless rectangular eyeglasses.", price: 45, description: "Refined silhouette with a clean top line...", colors: ['#000000'] },
-  { id: 'home-4', image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=400", name: "Quill Round Tortoise Glasses for Women", price: 80, description: "Sleek, modern sunglasses featuring a...", colors: ['#8B0000', '#2F4F4F', '#6B0F1A'] },
-  { id: 'home-5', image: "https://images.unsplash.com/photo-1508296695146-257a814070b4?w=400", name: "Semi-rimless rectangular eyeglasses.", price: 45, description: "Refined silhouette with a clean top line...", colors: ['#000000'] },
+  { id: '1', image: "https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=400", name: "MIU MIU Eyewear logo-print glasses", price: 264, description: "Contemporary eyewear crafted with premium acetate.", colors: ['#8B0000', '#1E3A8A', '#2D2D2D'] },
+  { id: '7', image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=400", name: "Quill Round Tortoise Sunglasses", price: 80, description: "Sleek modern sunglasses with tortoise shell finish.", colors: ['#8B0000', '#2F4F4F', '#6B0F1A'] },
+  { id: '2', image: "https://images.unsplash.com/photo-1508296695146-257a814070b4?w=400", name: "Semi-rimless rectangular eyeglasses", price: 45, description: "Refined silhouette with a clean top line.", colors: ['#000000'] },
+  { id: '5', image: "https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=400", name: "Oversized Square Acetate Frames", price: 185, description: "Bold square silhouette in rich acetate.", colors: ['#1C1C1C', '#8B0000', '#2F4F4F'] },
+  { id: '8', image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=400", name: "Aviator Gold UV400 Sunglasses", price: 110, description: "Classic aviator style with full UV protection.", colors: ['#B8860B', '#000000'] },
 ].map((product, index) => (
             <EyewearCard key={index} {...product} />
           ))}
