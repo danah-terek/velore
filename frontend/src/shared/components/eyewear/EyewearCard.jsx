@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { useFavorites } from '../../context/FavoritesContext'
+import { useFavorites } from '../../contexts'
 
 export default function EyewearCard({ id, image, name, price, description, colors }) {
   const { toggleFavorite, isFavorite } = useFavorites()

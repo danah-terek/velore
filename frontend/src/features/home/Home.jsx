@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom'
-import heroImg from "../assets/photoshoot.png"
-import Testimonials from "../components/eyewear/Testimonials"
-import EyewearCard from '../components/eyewear/EyewearCard'
-import sketchImage from '../assets/Veloresketch.jpeg'
+//import heroImg from "../assets/photoshoot.png"
+import { Testimonials } from '../../shared/components/eyewear'  // ← FIXED
+import { EyewearCard } from '../../shared/components/eyewear'  // ← FIXED
+import sketchImage from '../../assets/Veloresketch.jpeg'  // ← FIXED
 export default function Home() {
 
   return (

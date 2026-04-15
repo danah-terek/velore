@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
-import logo from "../../assets/logoEye-blue.png";
+import logo from "../../../assets/logoEye-blue.png"; 
 import { Search, User, Heart, ShoppingCart, Menu, X } from "lucide-react";
-import { useFavorites } from "../../context/FavoritesContext";
+import { useFavorites } from "../../contexts"; 
 
 
 export default function Navbar({ onCartOpen, onContactOpen }) {

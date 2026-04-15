@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import pic1 from '../assets/pic1.jpg';
-import pic2 from '../assets/pic2.jpg';
-import pic3 from '../assets/pic3.jpg';
-import logo from '../assets/logo-blue.png';
+import pic1 from '../../assets/pic1.jpg';  // ← FIXED
+import pic2 from '../../assets/pic2.jpg';  // ← FIXED
+import pic3 from '../../assets/pic3.jpg';  // ← FIXED
+import logo from '../../assets/logo-blue.png';
 
 const AiAdvisor = () => {
   const [openIndex, setOpenIndex] = useState(null);

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import signupPhoto from "../assets/spimage.png";
+import signupPhoto from "../../assets/spimage.png";
 
 export default function Signup() {
   const [firstName, setFirstName] = useState("");

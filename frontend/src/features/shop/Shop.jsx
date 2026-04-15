@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import EyewearCard from '../components/eyewear/EyewearCard'
+import { EyewearCard } from '../../shared/components/eyewear'
 
 // ─── Product Data ─────────────────────────────────────────────────────────────
 const allProducts = [

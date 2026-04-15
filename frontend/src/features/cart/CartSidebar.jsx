@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { X, Minus, Plus, Trash2 } from 'lucide-react'
-import EyewearCard from "../eyewear/EyewearCard"
+import { EyewearCard } from '../../shared/components/eyewear'
 
 // Mock cart data - replace with your state management later
 const MOCK_CART_ITEMS = [

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
-import { useFavorites } from '../context/FavoritesContext'
-import EyewearCard from '../components/eyewear/EyewearCard'
+import { useFavorites } from '../../shared/contexts'  // ← FIXED
+import { EyewearCard } from '../../shared/components/eyewear'  // ← FIXED
 
 const Favorite = () => {
   const { favorites, clearFavorites } = useFavorites()
