@@ -66,8 +66,8 @@ export default function Home() {
           ))}
         </div>
 
-        {/* Desktop — 4 cards per row, wraps to new line */}
-        <div className="hidden md:grid grid-cols-4 gap-6">
+        {/* Tablet & Desktop — 2 cols on iPad, 4 cols on large screens */}
+        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[
   { id: '1', image: "https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=400", name: "MIU MIU Eyewear logo-print glasses", price: 264, description: "Contemporary eyewear crafted with premium acetate.", colors: ['#8B0000', '#1E3A8A', '#2D2D2D'] },
   { id: '7', image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=400", name: "Quill Round Tortoise Sunglasses", price: 80, description: "Sleek modern sunglasses with tortoise shell finish.", colors: ['#8B0000', '#2F4F4F', '#6B0F1A'] },
@@ -112,12 +112,6 @@ export default function Home() {
 
           </div>
         </section>
-
-
-
-
-
-
 
       </div>
 
