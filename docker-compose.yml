@@ -1,0 +1,25 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - AI_SERVICE_URL=http://ai-service:5001
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    depends_on:
+      - ai-service
+    command: npm run dev
+
+  ai-service:
+    build: ./ai-service
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./ai-service:/app
+    environment:
+      - PYTHONUNBUFFERED=1
