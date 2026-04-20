@@ -1,10 +1,10 @@
 require('dotenv').config()
 const express = require('express')
 const cors = require('cors')
+const prisma = require('./shared/utils/database')
 
 const app = express()
 
-// Middleware
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:5173',
   credentials: true
@@ -12,7 +12,6 @@ app.use(cors({
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
-// Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ 
     status: 'OK', 
@@ -21,13 +20,22 @@ app.get('/health', (req, res) => {
   })
 })
 
-// Test endpoint
-app.get('/api/test', (req, res) => {
-  res.json({ message: 'Backend is working!' })
+app.get('/api/test-db', async (req, res) => {
+  try {
+    const userCount = await prisma.user.count()
+    const roleCount = await prisma.role.count()
+    res.json({ 
+      success: true, 
+      message: 'Database connected!',
+      users: userCount,
+      roles: roleCount
+    })
+  } catch (error) {
+    res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    })
+  }
 })
-
-// Routes will be added here later
-// app.use('/api/v1/auth', require('./features/auth/auth.routes'))
-// app.use('/api/v1/products', require('./features/products/product.routes'))
 
 module.exports = app
