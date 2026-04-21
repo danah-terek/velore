@@ -3,16 +3,378 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model Role {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name        String   @unique @db.VarChar(50)
+  role_id     BigInt    @id @default(autoincrement())
+  name        String    @unique
   description String?
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-  
+  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  admin       admin[]
+  users       users[]
+
   @@map("roles")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model addresses {
+  address_id  BigInt    @id @default(autoincrement())
+  user_id     BigInt
+  street      String?
+  city        String?
+  state       String?
+  postal_code String?
+  country     String?
+  created_at  DateTime? @default(now()) @db.Timestamptz(6)
+  users       users     @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+  orders      orders[]
+
+  @@index([user_id], map: "idx_addresses_user")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model admin {
+  admin_id      BigInt       @id @default(autoincrement())
+  email         String       @unique
+  password_hash String
+  name          String?
+  role_id       BigInt?
+  created_at    DateTime?    @default(now()) @db.Timestamptz(6)
+  roles         Role?        @relation(fields: [role_id], references: [role_id], onDelete: NoAction, onUpdate: NoAction)
+  audit_logs    audit_logs[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model ai_recommendations {
+  rec_id     BigInt    @id @default(autoincrement())
+  user_id    BigInt
+  product_id BigInt
+  face_shape String?
+  confidence Decimal?  @db.Decimal(3, 2)
+  recom_date DateTime? @default(now()) @db.Timestamptz(6)
+  products   products  @relation(fields: [product_id], references: [product_id], onDelete: Cascade, onUpdate: NoAction)
+  users      users     @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([product_id], map: "idx_ai_rec_product")
+  @@index([user_id], map: "idx_ai_rec_user")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model audit_logs {
+  log_id      BigInt    @id @default(autoincrement())
+  admin_id    BigInt?
+  action      String
+  details     String?
+  action_date DateTime? @default(now()) @db.Timestamptz(6)
+  admin       admin?    @relation(fields: [admin_id], references: [admin_id], onUpdate: NoAction)
+
+  @@index([admin_id], map: "idx_audit_logs_admin")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model blog_posts {
+  post_id      BigInt    @id @default(autoincrement())
+  title        String
+  slug         String    @unique
+  excerpt      String?
+  content      String
+  image        String?
+  author       String
+  category     String?
+  read_time    String?
+  is_published Boolean?  @default(true)
+  published_at DateTime? @default(now()) @db.Timestamptz(6)
+  created_at   DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@index([slug], map: "idx_blog_slug")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model brands {
+  brand_id   BigInt     @id @default(autoincrement())
+  name       String
+  created_at DateTime?  @default(now()) @db.Timestamptz(6)
+  updated_at DateTime?  @default(now()) @db.Timestamptz(6)
+  products   products[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model cart_items {
+  cart_item_id     BigInt            @id @default(autoincrement())
+  cart_id          BigInt
+  product_id       BigInt
+  variant_id       BigInt?
+  quantity         Int?              @default(1)
+  carts            carts             @relation(fields: [cart_id], references: [carts_id], onDelete: Cascade, onUpdate: NoAction)
+  products         products          @relation(fields: [product_id], references: [product_id], onDelete: Cascade, onUpdate: NoAction)
+  product_variants product_variants? @relation(fields: [variant_id], references: [variant_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([cart_id, product_id, variant_id])
+  @@index([cart_id], map: "idx_cart_items_cart")
+  @@index([product_id], map: "idx_cart_items_product")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model carts {
+  carts_id   BigInt       @id @default(autoincrement())
+  user_id    BigInt       @unique
+  cart_items cart_items[]
+  users      users        @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model categories {
+  category_id BigInt     @id @default(autoincrement())
+  name        String
+  created_at  DateTime?  @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime?  @default(now()) @db.Timestamptz(6)
+  products    products[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model embeddings {
+  id         BigInt                 @id @default(autoincrement())
+  content    String
+  embedding  Unsupported("vector")?
+  created_at DateTime?              @default(now()) @db.Timestamptz(6)
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model face_images {
+  image_id    BigInt    @id @default(autoincrement())
+  user_id     BigInt
+  image_data  Bytes
+  uploaded_at DateTime? @default(now()) @db.Timestamptz(6)
+  users       users     @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id], map: "idx_face_images_user")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model feedback {
+  feedback_id   BigInt    @id @default(autoincrement())
+  user_id       BigInt
+  product_id    BigInt
+  comment       String?
+  feedback_date DateTime? @default(now()) @db.Timestamptz(6)
+  products      products  @relation(fields: [product_id], references: [product_id], onDelete: Cascade, onUpdate: NoAction)
+  users         users     @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([product_id], map: "idx_feedback_product")
+  @@index([user_id], map: "idx_feedback_user")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model migrations {
+  version    String    @id
+  name       String
+  applied_at DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model notifications {
+  notif_id BigInt    @id @default(autoincrement())
+  user_id  BigInt
+  message  String
+  type     String?
+  sent_at  DateTime? @default(now()) @db.Timestamptz(6)
+  users    users     @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id], map: "idx_notifications_user")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model orders {
+  order_id     BigInt         @id @default(autoincrement())
+  user_id      BigInt
+  address_id   BigInt
+  order_date   DateTime?      @default(now()) @db.Timestamptz(6)
+  status       String?        @default("pending")
+  addresses    addresses      @relation(fields: [address_id], references: [address_id], onDelete: NoAction, onUpdate: NoAction)
+  users        users          @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  orders_items orders_items[]
+  payments     payments?
+
+  @@index([address_id], map: "idx_orders_address")
+  @@index([user_id], map: "idx_orders_user")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model orders_items {
+  order_item_id     BigInt            @id @default(autoincrement())
+  order_id          BigInt
+  product_id        BigInt
+  variant_id        BigInt?
+  quantity          Int
+  unit_price        Decimal?          @default(0) @db.Decimal(10, 2)
+  total_price       Decimal?          @default(0) @db.Decimal(10, 2)
+  prescription_data Json?
+  orders            orders            @relation(fields: [order_id], references: [order_id], onDelete: Cascade, onUpdate: NoAction)
+  products          products          @relation(fields: [product_id], references: [product_id], onDelete: NoAction, onUpdate: NoAction)
+  product_variants  product_variants? @relation(fields: [variant_id], references: [variant_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([order_id], map: "idx_orders_items_order")
+  @@index([product_id], map: "idx_orders_items_product")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model payments {
+  payment_id       BigInt    @id @default(autoincrement())
+  order_id         BigInt    @unique
+  amount           Decimal   @db.Decimal(10, 2)
+  payment_date     DateTime? @default(now()) @db.Timestamptz(6)
+  payment_meth     String?
+  transaction_id   BigInt?
+  status           String?   @default("pending")
+  gateway_response Json?
+  paid_at          DateTime? @db.Timestamptz(6)
+  updated_at       DateTime? @default(now()) @db.Timestamptz(6)
+  orders           orders    @relation(fields: [order_id], references: [order_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model prescription_inventory {
+  prescription_id    BigInt           @id @default(autoincrement())
+  variant_id         BigInt
+  sphere             Decimal?         @db.Decimal(4, 2)
+  cylinder           Decimal?         @db.Decimal(4, 2)
+  axis               Int?
+  pupillary_distance Int?
+  stock_quantity     Int?             @default(0)
+  created_at         DateTime?        @default(now()) @db.Timestamptz(6)
+  updated_at         DateTime?        @default(now()) @db.Timestamptz(6)
+  product_variants   product_variants @relation(fields: [variant_id], references: [variant_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([variant_id, sphere, cylinder, axis, pupillary_distance])
+  @@index([variant_id], map: "idx_prescription_variant")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model product_variants {
+  variant_id             BigInt                   @id @default(autoincrement())
+  product_id             BigInt
+  sku                    String                   @unique
+  color_name             String?
+  color_hex              String?
+  size                   String?
+  price_adjustment       Decimal?                 @default(0) @db.Decimal(10, 2)
+  stock_quantity         Int?                     @default(0)
+  low_stock_alert        Int?                     @default(5)
+  images                 String[]
+  created_at             DateTime?                @default(now()) @db.Timestamptz(6)
+  updated_at             DateTime?                @default(now()) @db.Timestamptz(6)
+  cart_items             cart_items[]
+  orders_items           orders_items[]
+  prescription_inventory prescription_inventory[]
+  products               products                 @relation(fields: [product_id], references: [product_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([product_id], map: "idx_variants_product")
+  @@index([sku], map: "idx_variants_sku")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model products {
+  product_id         BigInt               @id @default(autoincrement())
+  name               String
+  description        String?
+  price              Decimal              @db.Decimal(10, 2)
+  compare_price      Decimal?             @db.Decimal(10, 2)
+  category_id        BigInt
+  brand_id           BigInt
+  frame_shape        String?
+  face_shape         String?
+  gender             String?
+  material           String?
+  prescription_ready Boolean?             @default(false)
+  virtual_try_on     Boolean?             @default(false)
+  is_active          Boolean?             @default(true)
+  is_bundle          Boolean?             @default(false)
+  created_at         DateTime?            @default(now()) @db.Timestamptz(6)
+  updated_at         DateTime?            @default(now()) @db.Timestamptz(6)
+  ai_recommendations ai_recommendations[]
+  cart_items         cart_items[]
+  feedback           feedback[]
+  orders_items       orders_items[]
+  product_variants   product_variants[]
+  brands             brands               @relation(fields: [brand_id], references: [brand_id], onDelete: NoAction, onUpdate: NoAction)
+  categories         categories           @relation(fields: [category_id], references: [category_id], onDelete: NoAction, onUpdate: NoAction)
+  wishlist_items     wishlist_items[]
+
+  @@index([brand_id], map: "idx_products_brand")
+  @@index([category_id], map: "idx_products_category")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model reports {
+  report_id    BigInt    @id @default(autoincrement())
+  report_data  Json?
+  generated_at DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model sessions {
+  session_id    BigInt    @id @default(autoincrement())
+  user_id       BigInt
+  session_token String    @unique
+  created_at    DateTime? @default(now()) @db.Timestamptz(6)
+  expires_at    DateTime  @db.Timestamptz(6)
+  users         users     @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id], map: "idx_sessions_user")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model users {
+  user_id            BigInt               @id @default(autoincrement())
+  email              String               @unique
+  password           String
+  name               String?
+  google_id          String?              @unique
+  facebook_id        String?              @unique
+  loyalty_points     Int?                 @default(0)
+  is_active          Boolean?             @default(true)
+  created_at         DateTime?            @default(now()) @db.Timestamptz(6)
+  last_login         DateTime?            @db.Timestamptz(6)
+  updated_at         DateTime?            @default(now()) @db.Timestamptz(6)
+  role_id            BigInt?              @default(3)
+  addresses          addresses[]
+  ai_recommendations ai_recommendations[]
+  carts              carts?
+  face_images        face_images[]
+  feedback           feedback[]
+  notifications      notifications[]
+  orders             orders[]
+  sessions           sessions[]
+  roles              Role?                @relation(fields: [role_id], references: [role_id], onDelete: NoAction, onUpdate: NoAction)
+  wishlists          wishlists?
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model wishlist_items {
+  wishlist_items_id BigInt    @id @default(autoincrement())
+  wishlist_id       BigInt
+  product_id        BigInt
+  products          products  @relation(fields: [product_id], references: [product_id], onDelete: Cascade, onUpdate: NoAction)
+  wishlists         wishlists @relation(fields: [wishlist_id], references: [wishlist_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([wishlist_id, product_id])
+  @@index([product_id], map: "idx_wishlist_items_product")
+  @@index([wishlist_id], map: "idx_wishlist_items_wishlist")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model wishlists {
+  wishlist_id    BigInt           @id @default(autoincrement())
+  user_id        BigInt           @unique
+  wishlist_items wishlist_items[]
+  users          users            @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
 }
