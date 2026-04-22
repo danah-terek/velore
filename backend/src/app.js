@@ -2,6 +2,15 @@ require('dotenv').config()
 const express = require('express')
 const cors = require('cors')
 const prisma = require('./shared/utils/database')
+const categoryRoutes = require('./features/categories/category.routes') // 👈 add
+
+
+const authRoutes = require('./features/auth/auth.routes')
+
+const brandRoutes = require('./features/brand/brand.routes')
+const productRoutes = require('./features/products/product.routes')
+const reviewRoutes = require('./features/reviews/review.routes')
+
 
 const app = express()
 
@@ -19,6 +28,13 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString()
   })
 })
+
+app.use('/api/categories', categoryRoutes) // 👈 add
+app.use('/api/brands', brandRoutes)
+app.use('/api/products', productRoutes) // 👈 missing
+app.use('/api/reviews', reviewRoutes)
+app.use('/api/auth', authRoutes)
+
 
 app.get('/api/test-db', async (req, res) => {
   try {
