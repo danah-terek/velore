@@ -3,10 +3,10 @@ services:
     build: ./backend
     ports:
       - "3000:3000"
+    env_file:
+      - ./backend/.env
     environment:
       - NODE_ENV=development
-      - DATABASE_URL=${DATABASE_URL}
-      - JWT_SECRET=${JWT_SECRET}
       - AI_SERVICE_URL=http://ai-service:5001
     volumes:
       - ./backend:/app

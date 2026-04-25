@@ -2,15 +2,11 @@ require('dotenv').config()
 const express = require('express')
 const cors = require('cors')
 const prisma = require('./shared/utils/database')
-const categoryRoutes = require('./features/categories/category.routes') // 👈 add
-
-
+const categoryRoutes = require('./features/categories/category.routes')
 const authRoutes = require('./features/auth/auth.routes')
-
 const brandRoutes = require('./features/brand/brand.routes')
 const productRoutes = require('./features/products/product.routes')
 const reviewRoutes = require('./features/reviews/review.routes')
-
 
 const app = express()
 
@@ -29,16 +25,16 @@ app.get('/health', (req, res) => {
   })
 })
 
-app.use('/api/categories', categoryRoutes) // 👈 add
-app.use('/api/brands', brandRoutes)
-app.use('/api/products', productRoutes) // 👈 missing
-app.use('/api/reviews', reviewRoutes)
-app.use('/api/auth', authRoutes)
+// API v1 routes
+app.use('/api/v1/categories', categoryRoutes)
+app.use('/api/v1/brands', brandRoutes)
+app.use('/api/v1/products', productRoutes)
+app.use('/api/v1/reviews', reviewRoutes)
+app.use('/api/v1/auth', authRoutes)
 
-
-app.get('/api/test-db', async (req, res) => {
+app.get('/api/v1/test-db', async (req, res) => {
   try {
-    const userCount = await prisma.user.count()
+    const userCount = await prisma.users.count()
     const roleCount = await prisma.role.count()
     res.json({ 
       success: true, 
@@ -53,5 +49,4 @@ app.get('/api/test-db', async (req, res) => {
     })
   }
 })
-
 module.exports = app
