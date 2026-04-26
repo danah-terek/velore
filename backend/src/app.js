@@ -7,6 +7,9 @@ const authRoutes = require('./features/auth/auth.routes')
 const brandRoutes = require('./features/brand/brand.routes')
 const productRoutes = require('./features/products/product.routes')
 const reviewRoutes = require('./features/reviews/review.routes')
+const favoriteRoutes = require('./features/favorites/favorite.routes')
+const userRoutes = require('./features/users/user.routes')
+
 
 const app = express()
 
@@ -31,6 +34,12 @@ app.use('/api/v1/brands', brandRoutes)
 app.use('/api/v1/products', productRoutes)
 app.use('/api/v1/reviews', reviewRoutes)
 app.use('/api/v1/auth', authRoutes)
+app.use('/api/v1/favorites', favoriteRoutes)
+app.use('/api/v1/users', userRoutes)
+
+
+
+
 
 app.get('/api/v1/test-db', async (req, res) => {
   try {
