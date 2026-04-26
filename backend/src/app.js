@@ -31,6 +31,8 @@ app.use('/api/v1/brands', brandRoutes)
 app.use('/api/v1/products', productRoutes)
 app.use('/api/v1/reviews', reviewRoutes)
 app.use('/api/v1/auth', authRoutes)
+app.use('/api/v1/cart', require('./features/cart/cart.routes'))
+app.use('/api/v1/orders', require('./features/orders/order.routes'))
 
 app.get('/api/v1/test-db', async (req, res) => {
   try {
