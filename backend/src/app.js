@@ -40,6 +40,8 @@ app.use('/api/v1/users', userRoutes)
 
 
 
+app.use('/api/v1/cart', require('./features/cart/cart.routes'))
+app.use('/api/v1/orders', require('./features/orders/order.routes'))
 
 app.get('/api/v1/test-db', async (req, res) => {
   try {
