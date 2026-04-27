@@ -1,33 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { EyewearCard } from '../../shared/components/eyewear'
-
-// ─── Product Data ─────────────────────────────────────────────────────────────
-const allProducts = [
-  // Glasses
-  { id: '1', category: 'glasses', image: "https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=400", name: "MIU MIU Eyewear logo-print glasses", price: 264, description: "Contemporary eyewear crafted with premium acetate.", colors: ['#8B0000', '#1E3A8A', '#2D2D2D'], brand: 'MIU MIU', size: 'Medium', frameShape: 'Rectangle', faceShape: 'Oval Face', gender: 'Female', isBundle: false },
-  { id: '2', category: 'glasses', image: "https://images.unsplash.com/photo-1508296695146-257a814070b4?w=400", name: "Semi-rimless rectangular eyeglasses", price: 45, description: "Refined silhouette with a clean top line.", colors: ['#000000'], brand: 'Velore', size: 'Small', frameShape: 'Rectangle', faceShape: 'Square Face', gender: 'Male', isBundle: false },
-  { id: '3', category: 'glasses', image: "https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=400", name: "Classic Round Metal Frames", price: 120, description: "Timeless round shape in lightweight metal.", colors: ['#C0C0C0', '#B8860B'], brand: 'Velore', size: 'Large', frameShape: 'Round', faceShape: 'Heart Face', gender: 'Female', isBundle: true },
-  { id: '4', category: 'glasses', image: "https://images.unsplash.com/photo-1508296695146-257a814070b4?w=400", name: "Slim Rectangular Reading Glasses", price: 60, description: "Minimalist design for everyday wear.", colors: ['#000000', '#4B3621'], brand: 'Velore', size: 'Medium', frameShape: 'Rectangle', faceShape: 'Diamond Face', gender: 'Male', isBundle: false },
-  { id: '5', category: 'glasses', image: "https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=400", name: "Oversized Square Acetate Frames", price: 185, description: "Bold square silhouette in rich acetate.", colors: ['#1C1C1C', '#8B0000', '#2F4F4F'], brand: 'Ray-Ban', size: 'Large', frameShape: 'Square', faceShape: 'Oval Face', gender: 'Female', isBundle: false },
-  { id: '6', category: 'glasses', image: "https://images.unsplash.com/photo-1508296695146-257a814070b4?w=400", name: "Vintage Cat-Eye Glasses", price: 95, description: "Retro-inspired cat-eye with modern proportions.", colors: ['#6B0F1A', '#000000'], brand: 'Ray-Ban', size: 'Small', frameShape: 'Cat eye', faceShape: 'Round Face', gender: 'Female', isBundle: true },
-
-  // Sunglasses
-  { id: '7', category: 'sunglasses', image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=400", name: "Quill Round Tortoise Sunglasses", price: 80, description: "Sleek modern sunglasses with tortoise shell finish.", colors: ['#8B0000', '#2F4F4F', '#6B0F1A'], brand: 'Velore', size: 'Medium', frameShape: 'Round', faceShape: 'Oval Face', gender: 'Female', isBundle: false },
-  { id: '8', category: 'sunglasses', image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=400", name: "Aviator Gold UV400 Sunglasses", price: 110, description: "Classic aviator style with full UV protection.", colors: ['#B8860B', '#000000'], brand: 'Ray-Ban', size: 'Large', frameShape: 'Aviator', faceShape: 'Heart Face', gender: 'Male', isBundle: false },
-  { id: '9', category: 'sunglasses', image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=400", name: "Slim Rectangular Wrap Sunglasses", price: 75, description: "Sport-inspired wrap design for active lifestyles.", colors: ['#000000', '#1E3A8A'], brand: 'Velore', size: 'Medium', frameShape: 'Rectangle', faceShape: 'Square Face', gender: 'Male', isBundle: true },
-  { id: '10', category: 'sunglasses', image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=400", name: "Hexagonal Flat-Lens Sunglasses", price: 135, description: "Geometric flat lens for an editorial look.", colors: ['#2D2D2D', '#C0C0C0'], brand: 'MIU MIU', size: 'Small', frameShape: 'Square', faceShape: 'Diamond Face', gender: 'Female', isBundle: false },
-  { id: '11', category: 'sunglasses', image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=400", name: "Oversized Shield Sunglasses", price: 160, description: "One-piece shield lens with wraparound coverage.", colors: ['#000000'], brand: 'MIU MIU', size: 'Large', frameShape: 'Square', faceShape: 'Oval Face', gender: 'Female', isBundle: false },
-  { id: '12', category: 'sunglasses', image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=400", name: "Retro Round Mirrored Sunglasses", price: 90, description: "Mirrored round lenses with a bold colour pop.", colors: ['#B8860B', '#8B0000', '#1E3A8A'], brand: 'Ray-Ban', size: 'Medium', frameShape: 'Round', faceShape: 'Square Face', gender: 'Male', isBundle: true },
-
-  // Lenses
-  { id: '13', category: 'lenses', image: "https://images.unsplash.com/photo-1585386959984-a4155224a1ad?w=400", name: "Daily Comfort Clear Lenses", price: 35, description: "Ultra-thin daily disposable lenses for all-day comfort.", colors: ['#ADD8E6'], brand: 'Velore', lensColor: 'Clear', purpose: 'Screen Use', lensFeature: 'Blue Light Blocking', gender: 'Female', isBundle: false },
-  { id: '14', category: 'lenses', image: "https://images.unsplash.com/photo-1585386959984-a4155224a1ad?w=400", name: "Monthly Toric Astigmatism Lenses", price: 55, description: "Stabilised monthly lenses for astigmatism.", colors: ['#ADD8E6'], brand: 'Velore', lensColor: 'Grey', purpose: 'Driving', lensFeature: 'Anti-Reflective', gender: 'Male', isBundle: false },
-  { id: '15', category: 'lenses', image: "https://images.unsplash.com/photo-1585386959984-a4155224a1ad?w=400", name: "Blue Light Blocking Lenses", price: 48, description: "Filter harmful blue light from screens all day.", colors: ['#87CEEB'], brand: 'Ray-Ban', lensColor: 'Blue', purpose: 'Screen Use', lensFeature: 'Blue Light Blocking', gender: 'Female', isBundle: true },
-  { id: '16', category: 'lenses', image: "https://images.unsplash.com/photo-1585386959984-a4155224a1ad?w=400", name: "Extended Wear Silicone Hydrogel", price: 65, description: "High oxygen permeability for extended wear.", colors: ['#ADD8E6'], brand: 'Velore', lensColor: 'Clear', purpose: 'Sports', lensFeature: 'UV 400 Protection', gender: 'Male', isBundle: false },
-  { id: '17', category: 'lenses', image: "https://images.unsplash.com/photo-1585386959984-a4155224a1ad?w=400", name: "Gradient Color Monthly Lenses", price: 70, description: "Subtle gradient tint for a natural enhanced look.", colors: ['#6B8E23'], brand: 'MIU MIU', lensColor: 'Gradient', purpose: 'Outdoor', lensFeature: 'UV 400 Protection', gender: 'Female', isBundle: true },
-  { id: '18', category: 'lenses', image: "https://images.unsplash.com/photo-1585386959984-a4155224a1ad?w=400", name: "Night Drive Anti-Glare Lenses", price: 80, description: "Specially coated to reduce glare on night drives.", colors: ['#2F4F4F'], brand: 'Ray-Ban', lensColor: 'Green', purpose: 'Night Driving', lensFeature: 'Anti-Fog', gender: 'Male', isBundle: false },
-]
+import shopService from './shopService'
 
 const MAX_PRICE = 450
 const BRANDS = ['Velore', 'Ray-Ban', 'MIU MIU']
@@ -100,11 +74,37 @@ export default function Shop() {
   const [filterOpen, setFilterOpen] = useState(false)
   const [filters, setFilters] = useState(initFilters())
   const [appliedFilters, setAppliedFilters] = useState(initFilters())
+  
+  // ✅ NEW: Real data from API
+  const [allProducts, setAllProducts] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   const activeCategory = searchParams.get('category') || 'all'
   const isLenses = activeCategory === 'lenses'
   const showFrameFilters = activeCategory === 'glasses' || activeCategory === 'sunglasses'
   const showFilterBtn = activeCategory !== 'all'
+
+  // ✅ NEW: Fetch products from backend
+  useEffect(() => {
+    loadProducts()
+  }, [activeCategory])
+
+  const loadProducts = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const params = {}
+      if (activeCategory !== 'all') params.category = activeCategory
+      const response = await shopService.getProducts(params)
+      setAllProducts(response.data)
+    } catch (err) {
+      setError('Failed to load products')
+      console.error('Shop error:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const setCategory = (key) => {
     setSearchParams(key === 'all' ? {} : { category: key })
@@ -137,7 +137,8 @@ export default function Shop() {
     appliedFilters.priceMin > 0 || appliedFilters.priceMax < MAX_PRICE,
   ].filter(Boolean).length
 
-  const baseProducts = allProducts.filter(p => activeCategory === 'all' || p.category === activeCategory)
+  // ✅ UPDATED: Filter from API data
+  const baseProducts = allProducts
 
   const filtered = baseProducts.filter(p => {
     const f = appliedFilters
@@ -183,7 +184,7 @@ export default function Shop() {
       <div className="px-6 md:px-16 py-5 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <p className="text-sm text-gray-500">
-            Showing {sorted.length} of {baseProducts.length} results
+            {loading ? 'Loading...' : `Showing ${sorted.length} of ${baseProducts.length} results`}
           </p>
           {showFilterBtn && (
             <button
@@ -230,14 +231,21 @@ export default function Shop() {
 
       {/* ── Product Grid ── */}
       <div className="px-6 md:px-16 pb-16">
-        {sorted.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-24 text-gray-400 text-sm">Loading products...</div>
+        ) : error ? (
+          <div className="text-center py-24 text-red-400 text-sm">
+            {error}
+            <button onClick={loadProducts} className="block mx-auto mt-3 text-gray-900 underline text-sm">Try again</button>
+          </div>
+        ) : sorted.length === 0 ? (
           <div className="text-center py-24 text-gray-400 text-sm">
             No products match your filters.
             <button onClick={resetFilters} className="block mx-auto mt-3 text-gray-900 underline text-sm">Clear filters</button>
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-            {sorted.map(product => <EyewearCard key={product.id} {...product} />)}
+            {sorted.map(product => <EyewearCard key={product.productId || product.id} {...product} />)}
           </div>
         )}
       </div>
@@ -260,7 +268,6 @@ export default function Shop() {
 
         {/* Scrollable body */}
         <div className="flex-1 overflow-y-auto px-6">
-
           {/* Price */}
           <FilterSection title="Price">
             <p className="text-xs text-gray-400 mb-3">The highest price is ${MAX_PRICE}</p>
@@ -344,7 +351,6 @@ export default function Shop() {
               {['Female', 'Male'].map(g => <Checkbox key={g} label={g} checked={filters.genders.includes(g)} onChange={() => toggle('genders', g)} />)}
             </FilterSection>
           )}
-
         </div>
 
         {/* Apply */}

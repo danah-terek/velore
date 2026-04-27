@@ -1,114 +1,85 @@
 // CartSidebar.jsx
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { X, Minus, Plus, Trash2 } from 'lucide-react'
 import { EyewearCard } from '../../shared/components/eyewear'
+import cartService from './cartService'
 
-// Mock cart data - replace with your state management later
-const MOCK_CART_ITEMS = [
-  {
-    id: 1,
-    name: "MIU MIU Eyewear logo-print glasses",
-    price: 264.00,
-    image: "https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=400",
-    quantity: 1,
-    stock: 9,
-    colors: ['#8B0000']
-  }
-]
+const FREE_SHIPPING_THRESHOLD = 50
 
-// Recommended products
-const RECOMMENDED = [
-  {
-    id: 101,
-    category: 'glasses',
-    image: "https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=400",
-    name: "MIU MIU Eyewear logo-print glasses",
-    price: 264,
-    description: "Contemporary eyewear crafted with premium acetate.",
-    colors: ['#8B0000', '#1E3A8A', '#2D2D2D']
-  },
-  {
-    id: 102,
-    category: 'sunglasses',
-    image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=400",
-    name: "MIU MIU Eyewear logo-print sunglasses",
-    price: 264,
-    description: "Contemporary eyewear crafted with premium acetate.",
-    colors: ['#8B0000', '#2F4F4F']
-  },
-  {
-    id: 103,
-    category: 'lenses',
-    image: "https://images.unsplash.com/photo-1585386959984-a4155224a1ad?w=400",
-    name: "MIU MIU Eyewear logo-print lenses",
-    price: 264,
-    description: "Contemporary eyewear crafted with premium acetate.",
-    colors: ['#ADD8E6']
-  }
-]
+function CartItem({ item, onUpdateQuantity, onRemove, loading }) {
+  const price = item.variant 
+    ? parseFloat(item.product.price) + parseFloat(item.variant.priceAdjustment)
+    : parseFloat(item.product.price)
 
-const FREE_SHIPPING_THRESHOLD = 297
-
-function CartItem({ item, onUpdateQuantity, onRemove }) {
   return (
     <div className="flex gap-4 py-4 border-b border-gray-200">
       {/* Image */}
       <div className="w-20 h-20 flex-shrink-0 bg-gray-100 rounded-sm overflow-hidden">
-        <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+        <img 
+          src={item.product.image || item.variant?.images?.[0] || 'https://via.placeholder.com/80'} 
+          alt={item.product.name} 
+          className="w-full h-full object-cover" 
+        />
       </div>
 
       {/* Details */}
       <div className="flex-1 min-w-0">
         <div className="flex justify-between">
-          <h4 className="text-sm font-medium text-gray-900 truncate pr-2">{item.name}</h4>
+          <h4 className="text-sm font-medium text-gray-900 truncate pr-2">{item.product.name}</h4>
           <button 
             onClick={onRemove}
-            className="text-gray-400 hover:text-red-500 transition-colors flex-shrink-0"
+            disabled={loading}
+            className="text-gray-400 hover:text-red-500 transition-colors flex-shrink-0 disabled:opacity-50"
           >
             <Trash2 size={16} />
           </button>
         </div>
         
-        <p className="text-xs text-gray-500 mt-0.5">{item.stock} in stock</p>
+        {item.variant && (
+          <p className="text-xs text-gray-500 mt-0.5">
+            {item.variant.colorName && `${item.variant.colorName}`}
+            {item.variant.size && ` / ${item.variant.size}`}
+          </p>
+        )}
         
         <div className="flex items-center justify-between mt-2">
           <div className="flex items-center border border-gray-300 rounded-sm">
             <button 
-              onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
+              onClick={() => onUpdateQuantity(item.productId, item.variantId, item.quantity - 1)}
               className="w-7 h-7 flex items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors"
-              disabled={item.quantity <= 1}
+              disabled={loading || item.quantity <= 1}
             >
               <Minus size={14} />
             </button>
             <span className="w-8 text-center text-sm text-gray-700">{item.quantity}</span>
             <button 
-              onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
+              onClick={() => onUpdateQuantity(item.productId, item.variantId, item.quantity + 1)}
               className="w-7 h-7 flex items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors"
-              disabled={item.quantity >= item.stock}
+              disabled={loading}
             >
               <Plus size={14} />
             </button>
           </div>
-          <p className="text-sm font-semibold text-gray-900">${(item.price * item.quantity).toFixed(2)}</p>
+          <p className="text-sm font-semibold text-gray-900">${(price * item.quantity).toFixed(2)}</p>
         </div>
       </div>
     </div>
   )
 }
 
-function RecommendedCard({ product }) {
-  return (
-    <div className="bg-gray-100/50 rounded-sm p-3">
-      <EyewearCard {...product} />
-    </div>
-  )
-}
-
 export default function CartSidebar({ isOpen, onClose }) {
-  const [cartItems, setCartItems] = useState(MOCK_CART_ITEMS)
+  const [cart, setCart] = useState(null)
+  const [loading, setLoading] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
   
+  // Load cart when opened
+  useEffect(() => {
+    if (isOpen) {
+      loadCart()
+    }
+  }, [isOpen])
+
   // Handle animation timing
   useEffect(() => {
     if (isOpen) {
@@ -119,23 +90,54 @@ export default function CartSidebar({ isOpen, onClose }) {
     }
   }, [isOpen])
 
+  const loadCart = useCallback(async () => {
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token')
+if (!token) {
+  setCart({ items: [], total: 0 })
+  return
+}
+
+    setLoading(true)
+    try {
+      const response = await cartService.getCart()
+      setCart(response.data)
+    } catch (error) {
+      console.error('Failed to load cart:', error)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  const updateQuantity = async (productId, variantId, newQuantity) => {
+    if (newQuantity < 1) return
+    setLoading(true)
+    try {
+      await cartService.updateQuantity({ productId, variantId, quantity: newQuantity })
+      await loadCart()
+    } catch (error) {
+      console.error('Failed to update quantity:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const removeItem = async (productId, variantId) => {
+    setLoading(true)
+    try {
+      await cartService.removeItem(variantId || productId)
+      await loadCart()
+    } catch (error) {
+      console.error('Failed to remove item:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const cartItems = cart?.items || []
   const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0)
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+  const subtotal = cart?.total ? parseFloat(cart.total) : 0
   const amountToFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal)
   const progressPercentage = Math.min((subtotal / FREE_SHIPPING_THRESHOLD) * 100, 100)
-
-  const updateQuantity = (id, newQuantity) => {
-    if (newQuantity < 1) return
-    setCartItems(prev => 
-      prev.map(item => 
-        item.id === id ? { ...item, quantity: newQuantity } : item
-      )
-    )
-  }
-
-  const removeItem = (id) => {
-    setCartItems(prev => prev.filter(item => item.id !== id))
-  }
 
   if (!isVisible && !isOpen) return null
 
@@ -171,7 +173,7 @@ export default function CartSidebar({ isOpen, onClose }) {
           </button>
         </div>
 
-        {/* Free shipping progress - only show if cart has items */}
+        {/* Free shipping progress */}
         {cartCount > 0 && (
           <div className="px-6 py-4 border-b border-gray-200 flex-shrink-0">
             {amountToFreeShipping > 0 ? (
@@ -194,8 +196,11 @@ export default function CartSidebar({ isOpen, onClose }) {
 
         {/* Cart Items */}
         <div className="flex-1 overflow-y-auto px-6">
-          {cartCount === 0 ? (
-            // Empty cart state
+          {!cart ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="w-8 h-8 border-2 border-gray-900 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          ) : cartCount === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center py-12">
               <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -212,28 +217,16 @@ export default function CartSidebar({ isOpen, onClose }) {
               </button>
             </div>
           ) : (
-            // Cart with items
             <div className="pb-4">
               {cartItems.map(item => (
                 <CartItem 
-                  key={item.id}
+                  key={`${item.productId}-${item.variantId || '0'}`}
                   item={item}
                   onUpdateQuantity={updateQuantity}
-                  onRemove={() => removeItem(item.id)}
+                  onRemove={() => removeItem(item.productId, item.variantId)}
+                  loading={loading}
                 />
               ))}
-            </div>
-          )}
-
-          {/* You may like section */}
-          {cartCount > 0 && (
-            <div className="py-6">
-              <h3 className="text-sm font-semibold text-gray-900 mb-4">You may like</h3>
-              <div className="grid grid-cols-2 gap-3">
-                {RECOMMENDED.slice(0, 2).map(product => (
-                  <RecommendedCard key={product.id} product={product} />
-                ))}
-              </div>
             </div>
           )}
         </div>
