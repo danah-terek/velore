@@ -1,6 +1,7 @@
 import { useParams, Link } from "react-router-dom"
 import { useState, useEffect } from "react"
 import shopService from "../shop/shopService"
+import cartService from "../cart/cartService"  // ✅ Add this import
 
 function AccordionItem({ title, children }) {
   const [open, setOpen] = useState(false)
@@ -22,9 +23,9 @@ export default function ProductDetail() {
   const { id } = useParams()
   const [product, setProduct] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [selectedColor, setSelectedColor] = useState(null)
   const [selectedImage, setSelectedImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
+  const [addingToCart, setAddingToCart] = useState(false)  // ✅ Add this
 
   useEffect(() => {
     loadProduct()
@@ -35,13 +36,55 @@ export default function ProductDetail() {
     try {
       const response = await shopService.getProduct(id)
       setProduct(response.data)
-      if (response.data.colors?.length > 0) {
-        setSelectedColor(response.data.colors[0])
-      }
     } catch (error) {
       console.error('Failed to load product:', error)
+      try {
+        const allProducts = await shopService.getProducts()
+        const found = allProducts.data.find(p => 
+          p.product_id == id || p.productId == id || p.id == id
+        )
+        if (found) setProduct(found)
+        else setProduct(null)
+      } catch {
+        setProduct(null)
+      }
     } finally {
       setLoading(false)
+    }
+  }
+
+  // ✅ Add this function
+  const handleAddToCart = async () => {
+    const productId = product.product_id || product.productId
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token')
+    
+    if (token) {
+      setAddingToCart(true)
+      try {
+        await cartService.addItem({ productId, quantity })
+        alert('Added to cart!')
+      } catch (error) {
+        console.error('Failed to add to cart:', error)
+      } finally {
+        setAddingToCart(false)
+      }
+    } else {
+      // Guest cart
+      const localCart = JSON.parse(localStorage.getItem('guestCart') || '[]')
+      const existing = localCart.find(item => item.productId === productId)
+      if (existing) {
+        existing.quantity += quantity
+      } else {
+        localCart.push({
+          productId,
+          name: product.name,
+          price: product.price,
+          image: product.image || 'https://via.placeholder.com/80',
+          quantity
+        })
+      }
+      localStorage.setItem('guestCart', JSON.stringify(localCart))
+      alert('Added to cart!')
     }
   }
 
@@ -53,7 +96,7 @@ export default function ProductDetail() {
     return <div className="p-10 text-sm text-gray-500">Product not found</div>
   }
 
-  const images = [product.image, product.image, product.image]
+  const images = [product.image, product.image, product.image].filter(Boolean)
 
   return (
     <div className="px-4 md:px-16 py-8 max-w-6xl mx-auto">
@@ -85,17 +128,16 @@ export default function ProductDetail() {
 
           <p className="text-sm text-gray-500 leading-relaxed">{product.description}</p>
 
-          {product.brand && (
-            <p className="text-sm text-gray-600">Brand: <span className="font-medium">{product.brand.name || product.brand}</span></p>
+          {product.brands && (
+            <p className="text-sm text-gray-600">Brand: <span className="font-medium">{product.brands?.name || product.brand}</span></p>
           )}
-          {product.frameShape && (
-            <p className="text-sm text-gray-600">Frame Shape: <span className="font-medium">{product.frameShape}</span></p>
+          {product.frame_shape && (
+            <p className="text-sm text-gray-600">Frame Shape: <span className="font-medium">{product.frame_shape}</span></p>
           )}
           {product.material && (
             <p className="text-sm text-gray-600">Material: <span className="font-medium">{product.material}</span></p>
           )}
 
-          {/* Size & fit */}
           <div className="border border-gray-200 p-4">
             <p className="text-sm font-medium text-gray-900 mb-2">Size & fit</p>
             <div className="text-xs text-gray-500 space-y-1">
@@ -105,7 +147,6 @@ export default function ProductDetail() {
             </div>
           </div>
 
-          {/* Accordions */}
           <div>
             <AccordionItem title="Description">
               <p>{product.description}</p>
@@ -115,15 +156,19 @@ export default function ProductDetail() {
             </AccordionItem>
           </div>
 
-          {/* Quantity + Add to cart */}
+          {/* ✅ Fixed Add to Cart */}
           <div className="flex items-center gap-4 pt-2 border-t border-gray-200">
             <div className="flex border border-gray-300">
               <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="px-3 py-2 text-gray-600 hover:bg-gray-100">−</button>
               <span className="px-4 py-2 text-sm">{quantity}</span>
               <button onClick={() => setQuantity(q => q + 1)} className="px-3 py-2 text-gray-600 hover:bg-gray-100">+</button>
             </div>
-            <button className="flex-1 bg-black text-white py-2.5 text-sm font-medium hover:bg-gray-800 transition-colors">
-              Add to cart
+            <button 
+              onClick={handleAddToCart}
+              disabled={addingToCart}
+              className="flex-1 bg-black text-white py-2.5 text-sm font-medium hover:bg-gray-800 transition-colors disabled:bg-gray-400"
+            >
+              {addingToCart ? 'Adding...' : 'Add to cart'}
             </button>
           </div>
         </div>

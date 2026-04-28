@@ -57,7 +57,7 @@ const getAllProducts = async ({ page = 1, limit = 20 } = {}) => {
 // ─── GET PRODUCT BY ID ────────────────────────────────────────────────────────
 const getProductById = async (product_id) => {
   return await prisma.products.findUnique({
-    where: { product_id: BigInt(product_id) },
+    where: { product_id: Number(product_id) },
     select: productSelect,
   });
 };
@@ -85,8 +85,8 @@ const filterProducts = async (filters) => {
     ...(search && {
       name: { contains: search, mode: "insensitive" },
     }),
-    ...(category_id && { category_id: BigInt(category_id) }),
-    ...(brand_id && { brand_id: BigInt(brand_id) }),
+    ...(category_id && { category_id: Number(category_id) }),
+    ...(brand_id && { brand_id: Number(brand_id) }),
     ...(gender && { gender }),
     ...(frame_shape && { frame_shape }),
     ...(face_shape && { face_shape }),
@@ -123,7 +123,7 @@ const filterProducts = async (filters) => {
 // ─── GET PRODUCTS BY CATEGORY ─────────────────────────────────────────────────
 const getProductsByCategory = async (category_id) => {
   return await prisma.products.findMany({
-    where: { category_id: BigInt(category_id), is_active: true },
+    where: { category_id: Number(category_id), is_active: true },
     select: productSelect,
     orderBy: { created_at: "desc" },
   });
@@ -132,7 +132,7 @@ const getProductsByCategory = async (category_id) => {
 // ─── GET PRODUCTS BY BRAND ────────────────────────────────────────────────────
 const getProductsByBrand = async (brand_id) => {
   return await prisma.products.findMany({
-    where: { brand_id: BigInt(brand_id), is_active: true },
+    where: { brand_id: Number(brand_id), is_active: true },
     select: productSelect,
     orderBy: { created_at: "desc" },
   });
@@ -143,8 +143,8 @@ const createProduct = async (data) => {
   return await prisma.products.create({
     data: {
       ...data,
-      category_id: BigInt(data.category_id),
-      brand_id: BigInt(data.brand_id),
+      category_id: Number(data.category_id),
+      brand_id: Number(data.brand_id),
     },
     select: productSelect,
   });
@@ -153,11 +153,11 @@ const createProduct = async (data) => {
 // ─── UPDATE PRODUCT ───────────────────────────────────────────────────────────
 const updateProduct = async (product_id, data) => {
   return await prisma.products.update({
-    where: { product_id: BigInt(product_id) },
+    where: { product_id: Number(product_id) },
     data: {
       ...data,
-      ...(data.category_id && { category_id: BigInt(data.category_id) }),
-      ...(data.brand_id && { brand_id: BigInt(data.brand_id) }),
+      ...(data.category_id && { category_id: Number(data.category_id) }),
+      ...(data.brand_id && { brand_id: Number(data.brand_id) }),
     },
     select: productSelect,
   });
@@ -166,7 +166,7 @@ const updateProduct = async (product_id, data) => {
 // ─── DELETE PRODUCT ───────────────────────────────────────────────────────────
 const deleteProduct = async (product_id) => {
   return await prisma.products.delete({
-    where: { product_id: BigInt(product_id) },
+    where: { product_id: Number(product_id) },
   });
 };
 

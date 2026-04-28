@@ -1,5 +1,6 @@
 const authService = require('./auth.service')
 const prisma = require('../../shared/utils/database')
+
 const authController = {
   async register(req, res, next) {
     try {
@@ -32,24 +33,31 @@ const authController = {
     }
   },
 
+  async getProfile(req, res, next) {
+    try {
+      // ✅ Correct table: users (plural), column: user_id, relation: roles
+      const user = await prisma.users.findUnique({
+        where: { user_id: Number(req.user.userId) },
+        include: { roles: true }
+      })
 
-async getProfile(req, res, next) {
-  try {
-    const user = await prisma.users.findUnique({  // 👈 users
-      where: { user_id: BigInt(req.user.userId) },  // 👈 user_id + BigInt
-      include: { roles: true }  // 👈 roles
-    })
+      if (!user) {
+        return res.status(404).json({ success: false, error: 'User not found' })
+      }
 
-    res.json({
-      success: true,
-      data: { id: user.user_id.toString(), email: user.email, name: user.name, role: user.roles.name }
-    })
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message })
+      res.json({
+        success: true,
+        data: { 
+          id: user.user_id, 
+          email: user.email, 
+          name: user.name, 
+          role: user.roles?.name 
+        }
+      })
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message })
+    }
   }
-}
-
-
 }
 
 module.exports = authController

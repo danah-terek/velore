@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs')
 const userService = {
   async getProfile(userId) {
     const user = await prisma.users.findUnique({
-      where: { user_id: BigInt(userId) },
+      where: { user_id: Number(userId) },
       include: {
         roles: true,
         addresses: true,
@@ -60,7 +60,7 @@ const userService = {
     }
 
     const user = await prisma.users.update({
-      where: { user_id: BigInt(userId) },
+      where: { user_id: Number(userId) },
       data: {
         ...(name && { name }),
         ...(email && { email }),
@@ -77,7 +77,7 @@ const userService = {
 
   async changePassword(userId, currentPassword, newPassword) {
     const user = await prisma.users.findUnique({
-      where: { user_id: BigInt(userId) }
+      where: { user_id: Number(userId) }
     })
 
     if (!user) throw new Error('User not found')
@@ -90,7 +90,7 @@ const userService = {
     const hashedPassword = await bcrypt.hash(newPassword, 10)
 
     await prisma.users.update({
-      where: { user_id: BigInt(userId) },
+      where: { user_id: Number(userId) },
       data: { password: hashedPassword, updated_at: new Date() }
     })
 
@@ -102,7 +102,7 @@ const userService = {
 
     const address = await prisma.addresses.create({
       data: {
-        user_id: BigInt(userId),
+        user_id: Number(userId),
         street,
         city,
         state,
@@ -124,15 +124,15 @@ const userService = {
   async updateAddress(userId, addressId, addressData) {
     const address = await prisma.addresses.findFirst({
       where: {
-        address_id: BigInt(addressId),
-        user_id: BigInt(userId)
+        address_id: Number(addressId),
+        user_id: Number(userId)
       }
     })
 
     if (!address) throw new Error('Address not found')
 
     const updated = await prisma.addresses.update({
-      where: { address_id: BigInt(addressId) },
+      where: { address_id: Number(addressId) },
       data: addressData
     })
 
@@ -149,15 +149,15 @@ const userService = {
   async deleteAddress(userId, addressId) {
     const address = await prisma.addresses.findFirst({
       where: {
-        address_id: BigInt(addressId),
-        user_id: BigInt(userId)
+        address_id: Number(addressId),
+        user_id: Number(userId)
       }
     })
 
     if (!address) throw new Error('Address not found')
 
     await prisma.addresses.delete({
-      where: { address_id: BigInt(addressId) }
+      where: { address_id: Number(addressId) }
     })
 
     return { message: 'Address deleted successfully' }
@@ -165,7 +165,7 @@ const userService = {
 
   async deleteAccount(userId) {
     await prisma.users.delete({
-      where: { user_id: BigInt(userId) }
+      where: { user_id: Number(userId) }
     })
 
     return { message: 'Account deleted successfully' }
@@ -173,7 +173,7 @@ const userService = {
 
   async getOrders(userId) {
     const orders = await prisma.orders.findMany({
-      where: { user_id: BigInt(userId) },
+      where: { user_id: Number(userId) },
       include: {
         addresses: true,
         orders_items: {

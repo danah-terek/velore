@@ -245,7 +245,7 @@ export default function Shop() {
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-            {sorted.map(product => <EyewearCard key={product.productId || product.id} {...product} />)}
+            {sorted.map(product => <EyewearCard key={product.product_id || product.id} {...product} />)}
           </div>
         )}
       </div>

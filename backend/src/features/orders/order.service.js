@@ -8,7 +8,7 @@ const orderService = {
   async createOrder(userId, { address_id, payment_method }) {
     // Get cart with items
     const cart = await prisma.carts.findUnique({
-      where: { user_id: BigInt(userId) },
+      where: { user_id: Number(userId) },
       include: {
         cart_items: {
           include: {
@@ -37,8 +37,8 @@ const orderService = {
     // Create order
     const order = await prisma.orders.create({
       data: {
-        user_id: BigInt(userId),
-        address_id: BigInt(address_id),
+        user_id: Number(userId),
+        address_id: Number(address_id),
         status: 'pending',
         orders_items: {
           create: cart.cart_items.map(item => ({
@@ -84,7 +84,7 @@ const orderService = {
 
   async getUserOrders(userId) {
     const orders = await prisma.orders.findMany({
-      where: { user_id: BigInt(userId) },
+      where: { user_id: Number(userId) },
       include: {
         orders_items: {
           include: {
@@ -102,7 +102,7 @@ const orderService = {
 
   async getOrderById(orderId) {
     const order = await prisma.orders.findUnique({
-      where: { order_id: BigInt(orderId) },
+      where: { order_id: Number(orderId) },
       include: {
         orders_items: {
           include: {

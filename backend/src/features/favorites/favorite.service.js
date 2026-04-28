@@ -3,7 +3,7 @@ const prisma = require('../../shared/utils/database')
 const favoriteService = {
   async getFavorites(userId) {
     const wishlist = await prisma.wishlists.findUnique({
-      where: { user_id: BigInt(userId) },
+      where: { user_id: Number(userId) },
       include: {
         wishlist_items: {
           include: {
@@ -37,7 +37,7 @@ const favoriteService = {
 
   async addFavorite(userId, productId) {
     const wishlist = await prisma.wishlists.findUnique({
-      where: { user_id: BigInt(userId) }
+      where: { user_id: Number(userId) }
     })
 
     if (!wishlist) throw new Error('Wishlist not found')
@@ -46,7 +46,7 @@ const favoriteService = {
       where: {
         wishlist_id_product_id: {
           wishlist_id: wishlist.wishlist_id,
-          product_id: BigInt(productId)
+          product_id: Number(productId)
         }
       }
     })
@@ -56,7 +56,7 @@ const favoriteService = {
     const item = await prisma.wishlist_items.create({
       data: {
         wishlist_id: wishlist.wishlist_id,
-        product_id: BigInt(productId)
+        product_id: Number(productId)
       }
     })
 
@@ -65,7 +65,7 @@ const favoriteService = {
 
   async removeFavorite(userId, productId) {
     const wishlist = await prisma.wishlists.findUnique({
-      where: { user_id: BigInt(userId) }
+      where: { user_id: Number(userId) }
     })
 
     if (!wishlist) throw new Error('Wishlist not found')
@@ -74,7 +74,7 @@ const favoriteService = {
       where: {
         wishlist_id_product_id: {
           wishlist_id: wishlist.wishlist_id,
-          product_id: BigInt(productId)
+          product_id: Number(productId)
         }
       }
     })

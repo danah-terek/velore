@@ -19,7 +19,7 @@ const getAllBrands = async () => {
 // ─── GET BRAND BY ID ──────────────────────────────────────────────────────────
 const getBrandById = async (brand_id) => {
   return await prisma.brands.findUnique({
-    where: { brand_id: BigInt(brand_id) },
+    where: { brand_id: Number(brand_id) },
     include: {
       _count: {
         select: { products: true },
@@ -31,7 +31,7 @@ const getBrandById = async (brand_id) => {
 // ─── GET PRODUCTS BY BRAND ────────────────────────────────────────────────────
 const getProductsByBrand = async (brand_id) => {
   return await prisma.brands.findUnique({
-    where: { brand_id: BigInt(brand_id) },
+    where: { brand_id: Number(brand_id) },
     include: {
       products: {
         where: { is_active: true },
@@ -75,7 +75,7 @@ const createBrand = async ({ name }) => {
 // ─── UPDATE BRAND ─────────────────────────────────────────────────────────────
 const updateBrand = async (brand_id, { name }) => {
   return await prisma.brands.update({
-    where: { brand_id: BigInt(brand_id) },
+    where: { brand_id: Number(brand_id) },
     data: { name },
   });
 };
@@ -83,7 +83,7 @@ const updateBrand = async (brand_id, { name }) => {
 // ─── DELETE BRAND ─────────────────────────────────────────────────────────────
 const deleteBrand = async (brand_id) => {
   return await prisma.brands.delete({
-    where: { brand_id: BigInt(brand_id) },
+    where: { brand_id: Number(brand_id) },
   });
 };
 

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import loginPhoto from "../../assets/loginphoto.jpg";
 import authService from "./authService";
+import cartService from "../cart/cartService";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -22,6 +23,18 @@ export default function Login() {
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
       
+      const guestCart = JSON.parse(localStorage.getItem('guestCart') || '[]')
+    if (guestCart.length > 0) {
+      for (const item of guestCart) {
+        try {
+          await cartService.addItem({ productId: item.productId, quantity: item.quantity })
+        } catch (err) {
+          console.error('Failed to merge cart item:', err)
+        }
+      }
+      localStorage.removeItem('guestCart')
+    }
+
       // Redirect to home
       navigate('/');
     } catch (err) {

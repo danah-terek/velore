@@ -19,7 +19,7 @@ const getAllCategories = async () => {
 // ─── GET CATEGORY BY ID ───────────────────────────────────────────────────────
 const getCategoryById = async (category_id) => {
   return await prisma.categories.findUnique({
-    where: { category_id: BigInt(category_id) },
+    where: { category_id: Number(category_id) },  // ✅ Fixed
     include: {
       _count: {
         select: { products: true },
@@ -31,7 +31,7 @@ const getCategoryById = async (category_id) => {
 // ─── GET PRODUCTS BY CATEGORY ─────────────────────────────────────────────────
 const getProductsByCategory = async (category_id) => {
   return await prisma.categories.findUnique({
-    where: { category_id: BigInt(category_id) },
+    where: { category_id: Number(category_id) },  // ✅ Fixed
     include: {
       products: {
         where: { is_active: true },
@@ -75,7 +75,7 @@ const createCategory = async ({ name }) => {
 // ─── UPDATE CATEGORY ──────────────────────────────────────────────────────────
 const updateCategory = async (category_id, { name }) => {
   return await prisma.categories.update({
-    where: { category_id: BigInt(category_id) },
+    where: { category_id: Number(category_id) },  // ✅ Fixed
     data: { name },
   });
 };
@@ -83,7 +83,7 @@ const updateCategory = async (category_id, { name }) => {
 // ─── DELETE CATEGORY ──────────────────────────────────────────────────────────
 const deleteCategory = async (category_id) => {
   return await prisma.categories.delete({
-    where: { category_id: BigInt(category_id) },
+    where: { category_id: Number(category_id) },  // ✅ Fixed
   });
 };
 
