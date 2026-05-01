@@ -36,6 +36,23 @@ const validateCreateProduct = [
     .optional().isBoolean().withMessage("is_active must be a boolean"),
   body("is_bundle")
     .optional().isBoolean().withMessage("is_bundle must be a boolean"),
+    // Glasses & Sunglasses
+  body("lens_width")
+    .optional().isFloat({ min: 0 }).withMessage("lens_width must be a positive number"),
+  body("bridge_width")
+    .optional().isFloat({ min: 0 }).withMessage("bridge_width must be a positive number"),
+  body("temple_length")
+    .optional().isFloat({ min: 0 }).withMessage("temple_length must be a positive number"),
+  // Contact Lenses
+  body("diameter")
+    .optional().isFloat({ min: 0 }).withMessage("diameter must be a positive number"),
+  body("base_curve")
+    .optional().isFloat({ min: 0 }).withMessage("base_curve must be a positive number"),
+  body("water_content")
+    .optional().isFloat({ min: 0, max: 100 }).withMessage("water_content must be between 0 and 100"),
+  // Extended description
+  body("details")
+    .optional({ nullable: true }).isString().withMessage("details must be a string"),
 ];
 
 // ─── UPDATE PRODUCT ───────────────────────────────────────────────────────────
@@ -69,6 +86,23 @@ const validateUpdateProduct = [
     .optional().isBoolean().withMessage("is_active must be a boolean"),
   body("is_bundle")
     .optional().isBoolean().withMessage("is_bundle must be a boolean"),
+    // Glasses & Sunglasses
+  body("lens_width")
+    .optional().isFloat({ min: 0 }).withMessage("lens_width must be a positive number"),
+  body("bridge_width")
+    .optional().isFloat({ min: 0 }).withMessage("bridge_width must be a positive number"),
+  body("temple_length")
+    .optional().isFloat({ min: 0 }).withMessage("temple_length must be a positive number"),
+  // Contact Lenses
+  body("diameter")
+    .optional().isFloat({ min: 0 }).withMessage("diameter must be a positive number"),
+  body("base_curve")
+    .optional().isFloat({ min: 0 }).withMessage("base_curve must be a positive number"),
+  body("water_content")
+    .optional().isFloat({ min: 0, max: 100 }).withMessage("water_content must be between 0 and 100"),
+  // Extended description
+  body("details")
+    .optional({ nullable: true }).isString().withMessage("details must be a string"),
 ];
 
 // ─── FILTER / SEARCH PRODUCTS ─────────────────────────────────────────────────

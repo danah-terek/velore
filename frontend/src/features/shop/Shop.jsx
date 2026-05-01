@@ -87,24 +87,33 @@ export default function Shop() {
 
   // ✅ NEW: Fetch products from backend
   useEffect(() => {
-    loadProducts()
+    loadProducts(activeCategory)
   }, [activeCategory])
 
-  const loadProducts = async () => {
-    setLoading(true)
-    setError(null)
-    try {
-      const params = {}
-      if (activeCategory !== 'all') params.category = activeCategory
-      const response = await shopService.getProducts(params)
-      setAllProducts(response.data)
-    } catch (err) {
-      setError('Failed to load products')
-      console.error('Shop error:', err)
-    } finally {
-      setLoading(false)
+  const loadProducts = async (category) => {
+  setLoading(true)
+  setError(null)
+  try {
+    const params = {}
+    if (activeCategory !== 'all') {
+      const categoryMap = {
+        glasses: 1,
+        sunglasses: 2,
+        lenses: 4,
+      }
+      params.category_id = categoryMap[activeCategory]
     }
+    const response = await shopService.getProducts(params)
+console.log('API response:', response.data)  // ← add this
+setAllProducts(response.data)
+
+  } catch (err) {
+    setError('Failed to load products')
+    console.error('Shop error:', err)
+  } finally {
+    setLoading(false)
   }
+}
 
   const setCategory = (key) => {
     setSearchParams(key === 'all' ? {} : { category: key })
@@ -112,6 +121,8 @@ export default function Shop() {
     setFilters(reset)
     setAppliedFilters(reset)
     setFilterOpen(false)
+        window.scrollTo(0, 0)  // ← add this
+
   }
 
   const toggle = (key, value) => {
@@ -236,7 +247,7 @@ export default function Shop() {
         ) : error ? (
           <div className="text-center py-24 text-red-400 text-sm">
             {error}
-            <button onClick={loadProducts} className="block mx-auto mt-3 text-gray-900 underline text-sm">Try again</button>
+            <button onClick={() => loadProducts(activeCategory)} className="block mx-auto mt-3 text-gray-900 underline text-sm">Try again</button>
           </div>
         ) : sorted.length === 0 ? (
           <div className="text-center py-24 text-gray-400 text-sm">

@@ -9,7 +9,7 @@ const {
 } = require("./product.validation");
 
 // Public routes
-router.get("/", productController.getAllProducts);
+router.get("/", validateFilterProducts, productController.filterProducts);
 router.get("/search", validateFilterProducts, productController.filterProducts);
 router.get("/category/:id", validateId, productController.getProductsByCategory);
 router.get("/brand/:id", validateId, productController.getProductsByBrand);
