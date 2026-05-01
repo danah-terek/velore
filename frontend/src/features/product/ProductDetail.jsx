@@ -230,55 +230,52 @@ export default function ProductDetail() {
     }
   }
 
-  const handleAddToCart = async () => {
-    const productId = product.product_id
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token')
+const handleAddToCart = async () => {
+  const productId = product.product_id
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token')
 
-    // ── NEW: Build prescription payload ───────────────────────────────────
-    const prescriptionData = prescription
-    // ── END ───────────────────────────────────────────────────────────────
-
-    if (token) {
-      setAddingToCart(true)
-      try {
-        await cartService.addItem({ productId, quantity })
-        // ── NEW: Save prescription to localStorage keyed by productId ─────
-        const saved = JSON.parse(localStorage.getItem('prescriptions') || '{}')
-        saved[productId] = prescriptionData
-        localStorage.setItem('prescriptions', JSON.stringify(saved))
-        // ── END ───────────────────────────────────────────────────────────
-        alert('Added to cart!')
-      } catch (error) {
-        console.error('Failed to add to cart:', error)
-      } finally {
-        setAddingToCart(false)
-      }
-    } else {
-      const localCart = JSON.parse(localStorage.getItem('guestCart') || '[]')
-      const existing = localCart.find(item => item.productId === productId)
-      if (existing) {
-        existing.quantity += quantity
-        // ── NEW: Update prescription on existing item ─────────────────────
-        existing.prescriptionData = prescriptionData
-        // ── END ───────────────────────────────────────────────────────────
-      } else {
-        // ✅ Use first variant image or fallback
-        const firstImage = product.product_variants?.[0]?.images?.[0] || 'https://via.placeholder.com/80'
-        localCart.push({
-          productId,
-          name: product.name,
-          price: product.price,
-          image: firstImage,
-          quantity,
-          // ── NEW ──────────────────────────────────────────────────────────
-          prescriptionData,
-          // ── END ──────────────────────────────────────────────────────────
-        })
-      }
-      localStorage.setItem('guestCart', JSON.stringify(localCart))
+  if (token) {
+    setAddingToCart(true)
+    try {
+      console.log('Sending to cart:', { 
+        productId, 
+        variantId: selectedVariant?.variant_id,
+        quantity,
+        prescriptionData: prescription
+      })
+      await cartService.addItem({ 
+        productId, 
+        variantId: selectedVariant?.variant_id,
+        quantity,
+        prescriptionData: prescription
+      })
       alert('Added to cart!')
+    } catch (error) {
+      console.error('Failed to add to cart:', error)
+    } finally {
+      setAddingToCart(false)
     }
+  } else {
+    const localCart = JSON.parse(localStorage.getItem('guestCart') || '[]')
+    const existing = localCart.find(item => item.productId === productId)
+    if (existing) {
+      existing.quantity += quantity
+      existing.prescriptionData = prescription
+    } else {
+      const firstImage = product.product_variants?.[0]?.images?.[0] || 'https://via.placeholder.com/80'
+      localCart.push({
+        productId,
+        name: product.name,
+        price: product.price,
+        image: firstImage,
+        quantity,
+        prescriptionData: prescription,
+      })
+    }
+    localStorage.setItem('guestCart', JSON.stringify(localCart))
+    alert('Added to cart!')
   }
+}
 
   if (loading) {
     return <div className="flex justify-center items-center min-h-screen">Loading...</div>

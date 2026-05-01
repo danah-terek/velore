@@ -2,7 +2,6 @@ const prisma = require('../../shared/utils/database')
 
 const cartService = {
   async getCart(userId) {
-    // ✅ Convert userId to number first
     const userIdNum = Number(userId)
     
     let cart = await prisma.carts.findUnique({
@@ -41,8 +40,7 @@ const cartService = {
     return { ...cart, total: total.toFixed(2) }
   },
 
-  async addItem(userId, { productId, product_id, variantId, variant_id, quantity = 1 }) {
-    // ✅ Use whichever ID is provided, convert to number
+  async addItem(userId, { productId, product_id, variantId, variant_id, quantity = 1, prescriptionData }) {
     const productIdNum = Number(product_id || productId)
     const variantIdNum = variant_id || variantId ? Number(variant_id || variantId) : null
     const userIdNum = Number(userId)
@@ -61,7 +59,6 @@ const cartService = {
       })
     }
 
-    // ✅ Check if item already exists
     const existingWhere = {
       cart_id: cart.carts_id,
       product_id: productIdNum,
@@ -80,17 +77,20 @@ const cartService = {
     if (existing) {
       return prisma.cart_items.update({
         where: { cart_item_id: existing.cart_item_id },
-        data: { quantity: existing.quantity + quantity }
+        data: { 
+          quantity: existing.quantity + quantity,
+          prescription_data: prescriptionData || existing.prescription_data
+        }
       })
     }
 
-    // ✅ Create new cart item
     return prisma.cart_items.create({
       data: {
         cart_id: cart.carts_id,
         product_id: productIdNum,
         variant_id: variantIdNum,
-        quantity
+        quantity,
+        prescription_data: prescriptionData || null
       }
     })
   },
