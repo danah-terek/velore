@@ -11,70 +11,53 @@ export default function EyewearCard({ id, productId, product_id, image, name, pr
   const favorited = isFavorite(productIdFinal)
 
   const handleAddToCart = async (e) => {
-    e.preventDefault()
-    e.stopPropagation()
+  e.preventDefault()
+  e.stopPropagation()
+  
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token')
+  
+  // ✅ Guest mode: ONLY localStorage
+  if (!token) {
+    const localCart = JSON.parse(localStorage.getItem('guestCart') || '[]')
+    const existing = localCart.find(item => item.productId === productIdFinal)
     
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token')
-    
-    // ✅ Guest mode: save to localStorage
-    if (!token) {
-      const localCart = JSON.parse(localStorage.getItem('guestCart') || '[]')
-      const existing = localCart.find(item => item.productId === productIdFinal)
-      
-      if (existing) {
-        existing.quantity += 1
-      } else {
-        localCart.push({
-          productId: productIdFinal,
-          name: name,
-          price: parseFloat(price),
-          image: image || '',
-          quantity: 1
-        })
-      }
-      
-      localStorage.setItem('guestCart', JSON.stringify(localCart))
-      
-      const btn = e.target
-      btn.textContent = 'Added!'
-      setTimeout(() => { btn.textContent = 'Add to cart' }, 1000)
-      return
-    }
-    
-    // ✅ Logged-in mode: use API and refresh cart
-    setAddingToCart(true)
-    try {
-      await cartService.addItem({
+    if (existing) {
+      existing.quantity += 1
+    } else {
+      localCart.push({
         productId: productIdFinal,
+        name: name,
+        price: parseFloat(price),
+        image: image || '',
         quantity: 1
       })
-
-      // Refresh cart immediately from API
-      const updatedCart = await cartService.getCart()
-      console.log('Updated cart after add:', updatedCart)
-
-      // Normalize and save to localStorage so CartSidebar can read it
-      const cartItems = Array.isArray(updatedCart.data)
-        ? updatedCart.data
-        : updatedCart.data?.items
-        ? updatedCart.data.items
-        : updatedCart.data?.data
-        ? (Array.isArray(updatedCart.data.data) ? updatedCart.data.data : [updatedCart.data.data])
-        : []
-
-      localStorage.setItem('cart', JSON.stringify(cartItems))
-
-      const btn = e.target
-      if (btn) {
-        btn.textContent = 'Added!'
-        setTimeout(() => { btn.textContent = 'Add to cart' }, 1000)
-      }
-    } catch (error) {
-      console.error('Failed to add to cart:', error)
-    } finally {
-      setAddingToCart(false)
     }
+    
+    localStorage.setItem('guestCart', JSON.stringify(localCart))
+    
+    const btn = e.target
+    btn.textContent = 'Added!'
+    setTimeout(() => { btn.textContent = 'Add to cart' }, 1000)
+    return  // ← STOP here
   }
+  
+  // ✅ Logged in: ONLY API
+  setAddingToCart(true)
+  try {
+    await cartService.addItem({
+      productId: Number(productIdFinal),
+      quantity: 1
+    })
+    
+    const btn = e.target
+    btn.textContent = 'Added!'
+    setTimeout(() => { btn.textContent = 'Add to cart' }, 1000)
+  } catch (error) {
+    console.error('Failed to add to cart:', error)
+  } finally {
+    setAddingToCart(false)
+  }
+}
 
   return (
     <div className="bg-blue-100 rounded-sm relative flex flex-col w-full">

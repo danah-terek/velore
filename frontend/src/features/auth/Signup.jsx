@@ -12,6 +12,49 @@ export default function Signup() {
   const [agreed, setAgreed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
+
+  const validateForm = () => {
+    const errors = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    // First name
+    if (!firstName.trim()) {
+      errors.firstName = "First name is required";
+    } else if (firstName.trim().length < 2) {
+      errors.firstName = "First name must be at least 2 characters";
+    }
+
+    // Last name
+    if (!lastName.trim()) {
+      errors.lastName = "Last name is required";
+    } else if (lastName.trim().length < 2) {
+      errors.lastName = "Last name must be at least 2 characters";
+    }
+
+    // Email
+    if (!email.trim()) {
+      errors.email = "Email is required";
+    } else if (!emailRegex.test(email)) {
+      errors.email = "Please enter a valid email (e.g., user@gmail.com)";
+    }
+
+    // Password
+    if (!password) {
+      errors.password = "Password is required";
+    } else if (password.length < 8) {
+      errors.password = "Password must be at least 8 characters";
+    } else if (!/(?=.*[a-z])/.test(password)) {
+      errors.password = "Password must contain at least one lowercase letter";
+    } else if (!/(?=.*[A-Z])/.test(password)) {
+      errors.password = "Password must contain at least one uppercase letter";
+    } else if (!/(?=.*\d)/.test(password)) {
+      errors.password = "Password must contain at least one number";
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const handleCreate = async (e) => {
     e.preventDefault();
@@ -20,6 +63,9 @@ export default function Signup() {
       alert("You must agree to the terms.");
       return;
     }
+
+    // ✅ Validate before submitting
+    if (!validateForm()) return;
 
     setLoading(true);
     setError("");
@@ -30,8 +76,7 @@ export default function Signup() {
         password,
         name: `${firstName} ${lastName}`
       });
-      
-      // ✅ Redirect to login after successful registration
+
       navigate('/login');
     } catch (err) {
       setError(err.error || "Registration failed. Please try again.");
@@ -61,9 +106,9 @@ export default function Signup() {
             CREATE ACCOUNT
           </h1>
 
-          {/* ✅ Error message */}
+          {/* General Error */}
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 text-sm">
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded">
               {error}
             </div>
           )}
@@ -77,10 +122,18 @@ export default function Signup() {
               <input
                 type="text"
                 value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                required
-                className="w-full border border-gray-300 px-3 py-2.5 text-sm outline-none focus:border-black transition"
+                onChange={(e) => {
+                  setFirstName(e.target.value);
+                  setFieldErrors({ ...fieldErrors, firstName: '' });
+                }}
+                className={`w-full border px-3 py-2.5 text-sm outline-none transition ${
+                  fieldErrors.firstName ? 'border-red-500' : 'border-gray-300 focus:border-black'
+                }`}
+                placeholder="John"
               />
+              {fieldErrors.firstName && (
+                <p className="text-red-500 text-xs mt-1">{fieldErrors.firstName}</p>
+              )}
             </div>
             <div className="w-1/2">
               <label className="block text-sm font-medium mb-1.5">
@@ -89,10 +142,18 @@ export default function Signup() {
               <input
                 type="text"
                 value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                required
-                className="w-full border border-gray-300 px-3 py-2.5 text-sm outline-none focus:border-black transition"
+                onChange={(e) => {
+                  setLastName(e.target.value);
+                  setFieldErrors({ ...fieldErrors, lastName: '' });
+                }}
+                className={`w-full border px-3 py-2.5 text-sm outline-none transition ${
+                  fieldErrors.lastName ? 'border-red-500' : 'border-gray-300 focus:border-black'
+                }`}
+                placeholder="Doe"
               />
+              {fieldErrors.lastName && (
+                <p className="text-red-500 text-xs mt-1">{fieldErrors.lastName}</p>
+              )}
             </div>
           </div>
 
@@ -104,10 +165,18 @@ export default function Signup() {
             <input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full border border-gray-300 px-3 py-2.5 text-sm outline-none focus:border-black transition"
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setFieldErrors({ ...fieldErrors, email: '' });
+              }}
+              className={`w-full border px-3 py-2.5 text-sm outline-none transition ${
+                fieldErrors.email ? 'border-red-500' : 'border-gray-300 focus:border-black'
+              }`}
+              placeholder="you@example.com"
             />
+            {fieldErrors.email && (
+              <p className="text-red-500 text-xs mt-1">{fieldErrors.email}</p>
+            )}
           </div>
 
           {/* PASSWORD */}
@@ -118,10 +187,21 @@ export default function Signup() {
             <input
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full border border-gray-300 px-3 py-2.5 text-sm outline-none focus:border-black transition"
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setFieldErrors({ ...fieldErrors, password: '' });
+              }}
+              className={`w-full border px-3 py-2.5 text-sm outline-none transition ${
+                fieldErrors.password ? 'border-red-500' : 'border-gray-300 focus:border-black'
+              }`}
+              placeholder="••••••••"
             />
+            {fieldErrors.password && (
+              <p className="text-red-500 text-xs mt-1">{fieldErrors.password}</p>
+            )}
+            <p className="text-xs text-gray-400 mt-1">
+              Min 8 characters, uppercase, lowercase, and a number
+            </p>
           </div>
 
           {/* CHECKBOX */}
@@ -144,7 +224,7 @@ export default function Signup() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-black text-white py-3.5 text-sm font-bold tracking-widest uppercase hover:bg-gray-800 transition disabled:bg-gray-400"
+            className="w-full bg-black text-white py-3.5 text-sm font-bold tracking-widest uppercase hover:bg-gray-800 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             {loading ? "CREATING..." : "CREATE"}
           </button>

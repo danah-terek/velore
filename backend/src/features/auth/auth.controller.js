@@ -1,9 +1,19 @@
+const { validationResult } = require('express-validator')
 const authService = require('./auth.service')
 const prisma = require('../../shared/utils/database')
 
 const authController = {
   async register(req, res, next) {
     try {
+      // ✅ Check validation results
+      const errors = validationResult(req)
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          errors: errors.array().map(e => e.msg)
+        })
+      }
+
       const result = await authService.register(req.body)
       res.status(201).json({
         success: true,
@@ -19,6 +29,15 @@ const authController = {
 
   async login(req, res, next) {
     try {
+      // ✅ Check validation results
+      const errors = validationResult(req)
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          errors: errors.array().map(e => e.msg)
+        })
+      }
+
       const { email, password } = req.body
       const result = await authService.login(email, password)
       res.json({
@@ -35,7 +54,6 @@ const authController = {
 
   async getProfile(req, res, next) {
     try {
-      // ✅ Correct table: users (plural), column: user_id, relation: roles
       const user = await prisma.users.findUnique({
         where: { user_id: Number(req.user.userId) },
         include: { roles: true }
