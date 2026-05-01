@@ -5,7 +5,7 @@ const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000
+  timeout: 30000
 })
 
 // Request interceptor - attach token
@@ -27,6 +27,8 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('token')
       sessionStorage.removeItem('token')
+      localStorage.removeItem('user')
+      localStorage.removeItem('guestCart')
       window.location.href = '/login'
     }
     return Promise.reject(error.response?.data || error)

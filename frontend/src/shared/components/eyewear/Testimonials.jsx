@@ -97,13 +97,15 @@ export default function Testimonials() {
           autoplay={{ delay: 3000, disableOnInteraction: false }}
           navigation={{ prevEl: prevRef.current, nextEl: nextRef.current }}
           onSwiper={(swiper) => {
-            setTimeout(() => {
-              swiper.params.navigation.prevEl = prevRef.current
-              swiper.params.navigation.nextEl = nextRef.current
-              swiper.navigation.init()
-              swiper.navigation.update()
-            })
-          }}
+  setTimeout(() => {
+    if (swiper.params && swiper.params.navigation && typeof swiper.params.navigation !== 'boolean') {
+      swiper.params.navigation.prevEl = prevRef.current
+      swiper.params.navigation.nextEl = nextRef.current
+      swiper.navigation.init()
+      swiper.navigation.update()
+    }
+  })
+}}
           slideActiveClass="swiper-slide-active"
           className="px-12"
         >

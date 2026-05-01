@@ -55,7 +55,7 @@ export default function ProductDetail() {
 
   // ✅ Add this function
   const handleAddToCart = async () => {
-    const productId = product.product_id || product.productId
+    const productId = product.product_id || product.product_id
     const token = localStorage.getItem('token') || sessionStorage.getItem('token')
     
     if (token) {

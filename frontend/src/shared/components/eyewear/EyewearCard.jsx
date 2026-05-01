@@ -16,7 +16,7 @@ export default function EyewearCard({ id, productId, product_id, image, name, pr
     
     const token = localStorage.getItem('token') || sessionStorage.getItem('token')
     
-    // ✅ If NOT logged in, save to guest cart (localStorage)
+    // ✅ Guest mode: save to localStorage
     if (!token) {
       const localCart = JSON.parse(localStorage.getItem('guestCart') || '[]')
       const existing = localCart.find(item => item.productId === productIdFinal)
@@ -35,23 +35,40 @@ export default function EyewearCard({ id, productId, product_id, image, name, pr
       
       localStorage.setItem('guestCart', JSON.stringify(localCart))
       
-      // Show feedback
       const btn = e.target
       btn.textContent = 'Added!'
       setTimeout(() => { btn.textContent = 'Add to cart' }, 1000)
       return
     }
     
-    // ✅ If logged in, use API
+    // ✅ Logged-in mode: use API and refresh cart
     setAddingToCart(true)
     try {
       await cartService.addItem({
         productId: productIdFinal,
         quantity: 1
       })
+
+      // Refresh cart immediately from API
+      const updatedCart = await cartService.getCart()
+      console.log('Updated cart after add:', updatedCart)
+
+      // Normalize and save to localStorage so CartSidebar can read it
+      const cartItems = Array.isArray(updatedCart.data)
+        ? updatedCart.data
+        : updatedCart.data?.items
+        ? updatedCart.data.items
+        : updatedCart.data?.data
+        ? (Array.isArray(updatedCart.data.data) ? updatedCart.data.data : [updatedCart.data.data])
+        : []
+
+      localStorage.setItem('cart', JSON.stringify(cartItems))
+
       const btn = e.target
-      btn.textContent = 'Added!'
-      setTimeout(() => { btn.textContent = 'Add to cart' }, 1000)
+      if (btn) {
+        btn.textContent = 'Added!'
+        setTimeout(() => { btn.textContent = 'Add to cart' }, 1000)
+      }
     } catch (error) {
       console.error('Failed to add to cart:', error)
     } finally {

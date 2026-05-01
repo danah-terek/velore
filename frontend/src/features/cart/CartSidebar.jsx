@@ -6,40 +6,37 @@ import cartService from './cartService'
 const FREE_SHIPPING_THRESHOLD = 50
 
 function CartItem({ item, onRemove, onQuantityChange }) {
-  const price = parseFloat(item.price || item.product?.price || 0)
+  const name = item.products?.name || 'Product'
+  const price = parseFloat(item.products?.price || 0)
+  const image = item.products?.product_variants?.[0]?.images?.[0] || 'https://via.placeholder.com/80'
+  const itemId = item.cart_item_id
 
   return (
     <div className="flex gap-4 py-4 border-b border-gray-200">
       <div className="w-16 h-16 flex-shrink-0 bg-gray-100 rounded-sm overflow-hidden">
-        <img 
-          src={item.image || item.product?.image || 'https://via.placeholder.com/80'} 
-          alt={item.name || item.product?.name} 
-          className="w-full h-full object-cover" 
-        />
+        <img src={image} alt={name} className="w-full h-full object-cover" />
       </div>
 
       <div className="flex-1 min-w-0">
         <div className="flex justify-between">
-          <h4 className="text-sm font-medium text-gray-900 truncate pr-2">
-            {item.name || item.product?.name}
-          </h4>
-          <button onClick={onRemove} className="text-gray-400 hover:text-red-500 flex-shrink-0">
+          <h4 className="text-sm font-medium text-gray-900 truncate pr-2">{name}</h4>
+          <button onClick={() => onRemove(itemId)} className="text-gray-400 hover:text-red-500 flex-shrink-0">
             <Trash2 size={16} />
           </button>
         </div>
 
         <div className="flex items-center justify-between mt-2">
           <div className="flex items-center border border-gray-300 rounded-sm">
-            <button 
-              onClick={() => onQuantityChange(item.productId, item.quantity - 1)}
+            <button
+              onClick={() => onQuantityChange(itemId, item.quantity - 1)}
               className="w-7 h-7 flex items-center justify-center text-gray-500 hover:bg-gray-100"
               disabled={item.quantity <= 1}
             >
               <Minus size={14} />
             </button>
             <span className="w-8 text-center text-sm">{item.quantity}</span>
-            <button 
-              onClick={() => onQuantityChange(item.productId, item.quantity + 1)}
+            <button
+              onClick={() => onQuantityChange(itemId, item.quantity + 1)}
               className="w-7 h-7 flex items-center justify-center text-gray-500 hover:bg-gray-100"
             >
               <Plus size={14} />
@@ -56,7 +53,6 @@ export default function CartSidebar({ isOpen, onClose }) {
   const [items, setItems] = useState([])
   const [isVisible, setIsVisible] = useState(false)
 
-  // ✅ Load cart EVERY TIME it opens
   useEffect(() => {
     if (isOpen) {
       loadCart()
@@ -67,45 +63,56 @@ export default function CartSidebar({ isOpen, onClose }) {
     }
   }, [isOpen])
 
-  const loadCart = () => {
-    const guestCart = JSON.parse(localStorage.getItem('guestCart') || '[]')
-    setItems(guestCart)
+  const loadCart = async () => {
+  try {
+    const response = await cartService.getCart()
+    // Backend returns { success: true, data: { carts_id, cart_items: [], total } }
+    const cartItems = response?.data?.cart_items || response?.cart_items || []
+    setItems(Array.isArray(cartItems) ? cartItems : [])
+  } catch (error) {
+    console.error('Failed to load cart:', error)
+    setItems([])
   }
-
-  const saveCart = (newItems) => {
-    localStorage.setItem('guestCart', JSON.stringify(newItems))
-    setItems(newItems)
-  }
-
-  const handleQuantityChange = (productId, newQuantity) => {
+}
+  const handleQuantityChange = async (cartItemId, newQuantity) => {
     if (newQuantity < 1) return
-    const updated = items.map(item => 
-      item.productId === productId ? { ...item, quantity: newQuantity } : item
-    )
-    saveCart(updated)
+    try {
+      // NOTE: Adjust the field names to match what your backend's PUT /cart/update expects
+      await cartService.updateQuantity({ cart_item_id: cartItemId, quantity: newQuantity })
+      loadCart()
+    } catch (error) {
+      console.error('Failed to update:', error)
+    }
   }
 
-  const handleRemove = (productId) => {
-    const updated = items.filter(item => item.productId !== productId)
-    saveCart(updated)
+  const handleRemove = async (cartItemId) => {
+    try {
+      await cartService.removeItem(cartItemId)
+      loadCart()
+    } catch (error) {
+      console.error('Failed to remove:', error)
+    }
   }
 
-  const cartCount = items.reduce((sum, item) => sum + item.quantity, 0)
-  const subtotal = items.reduce((sum, item) => sum + (parseFloat(item.price || 0) * item.quantity), 0)
+  const cartCount = items.reduce((sum, item) => sum + (item.quantity || 0), 0)
+  const subtotal = items.reduce((sum, item) => {
+    const price = parseFloat(item.product?.price || item.price || 0)
+    return sum + price * (item.quantity || 0)
+  }, 0)
   const amountToFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal)
 
   if (!isVisible && !isOpen) return null
 
   return (
     <>
-      <div 
+      <div
         className={`fixed inset-0 bg-black/30 z-50 transition-opacity duration-300 ${
           isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
         onClick={onClose}
       />
 
-      <div 
+      <div
         className={`fixed top-0 right-0 h-full w-full max-w-[400px] md:max-w-[450px] bg-white z-50 shadow-2xl flex flex-col transition-transform duration-300 ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
@@ -129,14 +136,14 @@ export default function CartSidebar({ isOpen, onClose }) {
                   Spend <span className="font-semibold">${amountToFreeShipping.toFixed(2)}</span> more for free shipping!
                 </p>
                 <div className="h-1.5 bg-gray-200 rounded-full">
-                  <div 
+                  <div
                     className="h-full bg-gray-900 transition-all"
                     style={{ width: `${Math.min((subtotal / FREE_SHIPPING_THRESHOLD) * 100, 100)}%` }}
                   />
                 </div>
               </>
             ) : (
-              <p className="text-sm text-green-600 font-medium">🎉 Free shipping!</p>
+              <p className="text-sm text-green-600 font-medium">:tada: Free shipping!</p>
             )}
           </div>
         )}
@@ -158,12 +165,12 @@ export default function CartSidebar({ isOpen, onClose }) {
             </div>
           ) : (
             <div className="pb-4">
-              {items.map((item, index) => (
-                <CartItem 
-                  key={`${item.productId}-${index}`}
+              {items.map((item) => (
+                <CartItem
+                  key={item.cart_item_id}
                   item={item}
                   onQuantityChange={handleQuantityChange}
-                  onRemove={() => handleRemove(item.productId)}
+                  onRemove={handleRemove}
                 />
               ))}
             </div>
