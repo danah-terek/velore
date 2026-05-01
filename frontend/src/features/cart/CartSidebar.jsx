@@ -5,11 +5,13 @@ import cartService from './cartService'
 
 const FREE_SHIPPING_THRESHOLD = 50
 
-function CartItem({ item, onRemove, onQuantityChange }) {
-  const name = item.products?.name || 'Product'
-  const price = parseFloat(item.products?.price || 0)
-  const image = item.products?.product_variants?.[0]?.images?.[0] || 'https://via.placeholder.com/80'
+function CartItem({ item, onRemove, onQuantityChange, isGuest }) {
+  const name = item.products?.name || item.product?.name || item.name || 'Product'
+  const price = parseFloat(item.products?.price || item.product?.price || item.price || 0)
+  const image = item.products?.product_variants?.[0]?.images?.[0] || item.product?.image || item.image || 'https://via.placeholder.com/80'
   const itemId = item.cart_item_id
+  const productId = item.product_id || item.productId
+  const quantity = item.quantity || 0
 
   return (
     <div className="flex gap-4 py-4 border-b border-gray-200">
@@ -20,7 +22,10 @@ function CartItem({ item, onRemove, onQuantityChange }) {
       <div className="flex-1 min-w-0">
         <div className="flex justify-between">
           <h4 className="text-sm font-medium text-gray-900 truncate pr-2">{name}</h4>
-          <button onClick={() => onRemove(itemId)} className="text-gray-400 hover:text-red-500 flex-shrink-0">
+          <button 
+            onClick={() => onRemove(isGuest ? productId : itemId)} 
+            className="text-gray-400 hover:text-red-500 flex-shrink-0"
+          >
             <Trash2 size={16} />
           </button>
         </div>
@@ -28,21 +33,21 @@ function CartItem({ item, onRemove, onQuantityChange }) {
         <div className="flex items-center justify-between mt-2">
           <div className="flex items-center border border-gray-300 rounded-sm">
             <button
-              onClick={() => onQuantityChange(itemId, item.quantity - 1)}
+              onClick={() => onQuantityChange(isGuest ? productId : itemId, quantity - 1, isGuest)}
               className="w-7 h-7 flex items-center justify-center text-gray-500 hover:bg-gray-100"
-              disabled={item.quantity <= 1}
+              disabled={quantity <= 1}
             >
               <Minus size={14} />
             </button>
-            <span className="w-8 text-center text-sm">{item.quantity}</span>
+            <span className="w-8 text-center text-sm">{quantity}</span>
             <button
-              onClick={() => onQuantityChange(itemId, item.quantity + 1)}
+              onClick={() => onQuantityChange(isGuest ? productId : itemId, quantity + 1, isGuest)}
               className="w-7 h-7 flex items-center justify-center text-gray-500 hover:bg-gray-100"
             >
               <Plus size={14} />
             </button>
           </div>
-          <p className="text-sm font-semibold">${(price * item.quantity).toFixed(2)}</p>
+          <p className="text-sm font-semibold">${(price * quantity).toFixed(2)}</p>
         </div>
       </div>
     </div>
@@ -51,6 +56,7 @@ function CartItem({ item, onRemove, onQuantityChange }) {
 
 export default function CartSidebar({ isOpen, onClose }) {
   const [items, setItems] = useState([])
+  const [isGuest, setIsGuest] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
@@ -63,40 +69,91 @@ export default function CartSidebar({ isOpen, onClose }) {
     }
   }, [isOpen])
 
-  const loadCart = async () => {
+ const loadCart = async () => {
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token')
+  
+  // ✅ NO token = Guest mode
+  if (!token) {
+  setIsGuest(true)
+  const localCart = JSON.parse(localStorage.getItem('guestCart') || '[]')
+  setItems(localCart)
+  return  // ← STOP, don't call API
+}
+  
+  // ✅ Logged in
+  setIsGuest(false)
   try {
     const response = await cartService.getCart()
-    // Backend returns { success: true, data: { carts_id, cart_items: [], total } }
-    const cartItems = response?.data?.cart_items || response?.cart_items || []
+    // ✅ FIXED: apiClient already extracts .data, so response is the cart object directly
+    const cartItems = response?.cart_items || response?.data?.cart_items || []
     setItems(Array.isArray(cartItems) ? cartItems : [])
   } catch (error) {
     console.error('Failed to load cart:', error)
-    setItems([])
+    if (error?.response?.status === 401) {
+      localStorage.removeItem('token')
+      sessionStorage.removeItem('token')
+      setIsGuest(true)
+      const localCart = JSON.parse(localStorage.getItem('guestCart') || '[]')
+      setItems(localCart)
+    } else {
+      setItems([])
+    }
   }
 }
-  const handleQuantityChange = async (cartItemId, newQuantity) => {
+
+  const loadGuestCart = () => {
+    const localCart = JSON.parse(localStorage.getItem('guestCart') || '[]')
+    setItems(localCart)
+  }
+
+  const handleQuantityChange = async (id, newQuantity, isGuestItem) => {
     if (newQuantity < 1) return
-    try {
-      // NOTE: Adjust the field names to match what your backend's PUT /cart/update expects
-      await cartService.updateQuantity({ cart_item_id: cartItemId, quantity: newQuantity })
-      loadCart()
-    } catch (error) {
-      console.error('Failed to update:', error)
+    
+    if (isGuestItem) {
+      // Update guest cart in localStorage
+      const localCart = JSON.parse(localStorage.getItem('guestCart') || '[]')
+      const updated = localCart.map(item => 
+        item.productId === id ? { ...item, quantity: newQuantity } : item
+      )
+      localStorage.setItem('guestCart', JSON.stringify(updated))
+      setItems(updated)
+    } else {
+      // Update logged-in cart via API
+      try {
+        await cartService.updateQuantity({ cart_item_id: id, quantity: newQuantity })
+        loadCart()
+      } catch (error) {
+        console.error('Failed to update quantity:', error)
+      }
     }
   }
 
-  const handleRemove = async (cartItemId) => {
-    try {
-      await cartService.removeItem(cartItemId)
-      loadCart()
-    } catch (error) {
-      console.error('Failed to remove:', error)
+  const handleRemove = async (id) => {
+    if (isGuest) {
+      // Remove from guest cart
+      const localCart = JSON.parse(localStorage.getItem('guestCart') || '[]')
+      const updated = localCart.filter(item => item.productId !== id)
+      localStorage.setItem('guestCart', JSON.stringify(updated))
+      setItems(updated)
+    } else {
+      // Remove from logged-in cart via API
+      try {
+        await cartService.removeItem(id)
+        loadCart()
+      } catch (error) {
+        console.error('Failed to remove item:', error)
+      }
     }
   }
 
   const cartCount = items.reduce((sum, item) => sum + (item.quantity || 0), 0)
   const subtotal = items.reduce((sum, item) => {
-    const price = parseFloat(item.product?.price || item.price || 0)
+    const price = parseFloat(
+      item.products?.price || 
+      item.product?.price || 
+      item.price || 
+      0
+    )
     return sum + price * (item.quantity || 0)
   }, 0)
   const amountToFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal)
@@ -143,7 +200,7 @@ export default function CartSidebar({ isOpen, onClose }) {
                 </div>
               </>
             ) : (
-              <p className="text-sm text-green-600 font-medium">:tada: Free shipping!</p>
+              <p className="text-sm text-green-600 font-medium">🎉 Free shipping!</p>
             )}
           </div>
         )}
@@ -165,12 +222,13 @@ export default function CartSidebar({ isOpen, onClose }) {
             </div>
           ) : (
             <div className="pb-4">
-              {items.map((item) => (
+              {items.map((item, index) => (
                 <CartItem
-                  key={item.cart_item_id}
+                  key={item.cart_item_id || item.productId || index}
                   item={item}
                   onQuantityChange={handleQuantityChange}
                   onRemove={handleRemove}
+                  isGuest={isGuest}
                 />
               ))}
             </div>

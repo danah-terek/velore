@@ -10,32 +10,54 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
+
+  const validateForm = () => {
+    const errors = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!email.trim()) {
+      errors.email = "Email is required";
+    } else if (!emailRegex.test(email)) {
+      errors.email = "Please enter a valid email (e.g., user@gmail.com)";
+    }
+
+    if (!password) {
+      errors.password = "Password is required";
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const handleSignIn = async (e) => {
     e.preventDefault();
+
+    // ✅ Validate before submitting
+    if (!validateForm()) return;
+
     setLoading(true);
     setError("");
 
     try {
       const response = await authService.login({ email, password });
-      
-      // Store token and user data
+
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
-      
-      const guestCart = JSON.parse(localStorage.getItem('guestCart') || '[]')
-    if (guestCart.length > 0) {
-      for (const item of guestCart) {
-        try {
-          await cartService.addItem({ productId: item.productId, quantity: item.quantity })
-        } catch (err) {
-          console.error('Failed to merge cart item:', err)
-        }
-      }
-      localStorage.removeItem('guestCart')
-    }
 
-      // Redirect to home
+      // Merge guest cart
+      const guestCart = JSON.parse(localStorage.getItem('guestCart') || '[]');
+      if (guestCart.length > 0) {
+        for (const item of guestCart) {
+          try {
+            await cartService.addItem({ productId: item.productId, quantity: item.quantity });
+          } catch (err) {
+            console.error('Failed to merge cart item:', err);
+          }
+        }
+        localStorage.removeItem('guestCart');
+      }
+
       navigate('/');
     } catch (err) {
       setError(err.error || "Invalid email or password");
@@ -46,7 +68,6 @@ export default function Login() {
 
   return (
     <div className="flex flex-col md:flex-row w-screen h-screen overflow-hidden bg-white font-sans">
-
       {/* LEFT IMAGE */}
       <div className="relative w-full h-64 md:h-full md:w-[45%] overflow-hidden">
         <img
@@ -66,7 +87,7 @@ export default function Login() {
             LOGIN
           </h1>
 
-          {/* Error Message */}
+          {/* General Error Message */}
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded">
               {error}
@@ -81,9 +102,18 @@ export default function Login() {
             <input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full border border-gray-300 px-3 py-2.5 text-sm text-black outline-none focus:border-black transition duration-200"
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setFieldErrors({ ...fieldErrors, email: '' });
+              }}
+              className={`w-full border px-3 py-2.5 text-sm text-black outline-none transition duration-200 ${
+                fieldErrors.email ? 'border-red-500' : 'border-gray-300 focus:border-black'
+              }`}
+              placeholder="you@example.com"
             />
+            {fieldErrors.email && (
+              <p className="text-red-500 text-xs mt-1">{fieldErrors.email}</p>
+            )}
           </div>
 
           {/* Password */}
@@ -94,9 +124,18 @@ export default function Login() {
             <input
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full border border-gray-300 px-3 py-2.5 text-sm text-black outline-none focus:border-black transition duration-200"
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setFieldErrors({ ...fieldErrors, password: '' });
+              }}
+              className={`w-full border px-3 py-2.5 text-sm text-black outline-none transition duration-200 ${
+                fieldErrors.password ? 'border-red-500' : 'border-gray-300 focus:border-black'
+              }`}
+              placeholder="••••••••"
             />
+            {fieldErrors.password && (
+              <p className="text-red-500 text-xs mt-1">{fieldErrors.password}</p>
+            )}
             <a
               href="#"
               className="inline-block mt-2 text-xs text-gray-500 underline hover:text-black transition"

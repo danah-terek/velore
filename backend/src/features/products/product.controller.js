@@ -1,5 +1,6 @@
 const { validationResult } = require("express-validator");
 const productService = require("./product.service");
+const { searchProducts } = require("./product.search");
 
 // ─── SERIALIZE HELPER ─────────────────────────────────────────────────────────
 const serializeProduct = (p) => ({
@@ -9,14 +10,44 @@ const serializeProduct = (p) => ({
   compare_price: p.compare_price?.toString() ?? null,
   brands: p.brands ? { ...p.brands, brand_id: p.brands.brand_id.toString() } : null,
   categories: p.categories ? { ...p.categories, category_id: p.categories.category_id.toString() } : null,
-  product_variants: p.product_variants.map((v) => ({
+  product_variants: p.product_variants?.map((v) => ({
     ...v,
     variant_id: v.variant_id.toString(),
     price_adjustment: v.price_adjustment?.toString() ?? null,
-  })),
+  })) || [],
 });
 
-// ─── GET ALL PRODUCTS ─────────────────────────────────────────────────────────
+// ✅ SEARCH PRODUCTS
+// ✅ SEARCH PRODUCTS - Simple version
+const search = async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q || q.length < 2) {
+      return res.json({ success: true, data: [] });
+    }
+    const products = await searchProducts(q);
+    
+    // Simple serialization that handles nulls
+    const data = products.map(p => ({
+      product_id: p.product_id?.toString() || String(p.product_id),
+      name: p.name,
+      price: p.price?.toString() || '0',
+      description: p.description,
+      brands: p.brands ? { name: p.brands.name } : null,
+      categories: p.categories ? { name: p.categories.name } : null,
+      product_variants: p.product_variants || [],
+      frame_shape: p.frame_shape,
+      image: p.product_variants?.[0]?.images?.[0] || null
+    }));
+    
+    res.json({ success: true, data });
+  } catch (error) {
+    console.error("search error:", error);
+    res.status(500).json({ success: false, message: error.message || "Failed to search products" });
+  }
+};
+
+// ─── GET ALL PRODUCTS ────────────────────────────────────────────────────────
 const getAllProducts = async (req, res) => {
   try {
     const { page, limit } = req.query;
@@ -183,6 +214,7 @@ const deleteProduct = async (req, res) => {
 };
 
 module.exports = {
+  search,
   getAllProducts,
   getProductById,
   filterProducts,

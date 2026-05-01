@@ -1,11 +1,13 @@
 import apiClient from '../../shared/services/apiClient'
 import cartService from '../cart/cartService'
+import favoriteService from '../favorite/favoriteService'
 
 const clearStorage = () => {
   localStorage.removeItem('token')
   sessionStorage.removeItem('token')
   localStorage.removeItem('user')
   localStorage.removeItem('guestCart')
+  localStorage.removeItem('guestFavorites')
 }
 
 const mergeGuestCart = async () => {
@@ -13,7 +15,10 @@ const mergeGuestCart = async () => {
   if (guestCart.length > 0) {
     for (const item of guestCart) {
       try {
-        await cartService.addItem(item)
+        await cartService.addItem({
+          productId: Number(item.productId),
+          quantity: item.quantity || 1
+        })
       } catch (err) {
         console.error('Failed to merge guest cart item:', item, err)
       }
@@ -33,14 +38,9 @@ const authService = {
     // Merge guest cart into API cart
     await mergeGuestCart()
 
-    // Refresh cart from API so frontend state is correct
-    try {
-      const apiCart = await cartService.getCart()
-      localStorage.setItem('cart', JSON.stringify(apiCart))
-    } catch (err) {
-      console.error('Failed to refresh cart after login:', err)
-    }
-
+    // ✅ Reload the page so FavoritesContext re-mounts and loads from API
+    window.location.href = '/'
+    
     return response
   },
 

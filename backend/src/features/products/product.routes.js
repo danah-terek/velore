@@ -8,14 +8,17 @@ const {
   validateFilterProducts,
 } = require("./product.validation");
 
+// ✅ SEARCH - Must be BEFORE /:id routes
+router.get("/search", productController.search);
+
 // Public routes
 router.get("/", productController.getAllProducts);
-router.get("/search", validateFilterProducts, productController.filterProducts);
+router.get("/filter", validateFilterProducts, productController.filterProducts);
 router.get("/category/:id", validateId, productController.getProductsByCategory);
 router.get("/brand/:id", validateId, productController.getProductsByBrand);
 router.get("/:id", validateId, productController.getProductById);
 
-// Admin-only routes (add your auth/admin middleware here)
+// Admin-only routes
 router.post("/", validateCreateProduct, productController.createProduct);
 router.put("/:id", validateUpdateProduct, productController.updateProduct);
 router.delete("/:id", validateId, productController.deleteProduct);
