@@ -10,22 +10,47 @@ export default function ContactModal({ isOpen, onClose }) {
     message: ''
   })
   const [submitted, setSubmitted] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    // Here you would typically send the data to your backend
-    console.log('Form submitted:', formData)
+  const handleSubmit = async (e) => {
+  e.preventDefault()
+  setError(null)
+
+  // Manual validation
+  if (!formData.name.trim() || !formData.email.trim() || !formData.subject.trim() || !formData.message.trim()) {
+    setError('Please fill in all fields before submitting.')
+    return
+  }
+
+  setLoading(true)
+
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/contact`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData)
+    })
+
+    if (!res.ok) throw new Error('Failed to send message.')
+
     setSubmitted(true)
     setTimeout(() => {
       setSubmitted(false)
       setFormData({ name: '', email: '', subject: '', message: '' })
       onClose()
     }, 2000)
+  } catch (err) {
+    console.error(err)
+    setError('Something went wrong. Please try again.')
+  } finally {
+    setLoading(false)
   }
+}
 
   if (!isOpen) return null
 
@@ -38,7 +63,7 @@ export default function ContactModal({ isOpen, onClose }) {
       />
 
       {/* Modal */}
-      <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[90%] max-w-lg max-h-[90vh] overflow-y-auto bg-white rounded-sm shadow-2xl">
+      <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[90%] max-w-2xl max-h-[95vh] overflow-y-auto bg-white rounded-sm shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-900">Contact Us</h2>
@@ -77,9 +102,9 @@ export default function ContactModal({ isOpen, onClose }) {
                   <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
                     <Mail size={16} className="text-gray-700" />
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-xs text-gray-500">Email us</p>
-                    <p className="text-sm font-medium text-gray-900">hello@velore.com</p>
+                    <p className="text-sm font-medium text-gray-900 truncate">hello@velore.com</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -133,11 +158,18 @@ export default function ContactModal({ isOpen, onClose }) {
                   rows="5"
                   className="w-full border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-gray-900 transition-colors resize-none"
                 />
+
+                {/* Error message */}
+                {error && (
+                  <p className="text-sm text-red-500">{error}</p>
+                )}
+
                 <button
                   type="submit"
-                  className="w-full bg-gray-900 text-white py-3 text-sm font-medium hover:bg-gray-700 transition-colors"
+                  disabled={loading}
+                  className="w-full bg-gray-900 text-white py-3 text-sm font-medium hover:bg-gray-700 transition-colors disabled:opacity-50"
                 >
-                  Send Message
+                  {loading ? 'Sending...' : 'Send Message'}
                 </button>
               </form>
             </>

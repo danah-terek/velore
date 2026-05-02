@@ -9,6 +9,7 @@ const productRoutes = require('./features/products/product.routes')
 const reviewRoutes = require('./features/reviews/review.routes')
 const favoriteRoutes = require('./features/favorites/favorite.routes')
 const userRoutes = require('./features/users/user.routes')
+const contactRoutes = require('./features/contact/contact.routes')
 
 
 const app = express()
@@ -36,6 +37,7 @@ app.use('/api/v1/reviews', reviewRoutes)
 app.use('/api/v1/auth', authRoutes)
 app.use('/api/v1/favorites', favoriteRoutes)
 app.use('/api/v1/users', userRoutes)
+app.use('/api/v1/contact', contactRoutes)
 
 
 
