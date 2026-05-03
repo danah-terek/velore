@@ -1,11 +1,12 @@
 const router = require('express').Router()
 const orderController = require('./order.controller')
-const { authMiddleware } = require('../../shared/middleware/middleware')
+const { optionalAuth, authMiddleware } = require('../../shared/middleware/middleware')
 
-router.use(authMiddleware)
+// Guest can checkout too (optional auth)
+router.post('/checkout', optionalAuth, orderController.checkout)
 
-router.post('/checkout', orderController.checkout)
-router.get('/', orderController.getMyOrders)
-router.get('/:id', orderController.getOrderById)
+// These require login
+router.get('/', authMiddleware, orderController.getMyOrders)
+router.get('/:id', authMiddleware, orderController.getOrderById)
 
 module.exports = router

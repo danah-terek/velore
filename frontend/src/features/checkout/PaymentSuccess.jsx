@@ -1,22 +1,22 @@
 // PaymentSuccess.jsx
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { CheckCircle } from 'lucide-react'
+import { CheckCircle, Mail } from 'lucide-react'
 
 export default function PaymentSuccess() {
   const [searchParams] = useSearchParams()
   const [orderDetails, setOrderDetails] = useState(null)
   
   useEffect(() => {
-    // Get order details from URL params or fetch from your backend
     const orderId = searchParams.get('orderId')
-    const status = searchParams.get('status')
+    const orderNumber = searchParams.get('orderNumber')
+    const amount = searchParams.get('amount')
     
     if (orderId) {
       setOrderDetails({
         orderId,
-        status: status || 'success',
-        amount: searchParams.get('amount') || '264.00'
+        orderNumber: orderNumber || orderId,
+        amount: amount || '0.00'
       })
     }
   }, [searchParams])
@@ -31,18 +31,18 @@ export default function PaymentSuccess() {
         </div>
         
         <h1 className="text-2xl font-semibold text-gray-900 mb-2">
-          Payment Successful!
+          Order Confirmed!
         </h1>
         
         <p className="text-gray-500 mb-6">
-          Thank you for your purchase. Your order has been confirmed.
+          Thank you for your purchase. Your order has been placed successfully.
         </p>
         
         {orderDetails && (
-          <div className="bg-gray-50 rounded-sm p-4 mb-6 text-left">
-            <div className="flex justify-between text-sm mb-2">
-              <span className="text-gray-600">Order ID:</span>
-              <span className="text-gray-900 font-medium">{orderDetails.orderId}</span>
+          <div className="bg-gray-50 rounded-sm p-4 mb-6 text-left space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-600">Order Number:</span>
+              <span className="text-gray-900 font-medium">{orderDetails.orderNumber}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Total:</span>
@@ -50,6 +50,11 @@ export default function PaymentSuccess() {
             </div>
           </div>
         )}
+
+        <div className="flex items-center justify-center gap-2 text-sm text-gray-500 mb-6">
+          <Mail size={16} />
+          <span>Order confirmation sent to your email</span>
+        </div>
         
         <div className="space-y-3">
           <Link
@@ -59,10 +64,10 @@ export default function PaymentSuccess() {
             Continue Shopping
           </Link>
           <Link
-            to="/account/orders"
+            to="/shop"
             className="block w-full text-sm text-gray-500 hover:text-gray-900 transition-colors"
           >
-            View Order Status
+            Browse More Products
           </Link>
         </div>
       </div>
