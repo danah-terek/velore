@@ -16,6 +16,9 @@ import { Checkout, PaymentSuccess } from './features/checkout'
 import { AIAdvisor } from './features/ai-advisor'
 import { Favorite } from './features/favorite'
 
+// Admin
+import VeloreAdmin from './features/admin/VeloreAdminUI'
+
 // Context
 import { FavoritesProvider, useFavorites } from './shared/contexts'
 
@@ -49,40 +52,46 @@ function App() {
     <BrowserRouter>
       <FavoritesProvider>
         <ScrollToTop />
-        <Navbar
-          onCartOpen={() => setCartOpen(true)}
-          onContactOpen={() => setContactOpen(true)}
-        />
-        <CartSidebar isOpen={cartOpen} onClose={() => setCartOpen(false)} />
-        <ContactModal isOpen={contactOpen} onClose={() => setContactOpen(false)} />
-        <Toast />
-
         <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<Home />} />
-          <Route path="/shop" element={<Shop />} />
-          <Route path="/product/:id" element={<ProductDetail />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/payment-success" element={<PaymentSuccess />} />
-          <Route path="/ai-advisor" element={<AIAdvisor />} />
-          <Route path="/favorite" element={<Favorite />} />
-          
-          {/* Lazy Loaded Routes */}
-          <Route path="/blogs" element={
-            <Suspense fallback={<PageLoader />}>
-              <Blogs />
-            </Suspense>
-          } />
-          <Route path="/blogs/:id" element={
-            <Suspense fallback={<PageLoader />}>
-              <BlogPost />
-            </Suspense>
-          } />
-        </Routes>
 
-        <Footer />
+          {/* ─── Admin (no Navbar/Footer) ─────────────────────────── */}
+          <Route path="/admin/*" element={<VeloreAdmin />} />
+
+          {/* ─── Public routes (with Navbar/Footer) ──────────────── */}
+          <Route path="/*" element={
+            <>
+              <Navbar
+                onCartOpen={() => setCartOpen(true)}
+                onContactOpen={() => setContactOpen(true)}
+              />
+              <CartSidebar isOpen={cartOpen} onClose={() => setCartOpen(false)} />
+              <ContactModal isOpen={contactOpen} onClose={() => setContactOpen(false)} />
+              <Toast />
+
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/shop" element={<Shop />} />
+                <Route path="/product/:id" element={<ProductDetail />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/checkout" element={<Checkout />} />
+                <Route path="/payment-success" element={<PaymentSuccess />} />
+                <Route path="/ai-advisor" element={<AIAdvisor />} />
+                <Route path="/favorite" element={<Favorite />} />
+
+                <Route path="/blogs" element={
+                  <Suspense fallback={<PageLoader />}><Blogs /></Suspense>
+                } />
+                <Route path="/blogs/:id" element={
+                  <Suspense fallback={<PageLoader />}><BlogPost /></Suspense>
+                } />
+              </Routes>
+
+              <Footer />
+            </>
+          } />
+
+        </Routes>
       </FavoritesProvider>
     </BrowserRouter>
   )

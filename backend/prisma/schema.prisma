@@ -193,15 +193,18 @@ model notifications {
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model orders {
-  order_id     BigInt         @id @default(autoincrement())
-  user_id      BigInt
-  address_id   BigInt
-  order_date   DateTime?      @default(now()) @db.Timestamptz(6)
-  status       String?        @default("pending")
-  addresses    addresses      @relation(fields: [address_id], references: [address_id], onDelete: NoAction, onUpdate: NoAction)
-  users        users          @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
-  orders_items orders_items[]
-  payments     payments?
+  order_id             BigInt         @id @default(autoincrement())
+  user_id              BigInt
+  address_id           BigInt
+  order_date           DateTime?      @default(now()) @db.Timestamptz(6)
+  status               String?        @default("pending")
+  points_redeemed      Int?           @default(0)
+  discount_from_points Decimal?       @default(0) @db.Decimal(10, 2)
+  addresses            addresses      @relation(fields: [address_id], references: [address_id], onDelete: NoAction, onUpdate: NoAction)
+  users                users          @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  orders_items         orders_items[]
+  payments             payments?
+  loyalty_transactions loyalty_transactions[]  // 👈 this was missing
 
   @@index([address_id], map: "idx_orders_address")
   @@index([user_id], map: "idx_orders_user")
@@ -364,6 +367,7 @@ model users {
   sessions           sessions[]
   roles              Role?                @relation(fields: [role_id], references: [role_id], onDelete: NoAction, onUpdate: NoAction)
   wishlists          wishlists?
+  loyalty_transactions loyalty_transactions[]
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
@@ -393,4 +397,14 @@ model contact_messages {
   subject    String
   message    String
   created_at DateTime? @default(now()) @db.Timestamptz(6)
+}
+model loyalty_transactions {
+  transaction_id BigInt    @id @default(autoincrement())
+  user_id        BigInt
+  points         Int       // +10 earned, -10 redeemed
+  type           String    // "earned" or "redeemed"
+  order_id       BigInt?
+  created_at     DateTime? @default(now()) @db.Timestamptz(6)
+  users          users     @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  orders         orders?   @relation(fields: [order_id], references: [order_id], onDelete: SetNull)
 }
