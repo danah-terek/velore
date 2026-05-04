@@ -2,8 +2,15 @@ const prisma = require('../../shared/utils/database')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const crypto = require('crypto')
-const { Resend } = require('resend')
-const resend = new Resend(process.env.RESEND_API_KEY)
+const nodemailer = require('nodemailer')
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_APP_PASSWORD
+  }
+})
 
 const authService = {
   async register(userData) {
@@ -86,47 +93,47 @@ const authService = {
     return jwt.verify(token, process.env.JWT_SECRET)
   },
 
-  // ─── NEW: Forgot Password ─────────────────────────────────────────
   async forgotPassword(email) {
     const user = await prisma.users.findUnique({ where: { email } })
-    if (!user) {
-      return { message: 'If this email exists, a reset link has been sent.' }
-    }
+    console.log('🔍 Forgot password request for:', email)
+    console.log('👤 User found:', user ? 'YES' : 'NO')
+
+    if (!user) return
 
     const token = crypto.randomBytes(32).toString('hex')
-    const expires = new Date(Date.now() + 1000 * 60 * 60) // 1 hour
+    const expires = new Date(Date.now() + 60 * 60 * 1000)
 
     await prisma.users.update({
       where: { email },
-      data: {
-        reset_token: token,
-        reset_token_expires: expires
-      }
+      data: { reset_token: token, reset_token_expires: expires }
     })
 
-    const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${token}`
+    const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}`
+    console.log('📧 Sending email to:', email)
+    console.log('🔗 Reset URL:', resetUrl)
 
-    await resend.emails.send({
-      from: 'onboarding@resend.dev',
-      to: email,
-      subject: 'Reset Your Password — Velore',
-      html: `
-        <div style="font-family: sans-serif; max-width: 500px; margin: auto;">
-          <h2>Reset Your Password</h2>
-          <p>Hello ${user.name || ''},</p>
-          <p>You requested to reset your password. Click the button below. This link expires in 1 hour.</p>
-          <a href="${resetLink}" style="display:inline-block;padding:12px 24px;background:#1a1a1a;color:white;border-radius:6px;text-decoration:none;margin:16px 0;">
-            Reset Password
-          </a>
-          <p>If you didn't request this, you can safely ignore this email.</p>
-        </div>
-      `
-    })
-
-    return { message: 'If this email exists, a reset link has been sent.' }
+    try {
+      const info = await transporter.sendMail({
+        from: `"Velore" <${process.env.GMAIL_USER}>`,
+        to: email,
+        subject: 'Reset your Velore password',
+        html: `
+          <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
+            <h2 style="font-size: 22px; font-weight: 600;">Reset your password</h2>
+            <p style="color: #555;">Hi ${user.name || 'there'},</p>
+            <p style="color: #555;">We received a request to reset your password. Click the button below — the link expires in 1 hour.</p>
+            <a href="${resetUrl}" style="display: inline-block; margin: 24px 0; padding: 12px 28px; background: #111; color: #fff; text-decoration: none; border-radius: 6px; font-size: 14px;">Reset my password</a>
+            <p style="color: #999; font-size: 13px;">Didn't request this? You can safely ignore this email.</p>
+          </div>
+        `
+      })
+      console.log('✅ Email sent successfully:', info.messageId)
+    } catch (emailError) {
+      console.error('❌ Email sending failed:', emailError.message)
+      throw emailError
+    }
   },
 
-  // ─── NEW: Reset Password ──────────────────────────────────────────
   async resetPassword(token, newPassword) {
     const user = await prisma.users.findFirst({
       where: {
@@ -136,7 +143,7 @@ const authService = {
     })
 
     if (!user) {
-      throw new Error('Invalid or expired reset token.')
+      throw new Error('Invalid or expired reset token')
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10)
@@ -149,10 +156,7 @@ const authService = {
         reset_token_expires: null
       }
     })
-
-    return { message: 'Password reset successfully. You can now log in.' }
   }
-
 }
 
 module.exports = authService
