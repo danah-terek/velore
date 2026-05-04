@@ -75,7 +75,33 @@ const authController = {
     } catch (error) {
       res.status(500).json({ success: false, error: error.message })
     }
+  },
+
+  // ─── NEW: Forgot Password ─────────────────────────────────────────
+  async forgotPassword(req, res) {
+    try {
+      const { email } = req.body
+      if (!email) return res.status(400).json({ success: false, error: 'Email is required' })
+      const result = await authService.forgotPassword(email)
+      res.json({ success: true, ...result })
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message })
+    }
+  },
+
+  // ─── NEW: Reset Password ──────────────────────────────────────────
+  async resetPassword(req, res) {
+    try {
+      const { token, password } = req.body
+      if (!token || !password) return res.status(400).json({ success: false, error: 'Token and password are required' })
+      if (password.length < 6) return res.status(400).json({ success: false, error: 'Password must be at least 6 characters' })
+      const result = await authService.resetPassword(token, password)
+      res.json({ success: true, ...result })
+    } catch (error) {
+      res.status(400).json({ success: false, error: error.message })
+    }
   }
+
 }
 
 module.exports = authController

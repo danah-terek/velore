@@ -368,6 +368,9 @@ model users {
   roles              Role?                @relation(fields: [role_id], references: [role_id], onDelete: NoAction, onUpdate: NoAction)
   wishlists          wishlists?
   loyalty_transactions loyalty_transactions[]
+  reset_token         String?
+  reset_token_expires DateTime?  @db.Timestamptz(6)
+  
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
