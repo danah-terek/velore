@@ -95,62 +95,45 @@ const cartService = {
     })
   },
 
-  async updateQuantity(userId, { productId, product_id, variantId, variant_id, quantity }) {
-    const userIdNum = Number(userId)
-    const productIdNum = Number(product_id || productId)
-    const variantIdNum = variant_id || variantId ? Number(variant_id || variantId) : null
-    const quantityNum = Number(quantity)
-    
-    const cart = await prisma.carts.findUnique({
-      where: { user_id: userIdNum }
-    })
+  async updateQuantity(userId, { cart_item_id, quantity }) {
+  const userIdNum = Number(userId)
+  const cartItemIdNum = Number(cart_item_id)
+  const quantityNum = Number(quantity)
 
-    if (!cart) {
-      throw new Error('Cart not found')
+  // Verify this cart_item belongs to this user
+  const item = await prisma.cart_items.findFirst({
+    where: {
+      cart_item_id: cartItemIdNum,
+      carts: { user_id: userIdNum }
+    },
+    include: { carts: true }
+  })
+
+  if (!item) throw new Error('Item not found in cart')
+
+  return prisma.cart_items.update({
+    where: { cart_item_id: cartItemIdNum },
+    data: { quantity: quantityNum }
+  })
+},
+
+  async removeItem(userId, cartItemId) {
+  const userIdNum = Number(userId)
+  const cartItemIdNum = Number(cartItemId)
+
+  const item = await prisma.cart_items.findFirst({
+    where: {
+      cart_item_id: cartItemIdNum,
+      carts: { user_id: userIdNum }
     }
+  })
 
-    const where = {
-      cart_id: cart.carts_id,
-      product_id: productIdNum,
-    }
-    
-    if (variantIdNum) {
-      where.variant_id = variantIdNum
-    } else {
-      where.variant_id = null
-    }
+  if (!item) throw new Error('Item not found in cart')
 
-    const existing = await prisma.cart_items.findFirst({ where })
-    
-    if (!existing) {
-      throw new Error('Item not found in cart')
-    }
-
-    return prisma.cart_items.update({
-      where: { cart_item_id: existing.cart_item_id },
-      data: { quantity: quantityNum }
-    })
-  },
-
-  async removeItem(userId, variantId) {
-    const userIdNum = Number(userId)
-    const variantIdNum = Number(variantId)
-    
-    const cart = await prisma.carts.findUnique({
-      where: { user_id: userIdNum }
-    })
-
-    if (!cart) {
-      throw new Error('Cart not found')
-    }
-
-    return prisma.cart_items.deleteMany({
-      where: {
-        cart_id: cart.carts_id,
-        variant_id: variantIdNum
-      }
-    })
-  },
+  return prisma.cart_items.delete({
+    where: { cart_item_id: cartItemIdNum }
+  })
+},
 
   async clearCart(userId) {
     const userIdNum = Number(userId)

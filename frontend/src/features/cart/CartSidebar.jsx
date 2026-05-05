@@ -13,7 +13,6 @@ function CartItem({ item, onRemove, onQuantityChange, isGuest }) {
   const productId = item.product_id || item.productId
   const quantity = item.quantity || 0
 
-  // ✅ Get prescription data
   const prescription = item.prescription_data || item.prescriptionData || null
   const hasPrescription = prescription && (prescription.sph_r || prescription.sph_l || prescription.cyl_r || prescription.cyl_l || prescription.axis || prescription.pd)
 
@@ -26,15 +25,14 @@ function CartItem({ item, onRemove, onQuantityChange, isGuest }) {
       <div className="flex-1 min-w-0">
         <div className="flex justify-between">
           <h4 className="text-sm font-medium text-gray-900 truncate pr-2">{name}</h4>
-          <button 
-            onClick={() => onRemove(isGuest ? productId : itemId)} 
+          <button
+            onClick={() => onRemove(isGuest ? productId : itemId)}
             className="text-gray-400 hover:text-red-500 flex-shrink-0"
           >
             <Trash2 size={16} />
           </button>
         </div>
 
-        {/* ✅ Show prescription box */}
         {hasPrescription && (
           <div className="mt-1 p-2 bg-blue-50 rounded-sm border border-blue-100">
             <p className="text-xs font-medium text-blue-700 mb-1">Prescription:</p>
@@ -79,6 +77,7 @@ export default function CartSidebar({ isOpen, onClose }) {
   const [items, setItems] = useState([])
   const [isGuest, setIsGuest] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
+  const [isClearing, setIsClearing] = useState(false)
 
   useEffect(() => {
     if (isOpen) {
@@ -92,14 +91,14 @@ export default function CartSidebar({ isOpen, onClose }) {
 
   const loadCart = async () => {
     const token = localStorage.getItem('token') || sessionStorage.getItem('token')
-    
+
     if (!token) {
       setIsGuest(true)
       const localCart = JSON.parse(localStorage.getItem('guestCart') || '[]')
       setItems(localCart)
       return
     }
-    
+
     setIsGuest(false)
     try {
       const response = await cartService.getCart()
@@ -119,12 +118,29 @@ export default function CartSidebar({ isOpen, onClose }) {
     }
   }
 
+  const handleClearAll = async () => {
+    setIsClearing(true)
+    try {
+      if (isGuest) {
+        localStorage.setItem('guestCart', '[]')
+        setItems([])
+      } else {
+        await cartService.clearCart()
+        setItems([])
+      }
+    } catch (error) {
+      console.error('Failed to clear cart:', error)
+    } finally {
+      setIsClearing(false)
+    }
+  }
+
   const handleQuantityChange = async (id, newQuantity, isGuestItem) => {
     if (newQuantity < 1) return
-    
+
     if (isGuestItem) {
       const localCart = JSON.parse(localStorage.getItem('guestCart') || '[]')
-      const updated = localCart.map(item => 
+      const updated = localCart.map(item =>
         item.productId === id ? { ...item, quantity: newQuantity } : item
       )
       localStorage.setItem('guestCart', JSON.stringify(updated))
@@ -158,9 +174,9 @@ export default function CartSidebar({ isOpen, onClose }) {
   const cartCount = items.reduce((sum, item) => sum + (item.quantity || 0), 0)
   const subtotal = items.reduce((sum, item) => {
     const price = parseFloat(
-      item.products?.price || 
-      item.product?.price || 
-      item.price || 
+      item.products?.price ||
+      item.product?.price ||
+      item.price ||
       0
     )
     return sum + price * (item.quantity || 0)
@@ -183,15 +199,28 @@ export default function CartSidebar({ isOpen, onClose }) {
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
+        {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-gray-200">
           <h2 className="text-lg font-semibold text-gray-900">
             Your cart {cartCount > 0 && `(${cartCount})`}
           </h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-900">
-            <X size={22} />
-          </button>
+          <div className="flex items-center gap-3">
+            {items.length > 0 && (
+              <button
+                onClick={handleClearAll}
+                disabled={isClearing}
+                className="text-sm text-gray-400 hover:text-red-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isClearing ? 'Clearing...' : 'Clear all'}
+              </button>
+            )}
+            <button onClick={onClose} className="text-gray-400 hover:text-gray-900">
+              <X size={22} />
+            </button>
+          </div>
         </div>
 
+        {/* Free shipping bar */}
         {cartCount > 0 && (
           <div className="px-6 py-4 border-b border-gray-200">
             {amountToFreeShipping > 0 ? (
@@ -200,7 +229,10 @@ export default function CartSidebar({ isOpen, onClose }) {
                   Spend <span className="font-semibold">${amountToFreeShipping.toFixed(2)}</span> more for free shipping!
                 </p>
                 <div className="h-1.5 bg-gray-200 rounded-full">
-                  <div className="h-full bg-gray-900 transition-all" style={{ width: `${Math.min((subtotal / FREE_SHIPPING_THRESHOLD) * 100, 100)}%` }} />
+                  <div
+                    className="h-full bg-gray-900 transition-all"
+                    style={{ width: `${Math.min((subtotal / FREE_SHIPPING_THRESHOLD) * 100, 100)}%` }}
+                  />
                 </div>
               </>
             ) : (
@@ -209,6 +241,7 @@ export default function CartSidebar({ isOpen, onClose }) {
           </div>
         )}
 
+        {/* Items */}
         <div className="flex-1 overflow-y-auto px-6">
           {items.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center py-12">
@@ -238,6 +271,7 @@ export default function CartSidebar({ isOpen, onClose }) {
           )}
         </div>
 
+        {/* Footer */}
         {items.length > 0 && (
           <div className="px-6 py-5 border-t border-gray-200">
             <div className="flex items-center justify-between mb-4">
