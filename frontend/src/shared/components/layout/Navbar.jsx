@@ -244,7 +244,6 @@ export default function Navbar({ onCartOpen, onContactOpen }) {
               )}
             </div>
 
-            {/* Desktop: User icon — opens profile if logged in, goes to login if not */}
             {isLoggedIn ? (
               <button
                 onClick={() => setProfileOpen(true)}
@@ -341,11 +340,11 @@ export default function Navbar({ onCartOpen, onContactOpen }) {
         )}
       </nav>
 
-      {/* Profile Sidebar — outside nav so it overlays the whole page */}
       <ProfileSidebar
         isOpen={profileOpen}
         onClose={() => setProfileOpen(false)}
         onLogout={handleLogout}
+        onContactOpen={onContactOpen}
       />
     </>
   );

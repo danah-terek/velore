@@ -111,7 +111,7 @@ model cart_items {
   product_id        BigInt
   variant_id        BigInt?
   quantity          Int?              @default(1)
-  prescription_data Json?             // ← add this
+  prescription_data Json?
   carts             carts             @relation(fields: [cart_id], references: [carts_id], onDelete: Cascade, onUpdate: NoAction)
   products          products          @relation(fields: [product_id], references: [product_id], onDelete: Cascade, onUpdate: NoAction)
   product_variants  product_variants? @relation(fields: [variant_id], references: [variant_id], onDelete: NoAction, onUpdate: NoAction)
@@ -193,18 +193,19 @@ model notifications {
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model orders {
-  order_id             BigInt         @id @default(autoincrement())
+  order_id             BigInt                 @id @default(autoincrement())
   user_id              BigInt
   address_id           BigInt
-  order_date           DateTime?      @default(now()) @db.Timestamptz(6)
-  status               String?        @default("pending")
-  points_redeemed      Int?           @default(0)
-  discount_from_points Decimal?       @default(0) @db.Decimal(10, 2)
-  addresses            addresses      @relation(fields: [address_id], references: [address_id], onDelete: NoAction, onUpdate: NoAction)
-  users                users          @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  order_date           DateTime?              @default(now()) @db.Timestamptz(6)
+  status               String?                @default("pending")
+  discount_from_points Decimal?               @default(0) @db.Decimal(10, 2)
+  points_redeemed      Int?                   @default(0)
+  loyalty_transactions loyalty_transactions[]
+  addresses            addresses              @relation(fields: [address_id], references: [address_id], onDelete: NoAction, onUpdate: NoAction)
+  users                users                  @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
   orders_items         orders_items[]
   payments             payments?
-  loyalty_transactions loyalty_transactions[]  // 👈 this was missing
+  reviews              reviews?
 
   @@index([address_id], map: "idx_orders_address")
   @@index([user_id], map: "idx_orders_user")
@@ -303,15 +304,15 @@ model products {
   virtual_try_on     Boolean?             @default(false)
   is_active          Boolean?             @default(true)
   is_bundle          Boolean?             @default(false)
-  lens_width         Float?
-  bridge_width       Float?
-  temple_length      Float?
-  diameter           Float?
-  base_curve         Float?
-  water_content      Float?
-  details            String?
   created_at         DateTime?            @default(now()) @db.Timestamptz(6)
   updated_at         DateTime?            @default(now()) @db.Timestamptz(6)
+  base_curve         Float?
+  bridge_width       Float?
+  details            String?
+  diameter           Float?
+  lens_width         Float?
+  temple_length      Float?
+  water_content      Float?
   ai_recommendations ai_recommendations[]
   cart_items         cart_items[]
   feedback           feedback[]
@@ -319,11 +320,13 @@ model products {
   product_variants   product_variants[]
   brands             brands               @relation(fields: [brand_id], references: [brand_id], onDelete: NoAction, onUpdate: NoAction)
   categories         categories           @relation(fields: [category_id], references: [category_id], onDelete: NoAction, onUpdate: NoAction)
+  reviews            reviews[]
   wishlist_items     wishlist_items[]
 
   @@index([brand_id], map: "idx_products_brand")
   @@index([category_id], map: "idx_products_category")
 }
+
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model reports {
   report_id    BigInt    @id @default(autoincrement())
@@ -345,32 +348,32 @@ model sessions {
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model users {
-  user_id            BigInt               @id @default(autoincrement())
-  email              String               @unique
-  password           String
-  name               String?
-  google_id          String?              @unique
-  facebook_id        String?              @unique
-  loyalty_points     Int?                 @default(0)
-  is_active          Boolean?             @default(true)
-  created_at         DateTime?            @default(now()) @db.Timestamptz(6)
-  last_login         DateTime?            @db.Timestamptz(6)
-  updated_at         DateTime?            @default(now()) @db.Timestamptz(6)
-  role_id            BigInt?              @default(3)
-  addresses          addresses[]
-  ai_recommendations ai_recommendations[]
-  carts              carts?
-  face_images        face_images[]
-  feedback           feedback[]
-  notifications      notifications[]
-  orders             orders[]
-  sessions           sessions[]
-  roles              Role?                @relation(fields: [role_id], references: [role_id], onDelete: NoAction, onUpdate: NoAction)
-  wishlists          wishlists?
+  user_id              BigInt                 @id @default(autoincrement())
+  email                String                 @unique
+  password             String
+  name                 String?
+  google_id            String?                @unique
+  facebook_id          String?                @unique
+  loyalty_points       Int?                   @default(0)
+  is_active            Boolean?               @default(true)
+  created_at           DateTime?              @default(now()) @db.Timestamptz(6)
+  last_login           DateTime?              @db.Timestamptz(6)
+  updated_at           DateTime?              @default(now()) @db.Timestamptz(6)
+  role_id              BigInt?                @default(3)
+  reset_token          String?
+  reset_token_expires  DateTime?              @db.Timestamptz(6)
+  addresses            addresses[]
+  ai_recommendations   ai_recommendations[]
+  carts                carts?
+  face_images          face_images[]
+  feedback             feedback[]
   loyalty_transactions loyalty_transactions[]
-  reset_token         String?
-  reset_token_expires DateTime?  @db.Timestamptz(6)
-  
+  notifications        notifications[]
+  orders               orders[]
+  reviews              reviews[]
+  sessions             sessions[]
+  roles                Role?                  @relation(fields: [role_id], references: [role_id], onDelete: NoAction, onUpdate: NoAction)
+  wishlists            wishlists?
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
@@ -393,6 +396,7 @@ model wishlists {
   wishlist_items wishlist_items[]
   users          users            @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
 }
+
 model contact_messages {
   message_id BigInt    @id @default(autoincrement())
   name       String
@@ -401,13 +405,32 @@ model contact_messages {
   message    String
   created_at DateTime? @default(now()) @db.Timestamptz(6)
 }
+
 model loyalty_transactions {
   transaction_id BigInt    @id @default(autoincrement())
   user_id        BigInt
-  points         Int       // +10 earned, -10 redeemed
-  type           String    // "earned" or "redeemed"
+  points         Int
+  type           String
   order_id       BigInt?
   created_at     DateTime? @default(now()) @db.Timestamptz(6)
+  orders         orders?   @relation(fields: [order_id], references: [order_id])
   users          users     @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
-  orders         orders?   @relation(fields: [order_id], references: [order_id], onDelete: SetNull)
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model reviews {
+  review_id  BigInt    @id @default(autoincrement())
+  order_id   BigInt    @unique
+  user_id    BigInt
+  rating     Int
+  comment    String
+  status     String?   @default("pending") @db.VarChar
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
+  product_id BigInt?
+  orders     orders    @relation(fields: [order_id], references: [order_id], onDelete: Cascade, onUpdate: NoAction, map: "fk_reviews_order")
+  products   products? @relation(fields: [product_id], references: [product_id], onDelete: Cascade, onUpdate: NoAction, map: "fk_reviews_product")
+  users      users     @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "fk_reviews_user")
+
+  @@index([user_id], map: "idx_reviews_user")
+  @@index([product_id], map: "idx_reviews_product")
 }

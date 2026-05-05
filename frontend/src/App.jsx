@@ -17,6 +17,9 @@ import { CartSidebar } from './features/cart'
 import { Checkout, PaymentSuccess } from './features/checkout'
 import { AIAdvisor } from './features/ai-advisor'
 import { Favorite } from './features/favorite'
+import Admin from './pages/Admin'
+import AdminLogin from './pages/AdminLogin'
+import Profile from './pages/Profile'
 
 // Admin
 import VeloreAdmin from './features/admin/VeloreAdminUI'
@@ -57,6 +60,8 @@ function App() {
         <Routes>
 
           {/* ─── Admin (no Navbar/Footer) ─────────────────────────── */}
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin" element={<Admin />} />
           <Route path="/admin/*" element={<VeloreAdmin />} />
 
           {/* ─── Public routes (with Navbar/Footer) ──────────────── */}
@@ -82,6 +87,7 @@ function App() {
                 <Route path="/payment-success" element={<PaymentSuccess />} />
                 <Route path="/ai-advisor" element={<AIAdvisor />} />
                 <Route path="/favorite" element={<Favorite />} />
+                <Route path="/profile" element={<Profile />} />
 
                 <Route path="/blogs" element={
                   <Suspense fallback={<PageLoader />}><Blogs /></Suspense>

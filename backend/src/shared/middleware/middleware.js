@@ -47,8 +47,12 @@ const adminAuthMiddleware = (req, res, next) => {
       return res.status(403).json({ success: false, message: 'Admin access required' })
     }
 
-    // ✅ FIXED: Actually call next() for admin
     req.user = decoded
+    req.admin = {
+      adminId: decoded.adminId,
+      role: decoded.role,
+      email: decoded.email
+    }
     next()
   } catch (error) {
     return res.status(401).json({ success: false, message: 'Invalid or expired token' })

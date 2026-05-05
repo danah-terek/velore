@@ -4,7 +4,7 @@ import { Autoplay, Navigation } from "swiper/modules"
 import "swiper/css"
 import "swiper/css/navigation"
 
-const testimonials = [
+const fallbackTestimonials = [
   { name: "Danah Terek", rating: 4, review: "it was amazing ahaha meow, it fits perfectly ahaaah meow meow meow ahahaah very good meow mewo ahahaa i was wondering if i can go with my lenses" },
   { name: "Léa Mazmanian", rating: 4, review: "it was amazing ahaha meow, it fits perfectly ahaaah meow meow meow ahahaah very good meow mewo ahahaa i was wondering if i can go with my lenses" },
   { name: "Cookie Meow", rating: 5, review: "it was amazing ahaha meow, it fits perfectly ahaaah meow meow meow ahahaah very good meow mewo ahahaa i was wondering if i can go with my lenses" },
@@ -37,7 +37,7 @@ function TestimonialCard({ name, rating, review }) {
   )
 }
 
-export default function Testimonials() {
+export default function Testimonials({ testimonials = fallbackTestimonials }) {
   const prevRef = useRef(null)
   const nextRef = useRef(null)
 

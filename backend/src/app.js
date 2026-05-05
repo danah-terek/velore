@@ -12,6 +12,7 @@ const userRoutes = require('./features/users/user.routes')
 const contactRoutes = require('./features/contact/contact.routes')
 const loyaltyRoutes = require('./features/loyalty/loyalty.routes')
 const adminRoutes = require('./features/admin/admin.routes')
+const blogRoutes = require('./features/blog')
 
 const app = express()
 
@@ -41,6 +42,7 @@ app.use('/api/v1/users', userRoutes)
 app.use('/api/v1/contact', contactRoutes)
 app.use('/api/v1/loyalty', loyaltyRoutes)
 app.use('/api/v1/admin', adminRoutes)
+app.use('/api/v1/blogs', blogRoutes)
 
 
 

@@ -35,15 +35,18 @@ const getReviewById = async (feedback_id) => {
 };
 
 // ─── CREATE REVIEW ────────────────────────────────────────────────────────────
-const createReview = async ({ user_id, product_id, comment }) => {
-  return await prisma.feedback.create({
-    data: {
-      user_id: Number(user_id),
-      product_id: Number(product_id),
-      comment,
-    },
-  });
-};
+const createReview = async ({ user_id, product_id, order_id, rating, comment }) => {
+    return await prisma.reviews.create({
+      data: {
+        user_id: BigInt(user_id),
+        product_id: BigInt(product_id),
+        order_id: BigInt(order_id),
+        rating: Number(rating),
+        comment,
+        status: "pending"
+      }
+    });
+  };
 
 // ─── DELETE REVIEW ────────────────────────────────────────────────────────────
 const deleteReview = async (feedback_id) => {
@@ -52,9 +55,60 @@ const deleteReview = async (feedback_id) => {
   });
 };
 
+// ─── GET PENDING REVIEWS (ADMIN) ──────────────────────────────────────────────
+const getPendingReviews = async () => {
+  return await prisma.reviews.findMany({
+    where: { status: "pending" },
+    orderBy: { created_at: "desc" },
+    include: {
+      users: {
+        select: { user_id: true, name: true, email: true },
+      },
+      orders: {
+        select: { order_id: true, status: true, order_date: true },
+      },
+    },
+  });
+};
+
+// ─── GET APPROVED REVIEWS (PUBLIC) ────────────────────────────────────────────
+const getApprovedReviews = async () => {
+  return await prisma.reviews.findMany({
+    where: { status: "approved" },
+    orderBy: { created_at: "desc" },
+    include: {
+      users: {
+        select: { user_id: true, name: true },
+      },
+      orders: {
+        select: { order_id: true },
+      },
+    },
+  });
+};
+
+// ─── UPDATE REVIEW STATUS ─────────────────────────────────────────────────────
+const updateReviewStatus = async (review_id, status) => {
+  return await prisma.reviews.update({
+    where: { review_id: BigInt(review_id) },
+    data: { status },
+    include: {
+      users: {
+        select: { user_id: true, name: true, email: true },
+      },
+      orders: {
+        select: { order_id: true, status: true },
+      },
+    },
+  });
+};
+
 module.exports = {
   getReviewsByProduct,
   getReviewById,
   createReview,
   deleteReview,
+  getPendingReviews,
+  getApprovedReviews,
+  updateReviewStatus,
 };

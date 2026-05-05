@@ -1,34 +1,18 @@
-// src/pages/Blogs.jsx
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-
-const allBlogs = [
-  { 
-    id: 1, 
-    title: "What Type of Glasses Suit Me? A Complete Guide", 
-    image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=600", 
-    date: "April 10, 2026", 
-    readTime: "5 min read", 
-    author: "Sarah Johnson" 
-  },
-  { 
-    id: 2, 
-    title: "How to Protect Your Eyes from UV Light", 
-    image: "https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=600", 
-    date: "April 8, 2026", 
-    readTime: "4 min read", 
-    author: "Dr. Michael Chen" 
-  },
-  { 
-    id: 3, 
-    title: "From Lens Tech to Luxury Frames: The Evolution of Eyewear", 
-    image: "https://images.unsplash.com/photo-1508296695146-257a814070b4?w=600", 
-    date: "April 5, 2026", 
-    readTime: "6 min read", 
-    author: "Emma Rodriguez" 
-  },
-]
+import apiClient from '../../shared/services/apiClient'
 
 export default function Blogs() {
+  const [blogs, setBlogs] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    apiClient.get('/blogs')
+      .then(res => setBlogs(res?.data || []))
+      .catch(() => setBlogs([]))
+      .finally(() => setLoading(false))
+  }, [])
+
   return (
     <div className="min-h-screen bg-white">
       <section className="px-6 md:px-16 py-16 bg-gray-50">
@@ -43,28 +27,33 @@ export default function Blogs() {
       </section>
 
       <section className="px-6 md:px-16 py-16">
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {allBlogs.map(blog => (
-            <Link key={blog.id} to={`/blogs/${blog.id}`} className="group">
-              <div className="aspect-[4/3] rounded-sm overflow-hidden mb-4">
-                <img 
-                  src={blog.image} 
-                  alt={blog.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-              <div className="flex items-center gap-3 text-xs text-gray-500 mb-2">
-                <span>{blog.date}</span>
-                <span>•</span>
-                <span>{blog.readTime}</span>
-              </div>
-              <h2 className="text-xl font-semibold text-gray-900 group-hover:text-gray-600 transition-colors mb-2">
-                {blog.title}
-              </h2>
-              <p className="text-sm text-gray-600">By {blog.author}</p>
-            </Link>
-          ))}
-        </div>
+        {loading ? (
+          <p className="text-center text-gray-500">Loading...</p>
+        ) : blogs.length === 0 ? (
+          <p className="text-center text-gray-500">No blog posts yet.</p>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {blogs.map(blog => (
+              <Link key={blog.post_id} to={`/blogs/${blog.post_id}`} className="group">
+                <div className="aspect-[4/3] rounded-sm overflow-hidden mb-4">
+                  <img 
+                    src={blog.image || 'https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=600'} 
+                    alt={blog.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+                <div className="flex items-center gap-3 text-xs text-gray-500 mb-2">
+                  <span>{new Date(blog.published_at || blog.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                  <span>•</span>
+                  <span>{blog.read_time || '5 min read'}</span>
+                </div>
+                <h2 className="text-xl font-semibold text-gray-900 group-hover:text-gray-600 transition-colors mb-2">
+                  {blog.title}
+                </h2>
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   )

@@ -68,4 +68,26 @@ async function redeemUserPoints(req, res) {
   }
 }
 
-module.exports = { getLoyalty, awardPoints, redeemUserPoints };
+async function getLoyaltyByToken(req, res) {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).json({ success: false, message: 'No token provided' });
+    }
+    const token = authHeader.split(' ')[1];
+    const jwt = require('jsonwebtoken');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.userId || decoded.user_id || decoded.id;
+    
+    if (!userId) {
+      return res.status(400).json({ success: false, message: 'User ID not found in token' });
+    }
+
+    const data = await getLoyaltyInfo(BigInt(userId));
+    res.json({ success: true, data });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+}
+
+module.exports = { getLoyalty, getLoyaltyByToken, awardPoints, redeemUserPoints };

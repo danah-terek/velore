@@ -357,6 +357,26 @@ const adminService = {
     }
   },
 
+  async getAdmins() {
+  const admins = await prisma.admin.findMany({
+    select: {
+      admin_id: true,
+      email: true,
+      name: true,
+      created_at: true,
+      roles: { select: { name: true } }
+    },
+    orderBy: { created_at: 'desc' }
+  });
+  return admins.map(a => ({
+    id: a.admin_id.toString(),
+    email: a.email,
+    name: a.name,
+    role: a.roles?.name,
+    created_at: a.created_at
+  }));
+},
+
   async log(adminId, action, details) {
     try {
       await prisma.audit_logs.create({

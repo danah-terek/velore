@@ -25,7 +25,7 @@ const rbac = {
         return res.status(403).json({ success: false, error: 'Access denied' })
       }
       if (!this.hasPermission(role, permission)) {
-        return res.status(403).json({ success: false, error: `Missing permission: ${permission}` })
+        return res.status(403).json({ success: false, error: 'Missing permission: ' + permission })
       }
       next()
     }

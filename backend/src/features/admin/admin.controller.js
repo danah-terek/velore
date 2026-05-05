@@ -146,6 +146,15 @@ const adminController = {
     } catch (error) {
       res.status(500).json({ success: false, error: error.message })
     }
+  },
+
+  async getAdmins(req, res) {
+    try {
+      const data = await adminService.getAdmins();
+      res.json({ success: true, data });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
   }
 }
 

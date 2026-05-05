@@ -30,6 +30,9 @@ router.patch('/orders/:orderId/status', rbac.requirePermission('update:orders'),
 // Audit Logs
 router.get('/audit-logs', rbac.requirePermission('read:audit_logs'), adminController.getAuditLogs)
 
+// Admins management
+router.get('/admins', rbac.requireSuperAdmin, adminController.getAdmins)
+
 // Super Admin only — create new admin
 router.post('/admins', rbac.requireSuperAdmin, adminController.createAdmin)
 

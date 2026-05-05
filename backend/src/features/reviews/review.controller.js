@@ -12,6 +12,23 @@ const serializeReview = (r) => ({
     : null,
 });
 
+const serializeModerationReview = (r) => ({
+  review_id: r.review_id.toString(),
+  order_id: r.order_id.toString(),
+  user_id: r.user_id.toString(),
+  product_id: r.product_id ? r.product_id.toString() : null,
+  rating: r.rating,
+  comment: r.comment,
+  status: r.status,
+  created_at: r.created_at,
+  users: r.users
+    ? { user_id: r.users.user_id.toString(), name: r.users.name, email: r.users.email }
+    : null,
+  orders: r.orders
+    ? { order_id: r.orders.order_id.toString(), status: r.orders.status }
+    : null
+});
+
 // ─── GET REVIEWS BY PRODUCT ───────────────────────────────────────────────────
 const getReviewsByProduct = async (req, res) => {
   try {
@@ -48,10 +65,14 @@ const getReviewById = async (req, res) => {
 // ─── CREATE REVIEW ────────────────────────────────────────────────────────────
 const createReview = async (req, res) => {
   try {
-    const { user_id, product_id, comment } = req.body;
+    const { user_id, product_id, order_id, rating, comment } = req.body;
 
-    if (!user_id || !product_id) {
-      return res.status(400).json({ success: false, message: "user_id and product_id are required" });
+    if (!user_id || !product_id || !order_id) {
+      return res.status(400).json({ success: false, message: "user_id, product_id, and order_id are required" });
+    }
+
+    if (!rating || rating < 1 || rating > 5) {
+      return res.status(400).json({ success: false, message: "Rating must be between 1 and 5" });
     }
 
     if (!comment || !comment.trim()) {
@@ -61,17 +82,28 @@ const createReview = async (req, res) => {
     const review = await reviewService.createReview({
       user_id,
       product_id,
+      order_id,
+      rating: Number(rating),
       comment: comment.trim(),
     });
 
     res.status(201).json({
-      success: true,
-      message: "Review submitted successfully",
-      data: { ...review, feedback_id: review.feedback_id.toString() },
-    });
+  success: true,
+  message: "Review submitted successfully",
+  data: {
+    review_id: review.review_id.toString(),
+    user_id: review.user_id.toString(),
+    product_id: review.product_id.toString(),
+    order_id: review.order_id.toString(),
+    rating: review.rating,
+    comment: review.comment,
+    status: review.status,
+    created_at: review.created_at
+  },
+});
   } catch (error) {
     console.error("createReview error:", error);
-    res.status(500).json({ success: false, message: "Failed to submit review" });
+    res.status(500).json({ success: false, message: error.message || "Failed to submit review" });
   }
 };
 
@@ -93,9 +125,78 @@ const deleteReview = async (req, res) => {
   }
 };
 
+// ─── GET PENDING REVIEWS (ADMIN) ──────────────────────────────────────────────
+const getPendingReviews = async (req, res) => {
+  try {
+    const reviews = await reviewService.getPendingReviews();
+    res.status(200).json({
+      success: true,
+      data: reviews.map(serializeModerationReview),
+    });
+  } catch (error) {
+    console.error("getPendingReviews error:", error);
+    res.status(500).json({ success: false, message: "Failed to fetch pending reviews" });
+  }
+};
+
+// ─── GET APPROVED REVIEWS (PUBLIC) ────────────────────────────────────────────
+const getApprovedReviews = async (req, res) => {
+  try {
+    const reviews = await reviewService.getApprovedReviews();
+    res.status(200).json({
+      success: true,
+      data: reviews.map(serializeModerationReview),
+    });
+  } catch (error) {
+    console.error("getApprovedReviews error:", error);
+    res.status(500).json({ success: false, message: "Failed to fetch approved reviews" });
+  }
+};
+
+// ─── APPROVE / REJECT REVIEW (ADMIN) ──────────────────────────────────────────
+const approveReview = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const review = await reviewService.updateReviewStatus(id, "approved");
+    res.status(200).json({
+      success: true,
+      message: "Review approved successfully",
+      data: serializeModerationReview(review),
+    });
+  } catch (error) {
+    console.error("approveReview error:", error);
+    if (error.code === "P2025") {
+      return res.status(404).json({ success: false, message: "Review not found" });
+    }
+    res.status(500).json({ success: false, message: "Failed to approve review" });
+  }
+};
+
+const rejectReview = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const review = await reviewService.updateReviewStatus(id, "rejected");
+    res.status(200).json({
+      success: true,
+      message: "Review rejected successfully",
+      data: serializeModerationReview(review),
+    });
+  } catch (error) {
+    console.error("rejectReview error:", error);
+    if (error.code === "P2025") {
+      return res.status(404).json({ success: false, message: "Review not found" });
+    }
+    res.status(500).json({ success: false, message: "Failed to reject review" });
+  }
+};
+
 module.exports = {
   getReviewsByProduct,
   getReviewById,
   createReview,
   deleteReview,
+  getPendingReviews,
+  getApprovedReviews,
+  approveReview,
+  rejectReview,
 };
