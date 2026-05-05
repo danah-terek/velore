@@ -34,13 +34,15 @@ const cartController = {
   },
 
   async removeItem(req, res) {
-    try {
-      await cartService.removeItem(req.user.userId, parseInt(req.params.variantId))
-      res.json({ success: true, message: 'Item removed' })
-    } catch (error) {
-      res.status(400).json({ success: false, error: error.message })
-    }
-  },
+  try {
+    await cartService.removeItem(req.user.userId, parseInt(req.params.variantId))
+    // ↑ rename the param for clarity but it works — just make sure the route stays:
+    // DELETE /remove/:variantId   (this param name doesn't matter, just keep it consistent)
+    res.json({ success: true, message: 'Item removed' })
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message })
+  }
+},
 
   async clearCart(req, res) {
     try {

@@ -164,18 +164,28 @@ const orderService = {
     }
   },
 
-  async getUserOrders(userId) {
-    const orders = await prisma.orders.findMany({
-      where: { user_id: Number(userId) },
-      include: {
-        orders_items: { include: { products: true, product_variants: true } },
-        payments: true,
-        addresses: true
+async getUserOrders(userId) {
+  const orders = await prisma.orders.findMany({
+    where: { user_id: Number(userId) },
+    include: {
+      orders_items: {
+        include: {
+          products: {
+            include: {
+              categories: true,
+              brands: true
+            }
+          },
+          product_variants: true
+        }
       },
-      orderBy: { order_date: 'desc' }
-    })
-    return serialize(orders)
-  },
+      payments: true,
+      addresses: true
+    },
+    orderBy: { order_date: 'desc' }
+  })
+  return serialize(orders)
+},
 
   async getOrderById(orderId) {
     const order = await prisma.orders.findUnique({

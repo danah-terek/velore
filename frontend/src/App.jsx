@@ -10,9 +10,7 @@ import { ContactModal } from './shared/components/ui'
 import { Home } from './features/home'
 import { Shop } from './features/shop'
 import { ProductDetail } from './features/product'
-import { Login, Signup } from './features/auth'
-import ForgotPassword from './features/auth/ForgotPassword'   // ADD THIS
-import ResetPassword from './features/auth/ResetPassword'     // ADD THIS
+import { Login, Signup, ForgotPassword, ResetPassword } from './features/auth'
 import { CartSidebar } from './features/cart'
 import { Checkout, PaymentSuccess } from './features/checkout'
 import { AIAdvisor } from './features/ai-advisor'
