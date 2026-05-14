@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <defs>
+    <style>
+      .bg{fill:#F7F2EA}.ink{stroke:#151515;stroke-width:10;stroke-linecap:round;stroke-linejoin:round;fill:none}
+      .muted{fill:#2A2A2A;opacity:.78}.accent{fill:#B85C38}.sky{fill:#7EC8E3;opacity:.20}
+      text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+    </style>
+  </defs>
+  <rect class="bg" width="1200" height="800"/>
+  <circle cx="1060" cy="150" r="120" class="sky"/>
+  <text x="84" y="110" font-size="28" class="muted" letter-spacing="2">VELORE DEMO</text>
+  <rect x="84" y="132" width="92" height="8" class="accent" rx="4"/>
+  <text x="84" y="180" font-size="54" fill="#151515" font-weight="650">Kids SoftEdge Frames</text>
+  <text x="84" y="232" font-size="24" class="muted">Flexible " Lightweight " Comfortable fit</text>
+  <g transform="translate(0,30)">
+    <circle cx="360" cy="520" r="145" class="ink"/>
+    <circle cx="840" cy="520" r="145" class="ink"/>
+    <path class="ink" d="M505 520c30-16 160-16 190 0"/>
+    <path class="ink" d="M200 540c-40 10-80 0-120-30"/>
+    <path class="ink" d="M1000 540c40 10 80 0 120-30"/>
+  </g>
+  <text x="84" y="740" font-size="22" class="muted">Demo SVG placeholder " Replace with real images later</text>
+</svg>

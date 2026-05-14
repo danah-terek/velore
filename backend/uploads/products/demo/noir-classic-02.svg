@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <defs>
+    <style>
+      .bg { fill: #F7F2EA; }
+      .ink { stroke: #151515; stroke-width: 10; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .muted { fill: #2A2A2A; opacity: 0.78; }
+      .accent { fill: #B85C38; }
+      .tort { fill: #6B4F3A; opacity: 0.12; }
+      text { font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1200" height="800"/>
+  <circle cx="1080" cy="140" r="120" class="tort"/>
+
+  <text x="84" y="110" font-size="28" class="muted" letter-spacing="2">VELORE DEMO</text>
+  <rect x="84" y="132" width="92" height="8" class="accent" rx="4"/>
+  <text x="84" y="180" font-size="54" fill="#151515" font-weight="650">Noir Classic  Tortoise</text>
+  <text x="84" y="232" font-size="24" class="muted">Warm tortoise tone " Everyday comfort</text>
+
+  <g transform="translate(0,20)">
+    <path class="ink" d="M190 430c110-30 210-30 320 0"/>
+    <path class="ink" d="M690 430c110-30 210-30 320 0"/>
+    <path class="ink" d="M510 430c30-20 80-20 110 0"/>
+    <path class="ink" d="M170 455c-40 30-60 85-55 140 6 70 55 105 140 105h195c80 0 130-40 145-115 12-60-6-110-52-145-65-50-243-50-373 0z"/>
+    <path class="ink" d="M1030 455c40 30 60 85 55 140-6 70-55 105-140 105H750c-80 0-130-40-145-115-12-60 6-110 52-145 65-50 243-50 373 0z"/>
+  </g>
+
+  <text x="84" y="740" font-size="22" class="muted">Demo SVG placeholder " Add real images later</text>
+</svg>

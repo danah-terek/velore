@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <defs>
+    <style>
+      .bg { fill: #F7F2EA; }
+      .ink { stroke: #151515; stroke-width: 10; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .gold { stroke: #B85C38; stroke-width: 10; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .muted { fill: #2A2A2A; opacity: 0.78; }
+      .accent { fill: #B85C38; }
+      text { font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="1200" height="800"/>
+
+  <text x="84" y="110" font-size="28" class="muted" letter-spacing="2">VELORE DEMO</text>
+  <rect x="84" y="132" width="92" height="8" class="accent" rx="4"/>
+  <text x="84" y="180" font-size="54" fill="#151515" font-weight="650">Aurelia Gold Round Frames</text>
+  <text x="84" y="232" font-size="24" class="muted">Lightweight metal " Adjustable nose pads</text>
+
+  <!-- Round frames line art -->
+  <g transform="translate(0,30)">
+    <circle cx="360" cy="520" r="150" class="gold"/>
+    <circle cx="840" cy="520" r="150" class="gold"/>
+    <path class="ink" d="M510 520c30-18 150-18 180 0"/>
+    <path class="ink" d="M210 520c-50-20-90-60-110-120"/>
+    <path class="ink" d="M990 520c50-20 90-60 110-120"/>
+    <path class="ink" d="M330 420c30 50 70 80 120 90"/>
+    <path class="ink" d="M870 420c-30 50-70 80-120 90"/>
+  </g>
+
+  <text x="84" y="740" font-size="22" class="muted">Demo SVG placeholder " Replace with real images later</text>
+</svg>

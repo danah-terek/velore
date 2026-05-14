@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="800" viewBox="0 0 1400 800">
+  <defs>
+    <style>
+      .bg{fill:#F7F2EA}.ink{stroke:#151515;stroke-width:8;stroke-linecap:round;stroke-linejoin:round;fill:none}
+      .muted{fill:#2A2A2A;opacity:.80}.accent{fill:#B85C38}.drop{fill:#B85C38;opacity:.14}
+      text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+    </style>
+  </defs>
+  <rect class="bg" width="1400" height="800"/>
+  <path class="drop" d="M1180 110c70 90 110 160 110 230 0 80-65 145-145 145s-145-65-145-145c0-70 40-140 110-230 20-25 50-25 70 0z"/>
+  <text x="90" y="140" font-size="28" class="muted" letter-spacing="2">VELORE JOURNAL</text>
+  <rect x="90" y="162" width="120" height="8" class="accent" rx="4"/>
+  <text x="90" y="240" font-size="64" fill="#151515" font-weight="700">Lens Care Tips</text>
+  <text x="90" y="298" font-size="26" class="muted">Keep lenses clear with simple daily habits</text>
+  <g transform="translate(0,40)">
+    <rect x="140" y="410" width="520" height="300" rx="56" class="ink"/>
+    <rect x="760" y="410" width="520" height="300" rx="56" class="ink"/>
+    <path class="ink" d="M660 560c40-18 80-18 120 0"/>
+    <path class="ink" d="M350 470c40 70 40 160 0 230"/>
+    <path class="ink" d="M1050 470c-40 70-40 160 0 230"/>
+  </g>
+  <text x="90" y="740" font-size="22" class="muted">Demo cover SVG " Replace later with photography</text>
+</svg>

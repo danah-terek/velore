@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <defs>
+    <style>
+      .bg { fill: #F7F2EA; }
+      .ink { stroke: #151515; stroke-width: 10; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .accentStroke { stroke: #B85C38; stroke-width: 10; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .muted { fill: #2A2A2A; opacity: 0.78; }
+      .accent { fill: #B85C38; }
+      text { font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="1200" height="800"/>
+
+  <text x="84" y="110" font-size="28" class="muted" letter-spacing="2">VELORE DEMO</text>
+  <rect x="84" y="132" width="92" height="8" class="accent" rx="4"/>
+  <text x="84" y="180" font-size="54" fill="#151515" font-weight="650">Aurelia Gold — Medium</text>
+  <text x="84" y="232" font-size="24" class="muted">Clean round profile • Premium hinge feel</text>
+
+  <g transform="translate(0,30)">
+    <circle cx="360" cy="520" r="160" class="accentStroke"/>
+    <circle cx="840" cy="520" r="160" class="accentStroke"/>
+    <path class="ink" d="M505 520c30-18 160-18 190 0"/>
+    <path class="ink" d="M240 610c60 40 130 55 220 40"/>
+    <path class="ink" d="M960 610c-60 40-130 55-220 40"/>
+  </g>
+
+  <text x="84" y="740" font-size="22" class="muted">Demo SVG placeholder • Replace with real images later</text>
+</svg>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <defs>
+    <style>
+      .bg { fill: #F7F2EA; }
+      .ink { stroke: #151515; stroke-width: 10; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .accentStroke { stroke: #B85C38; stroke-width: 10; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .muted { fill: #2A2A2A; opacity: 0.78; }
+      .accent { fill: #B85C38; }
+      text { font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="1200" height="800"/>
+
+  <text x="84" y="110" font-size="28" class="muted" letter-spacing="2">VELORE DEMO</text>
+  <rect x="84" y="132" width="92" height="8" class="accent" rx="4"/>
+  <text x="84" y="180" font-size="54" fill="#151515" font-weight="650">Aurelia Gold  Medium</text>
+  <text x="84" y="232" font-size="24" class="muted">Clean round profile " Premium hinge feel</text>
+
+  <g transform="translate(0,30)">
+    <circle cx="360" cy="520" r="160" class="accentStroke"/>
+    <circle cx="840" cy="520" r="160" class="accentStroke"/>
+    <path class="ink" d="M505 520c30-18 160-18 190 0"/>
+    <path class="ink" d="M240 610c60 40 130 55 220 40"/>
+    <path class="ink" d="M960 610c-60 40-130 55-220 40"/>
+  </g>
+
+  <text x="84" y="740" font-size="22" class="muted">Demo SVG placeholder " Replace with real images later</text>
+</svg>

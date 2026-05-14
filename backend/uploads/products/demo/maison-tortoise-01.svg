@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <defs>
+    <style>
+      .bg{fill:#F7F2EA}.ink{stroke:#151515;stroke-width:10;stroke-linecap:round;stroke-linejoin:round;fill:none}
+      .muted{fill:#2A2A2A;opacity:.78}.accent{fill:#B85C38}.tort{fill:#6B4F3A;opacity:.18}
+      text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+    </style>
+  </defs>
+  <rect class="bg" width="1200" height="800"/>
+  <path class="tort" d="M1020 120c60 40 80 120 40 180-40 60-120 80-180 40-60-40-80-120-40-180 40-60 120-80 180-40z"/>
+  <text x="84" y="110" font-size="28" class="muted" letter-spacing="2">VELORE DEMO</text>
+  <rect x="84" y="132" width="92" height="8" class="accent" rx="4"/>
+  <text x="84" y="180" font-size="54" fill="#151515" font-weight="650">Maison Tortoise Optical</text>
+  <text x="84" y="232" font-size="24" class="muted">Warm acetate " Keyhole bridge</text>
+  <g transform="translate(0,20)">
+    <path class="ink" d="M160 520c70-70 170-100 300-90 110 10 150 60 150 150 0 90-60 140-160 140H310c-100 0-150-40-165-120-10-50-5-80 15-80z"/>
+    <path class="ink" d="M1040 520c-70-70-170-100-300-90-110 10-150 60-150 150 0 90 60 140 160 140h150c100 0 150-40 165-120 10-50 5-80-15-80z"/>
+    <path class="ink" d="M520 520c35-18 125-18 160 0"/>
+  </g>
+  <text x="84" y="740" font-size="22" class="muted">Demo SVG placeholder " Replace with real images later</text>
+</svg>

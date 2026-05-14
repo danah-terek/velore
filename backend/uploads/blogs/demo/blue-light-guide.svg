@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="800" viewBox="0 0 1400 800">
+  <defs>
+    <style>
+      .bg{fill:#F7F2EA}.ink{stroke:#151515;stroke-width:8;stroke-linecap:round;stroke-linejoin:round;fill:none}
+      .muted{fill:#2A2A2A;opacity:.80}.accent{fill:#B85C38}.wash{fill:#E6F1FF;opacity:.25}
+      text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+    </style>
+  </defs>
+  <rect class="bg" width="1400" height="800"/>
+  <rect x="980" y="120" width="320" height="240" rx="48" class="wash"/>
+  <text x="90" y="140" font-size="28" class="muted" letter-spacing="2">VELORE JOURNAL</text>
+  <rect x="90" y="162" width="120" height="8" class="accent" rx="4"/>
+  <text x="90" y="240" font-size="64" fill="#151515" font-weight="700">BlueLight Glasses Explained</text>
+  <text x="90" y="298" font-size="26" class="muted">Comfort, clarity, and better screen habits</text>
+  <g transform="translate(0,40)">
+    <rect x="120" y="390" width="520" height="260" rx="48" class="ink"/>
+    <rect x="760" y="390" width="520" height="260" rx="48" class="ink"/>
+    <path class="ink" d="M640 520c40-18 80-18 120 0"/>
+  </g>
+  <text x="90" y="740" font-size="22" class="muted">Demo cover SVG " Replace later with photography</text>
+</svg>

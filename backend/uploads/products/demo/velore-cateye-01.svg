@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <defs>
+    <style>
+      .bg{fill:#F7F2EA}.ink{stroke:#151515;stroke-width:10;stroke-linecap:round;stroke-linejoin:round;fill:none}
+      .muted{fill:#2A2A2A;opacity:.78}.accent{fill:#B85C38}
+      text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+    </style>
+  </defs>
+  <rect class="bg" width="1200" height="800"/>
+  <text x="84" y="110" font-size="28" class="muted" letter-spacing="2">VELORE DEMO</text>
+  <rect x="84" y="132" width="92" height="8" class="accent" rx="4"/>
+  <text x="84" y="180" font-size="54" fill="#151515" font-weight="650">Velore CatEye Sunglasses</text>
+  <text x="84" y="232" font-size="24" class="muted">Elegant lift " Subtle gradient vibe</text>
+  <g transform="translate(0,15)">
+    <path class="ink" d="M170 520c120-120 250-150 390-95 60 25 110 75 110 150 0 105-70 165-190 165H320c-110 0-165-45-175-135-6-50 6-70 25-85z"/>
+    <path class="ink" d="M1030 520c-120-120-250-150-390-95-60 25-110 75-110 150 0 105 70 165 190 165h160c110 0 165-45 175-135 6-50-6-70-25-85z"/>
+    <path class="ink" d="M525 520c35-18 115-18 150 0"/>
+  </g>
+  <text x="84" y="740" font-size="22" class="muted">Demo SVG placeholder " Replace with real images later</text>
+</svg>

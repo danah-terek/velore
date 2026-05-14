@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <defs>
+    <style>
+      .bg{fill:#F7F2EA}.ink{stroke:#151515;stroke-width:10;stroke-linecap:round;stroke-linejoin:round;fill:none}
+      .muted{fill:#2A2A2A;opacity:.78}.accent{fill:#B85C38}.panel{fill:#151515;opacity:.06}
+      text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+    </style>
+  </defs>
+  <rect class="bg" width="1200" height="800"/>
+  <text x="84" y="110" font-size="28" class="muted" letter-spacing="2">VELORE DEMO</text>
+  <rect x="84" y="132" width="92" height="8" class="accent" rx="4"/>
+  <text x="84" y="180" font-size="54" fill="#151515" font-weight="650">Nova Sport Polarized</text>
+  <text x="84" y="232" font-size="24" class="muted">Wrap fit " Outdoor training</text>
+  <g transform="translate(0,20)">
+    <path class="panel" d="M160 520c140-120 310-140 440-80 80 40 120 110 120 180 0 90-60 140-160 140H310c-100 0-160-40-180-120-15-60-5-95 30-120z"/>
+    <path class="panel" d="M1040 520c-140-120-310-140-440-80-80 40-120 110-120 180 0 90 60 140 160 140h250c100 0 160-40 180-120 15-60 5-95-30-120z"/>
+    <path class="ink" d="M160 520c140-120 310-140 440-80 80 40 120 110 120 180 0 90-60 140-160 140H310c-100 0-160-40-180-120-15-60-5-95 30-120z"/>
+    <path class="ink" d="M1040 520c-140-120-310-140-440-80-80 40-120 110-120 180 0 90 60 140 160 140h250c100 0 160-40 180-120 15-60 5-95-30-120z"/>
+    <path class="ink" d="M520 520c35-20 125-20 160 0"/>
+  </g>
+  <text x="84" y="740" font-size="22" class="muted">Demo SVG placeholder " Replace with real images later</text>
+</svg>

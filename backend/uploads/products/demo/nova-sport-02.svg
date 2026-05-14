@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <defs>
+    <style>
+      .bg{fill:#F7F2EA}.ink{stroke:#151515;stroke-width:10;stroke-linecap:round;stroke-linejoin:round;fill:none}
+      .muted{fill:#2A2A2A;opacity:.78}.accent{fill:#B85C38}.graph{fill:#3A3A3A;opacity:.12}
+      text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+    </style>
+  </defs>
+  <rect class="bg" width="1200" height="800"/>
+  <rect x="970" y="90" width="140" height="140" rx="28" class="graph"/>
+  <text x="84" y="110" font-size="28" class="muted" letter-spacing="2">VELORE DEMO</text>
+  <rect x="84" y="132" width="92" height="8" class="accent" rx="4"/>
+  <text x="84" y="180" font-size="54" fill="#151515" font-weight="650">Nova Sport  Graphite</text>
+  <text x="84" y="232" font-size="24" class="muted">High coverage " Glare control</text>
+  <g transform="translate(0,20)">
+    <path class="ink" d="M210 520c120-90 280-110 420-70 90 25 150 90 150 180 0 90-65 140-160 140H320c-110 0-170-45-190-130-10-45 5-80 80-120z"/>
+    <path class="ink" d="M990 520c-120-90-280-110-420-70-90 25-150 90-150 180 0 90 65 140 160 140h250c110 0 170-45 190-130 10-45-5-80-80-120z"/>
+    <path class="ink" d="M525 520c35-20 115-20 150 0"/>
+  </g>
+  <text x="84" y="740" font-size="22" class="muted">Demo SVG placeholder " Replace with real images later</text>
+</svg>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <defs>
+    <style>
+      .bg{fill:#F7F2EA}.ink{stroke:#151515;stroke-width:10;stroke-linecap:round;stroke-linejoin:round;fill:none}
+      .muted{fill:#2A2A2A;opacity:.78}.accent{fill:#B85C38}.glass{fill:#E6F1FF;opacity:.25}
+      text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+    </style>
+  </defs>
+  <rect class="bg" width="1200" height="800"/>
+  <text x="84" y="110" font-size="28" class="muted" letter-spacing="2">VELORE DEMO</text>
+  <rect x="84" y="132" width="92" height="8" class="accent" rx="4"/>
+  <text x="84" y="180" font-size="54" fill="#151515" font-weight="650">Urban Clear BlueLight</text>
+  <text x="84" y="232" font-size="24" class="muted">Crystal frame " Screen-friendly look</text>
+  <g transform="translate(0,20)">
+    <rect x="170" y="430" width="360" height="230" rx="52" class="glass"/>
+    <rect x="670" y="430" width="360" height="230" rx="52" class="glass"/>
+    <rect x="170" y="430" width="360" height="230" rx="52" class="ink"/>
+    <rect x="670" y="430" width="360" height="230" rx="52" class="ink"/>
+    <path class="ink" d="M530 520c40-20 100-20 140 0"/>
+    <path class="ink" d="M75 480c35-40 70-62 105-66"/>
+    <path class="ink" d="M1125 480c-35-40-70-62-105-66"/>
+  </g>
+  <text x="84" y="740" font-size="22" class="muted">Demo SVG placeholder " Replace with real photos later</text>
+</svg>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="800" viewBox="0 0 1400 800">
+  <defs>
+    <style>
+      .bg{fill:#F7F2EA}.ink{stroke:#151515;stroke-width:8;stroke-linecap:round;stroke-linejoin:round;fill:none}
+      .muted{fill:#2A2A2A;opacity:.80}.accent{fill:#B85C38}.sun{fill:#B85C38;opacity:.14}
+      text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+    </style>
+  </defs>
+  <rect class="bg" width="1400" height="800"/>
+  <circle cx="1180" cy="180" r="130" class="sun"/>
+  <text x="90" y="140" font-size="28" class="muted" letter-spacing="2">VELORE JOURNAL</text>
+  <rect x="90" y="162" width="120" height="8" class="accent" rx="4"/>
+  <text x="90" y="240" font-size="64" fill="#151515" font-weight="700">Sunglasses Buying Guide</text>
+  <text x="90" y="298" font-size="26" class="muted">UV protection " Polarization " Fit</text>
+  <g transform="translate(0,40)">
+    <path class="ink" d="M220 500c110-30 210-30 320 0"/>
+    <path class="ink" d="M860 500c110-30 210-30 320 0"/>
+    <path class="ink" d="M540 500c30-18 90-18 120 0"/>
+    <path class="ink" d="M200 525c-40 30-60 85-55 140 6 70 55 105 140 105h195c80 0 130-40 145-115 12-60-6-110-52-145-65-50-243-50-373 0z"/>
+    <path class="ink" d="M1200 525c40 30 60 85 55 140-6 70-55 105-140 105H820c-80 0-130-40-145-115-12-60 6-110 52-145 65-50 243-50 373 0z"/>
+  </g>
+  <text x="90" y="740" font-size="22" class="muted">Demo cover SVG " Replace later with photography</text>
+</svg>

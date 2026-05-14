@@ -1,0 +1,50 @@
+name: velore
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: velore_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: velore_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d velore_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - velore_network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: velore_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@velore.local
+      PGADMIN_DEFAULT_PASSWORD: admin
+      # pgAdmin validates emails and rejects `.local` by default.
+      # Allow special-use domain `local` so admin@velore.local is accepted.
+      # NOTE: this value is evaluated as Python, so it must be a valid literal.
+      PGADMIN_CONFIG_ALLOW_SPECIAL_EMAIL_DOMAINS: "['local']"
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - velore_network
+
+volumes:
+  postgres_data:
+  pgadmin_data:
+
+networks:
+  velore_network:
+    driver: bridge
+

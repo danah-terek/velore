@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <defs>
+    <style>
+      .bg{fill:#F7F2EA}.ink{stroke:#151515;stroke-width:10;stroke-linecap:round;stroke-linejoin:round;fill:none}
+      .muted{fill:#2A2A2A;opacity:.78}.accent{fill:#B85C38}.gold{fill:#B85C38;opacity:.12}
+      text{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+    </style>
+  </defs>
+  <rect class="bg" width="1200" height="800"/>
+  <circle cx="1040" cy="140" r="120" class="gold"/>
+  <text x="84" y="110" font-size="28" class="muted" letter-spacing="2">VELORE DEMO</text>
+  <rect x="84" y="132" width="92" height="8" class="accent" rx="4"/>
+  <text x="84" y="180" font-size="54" fill="#151515" font-weight="650">Velore Signature Aviator</text>
+  <text x="84" y="232" font-size="24" class="muted">Iconic shape " Metal build</text>
+  <g transform="translate(0,10)">
+    <path class="ink" d="M200 470c70-80 160-120 280-120 150 0 240 90 240 230 0 140-90 230-240 230H330c-140 0-210-60-220-160-5-55 10-110 90-180z"/>
+    <path class="ink" d="M1000 470c-70-80-160-120-280-120-150 0-240 90-240 230 0 140 90 230 240 230h150c140 0 210-60 220-160 5-55-10-110-90-180z"/>
+    <path class="ink" d="M520 520c40-25 120-25 160 0"/>
+    <path class="ink" d="M90 470c40-45 80-70 120-74"/>
+    <path class="ink" d="M1110 470c-40-45-80-70-120-74"/>
+  </g>
+  <text x="84" y="740" font-size="22" class="muted">Demo SVG placeholder " Replace with real images later</text>
+</svg>
