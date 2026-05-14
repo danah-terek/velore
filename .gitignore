@@ -1,0 +1,43 @@
+# General
+.DS_Store
+Thumbs.db
+
+# Env files
+.env
+**/.env
+
+# Node
+node_modules/
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Builds
+dist/
+build/
+**/dist/
+**/build/
+
+# Vite / cache
+.vite/
+**/.vite/
+
+# Prisma
+**/prisma/dev.db
+
+# Logs / uploads (keep empty dirs via .gitkeep if needed)
+backend/logs/
+backend/uploads/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+venv/
+**/venv/
+
