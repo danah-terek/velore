@@ -1,0 +1,6 @@
+/* Intentionally minimal and valid CSS.
+   Global design primitives live in src/index.css. */
+
+.app-root {
+  min-height: 100vh;
+}
