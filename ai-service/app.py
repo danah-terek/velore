@@ -1,0 +1,77 @@
+from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from dotenv import load_dotenv
+import os
+import logging
+import sys
+
+load_dotenv()
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from face_detection import FaceAnalyzer
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("ai-service")
+
+# Config
+HOST = os.getenv("HOST", "0.0.0.0")
+PORT = int(os.getenv("PORT", "5001"))
+MAX_SIZE_MB = int(os.getenv("MAX_IMAGE_SIZE_MB", "10"))
+ALLOWED_EXTENSIONS = set(os.getenv("ALLOWED_EXTENSIONS", "jpg,jpeg,png,webp,jfif").split(","))
+
+app = FastAPI(title="Velore AI Face Analysis")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+analyzer = FaceAnalyzer()
+
+@app.get("/")
+async def root():
+    return {"message": "Velore AI Service Running"}
+
+@app.get("/health")
+async def health():
+    return {"status": "healthy", "service": "ai-face-analysis"}
+
+@app.post("/analyze")
+async def analyze_face(file: UploadFile = File(...)):
+    print(f"DEBUG: Received file: {file.filename}, content_type: {file.content_type}")
+    
+    ext = file.filename.rsplit(".", 1)[-1].lower() if "." in file.filename else ""
+    print(f"DEBUG: Extension: '{ext}', Allowed: {ALLOWED_EXTENSIONS}")
+    
+    if ext not in ALLOWED_EXTENSIONS:
+        print(f"DEBUG: Rejected - invalid extension '{ext}'")
+        raise HTTPException(status_code=400, detail=f"Invalid file type: .{ext}")
+
+    contents = await file.read()
+    print(f"DEBUG: File read successfully, size: {len(contents)} bytes")
+
+    size_mb = len(contents) / (1024 * 1024)
+    if size_mb > MAX_SIZE_MB:
+        print(f"DEBUG: Rejected - too large: {size_mb:.1f}MB")
+        raise HTTPException(status_code=400, detail=f"Image too large: {size_mb:.1f}MB")
+
+    logger.info(f"Analyzing: {file.filename} ({size_mb:.2f}MB)")
+
+    try:
+        result = analyzer.analyze(contents)
+    except Exception as e:
+        print(f"DEBUG: Analysis crashed: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Analysis error: {str(e)}")
+
+    if not result["success"]:
+        print(f"DEBUG: No face detected: {result.get('error')}")
+        raise HTTPException(status_code=422, detail=result.get("error", "Analysis failed"))
+
+    return result
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host=HOST, port=PORT)
