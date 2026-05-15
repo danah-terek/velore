@@ -14,12 +14,20 @@ export default function ResetPassword() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
+  const rules = {
+    length: password.length >= 8,
+    uppercase: /[A-Z]/.test(password),
+    lowercase: /[a-z]/.test(password),
+    number: /[0-9]/.test(password),
+  };
+  const allRulesMet = Object.values(rules).every(Boolean);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
     if (!password) return setError("Password is required");
-    if (password.length < 6) return setError("Password must be at least 6 characters");
+    if (!allRulesMet) return setError("Password does not meet all requirements");
     if (password !== confirm) return setError("Passwords do not match");
     if (!token) return setError("Invalid reset link");
 
@@ -35,6 +43,13 @@ export default function ResetPassword() {
       setLoading(false);
     }
   };
+
+  const RuleItem = ({ met, text }) => (
+    <li className={`flex items-center gap-2 text-xs ${met ? "text-green-600" : "text-gray-400"}`}>
+      <span>{met ? "✓" : "○"}</span>
+      {text}
+    </li>
+  );
 
   return (
     <div className="flex flex-col md:flex-row w-screen h-screen overflow-hidden bg-white font-sans">
@@ -69,7 +84,7 @@ export default function ResetPassword() {
                 </div>
               )}
 
-              <div className="mb-5">
+              <div className="mb-3">
                 <label className="block text-sm font-medium text-black mb-1.5 tracking-wide">
                   New Password <span className="text-red-600">*</span>
                 </label>
@@ -81,6 +96,16 @@ export default function ResetPassword() {
                   placeholder="••••••••"
                 />
               </div>
+
+              {/* Live password rules */}
+              {password.length > 0 && (
+                <ul className="mb-5 space-y-1 pl-1">
+                  <RuleItem met={rules.length} text="At least 8 characters" />
+                  <RuleItem met={rules.uppercase} text="One uppercase letter" />
+                  <RuleItem met={rules.lowercase} text="One lowercase letter" />
+                  <RuleItem met={rules.number} text="One number" />
+                </ul>
+              )}
 
               <div className="mb-6">
                 <label className="block text-sm font-medium text-black mb-1.5 tracking-wide">

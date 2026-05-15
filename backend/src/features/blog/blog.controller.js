@@ -74,28 +74,25 @@ const blogController = {
   },
 
   async getAllBlogs(req, res) {
-  try {
-    const data = await blogService.getAllBlogs()
-    res.json({ success: true, data: data.map(serializeBlog) })
-  } catch (error) {
-    res.status(400).json({ success: false, error: error.message })
-  }
-},
+    try {
+      const data = await blogService.getAllBlogs()
+      res.json({ success: true, data: data.map(serializeBlog) })
+    } catch (error) {
+      res.status(400).json({ success: false, error: error.message })
+    }
+  },
 
   async getBlogById(req, res) {
     try {
       const data = await blogService.getBlogById(req.params.id)
-if (!data) {
-  return res.status(404).json({ success: false, message: 'Blog not found' })
-}
-res.json({ success: true, data: serializeBlog(data) })
+      if (!data) {
+        return res.status(404).json({ success: false, message: 'Blog not found' })
+      }
       res.json({ success: true, data: serializeBlog(data) })
     } catch (error) {
       res.status(400).json({ success: false, error: error.message })
     }
   }
 }
-
-
 
 module.exports = blogController
