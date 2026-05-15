@@ -5,6 +5,8 @@ import { Footer, Navbar, ScrollToTop } from './shared/components/layout'
 import { FavoritesProvider, useFavorites } from './shared/contexts'
 import { AIAdvisorChat } from './features/ai-advisor'
 
+import TryOn from "./features/tryon/TryOn";
+
 const Home = lazy(() => import('./features/home/Home'))
 const Shop = lazy(() => import('./features/shop/Shop'))
 const ProductDetail = lazy(() => import('./features/product/ProductDetail'))
@@ -136,6 +138,7 @@ export default function App() {
             <Route path="privacy-policy" element={<PolicyPlaceholder title="Privacy Policy" />} />
             <Route path="terms-of-service" element={<PolicyPlaceholder title="Terms of Service" />} />
             <Route path="shipping-policy" element={<PolicyPlaceholder title="Shipping Policy" />} />
+            <Route path="/try-on" element={<TryOn />} />
 
             <Route path="*" element={<NotFound />} />
           </Route>

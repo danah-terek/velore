@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 class FaceAnalyzer:
     
-    def __init__(self, min_detection_confidence=0.5):
+    def __init__(self, min_detection_confidence=0.3):
         base_options = python.BaseOptions(model_asset_buffer=self._get_model())
         options = vision.FaceLandmarkerOptions(
             base_options=base_options,
