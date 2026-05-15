@@ -5,6 +5,9 @@ from dotenv import load_dotenv
 import os
 import logging
 import sys
+import cv2
+import numpy as np
+import mediapipe as mp
 
 load_dotenv()
 
@@ -71,6 +74,40 @@ async def analyze_face(file: UploadFile = File(...)):
         raise HTTPException(status_code=422, detail=result.get("error", "Analysis failed"))
 
     return result
+
+
+@app.post("/landmarks")
+async def get_landmarks(file: UploadFile = File(...)):
+    try:
+        contents = await file.read()
+        img = analyzer.load_image(contents)          # ✅ consistent loader
+        img_rgb = analyzer.preprocess(img)           # ✅ resize + normalize
+        mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=img_rgb)
+        result = analyzer.detector.detect(mp_image)
+
+        if not result.face_landmarks:
+            return {"detected": False, "landmarks": None}
+
+        lm = result.face_landmarks[0]
+        h, w = img.shape[:2]
+
+        return {
+            "detected": True,
+            "landmarks": {
+                "left_eye":     {"x": lm[33].x * w,  "y": lm[33].y * h},
+                "right_eye":    {"x": lm[263].x * w, "y": lm[263].y * h},
+                "nose_bridge":  {"x": lm[168].x * w, "y": lm[168].y * h},
+                "left_temple":  {"x": lm[234].x * w, "y": lm[234].y * h},
+                "right_temple": {"x": lm[454].x * w, "y": lm[454].y * h},
+                "image_width":  w,
+                "image_height": h
+            }
+        }
+    except Exception as e:
+        logger.error(f"Landmark error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 
 if __name__ == "__main__":
     import uvicorn
