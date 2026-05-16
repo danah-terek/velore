@@ -13,7 +13,8 @@ export const adminApiClient = axios.create({
 })
 
 adminApiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem(ADMIN_TOKEN_KEY)
+  // Must match AdminAuthContext — sessionStorage only
+  const token = sessionStorage.getItem(ADMIN_TOKEN_KEY)
   if (token) config.headers.Authorization = `Bearer ${token}`
   return config
 })
@@ -23,6 +24,9 @@ adminApiClient.interceptors.response.use(
   (error) => {
     const status = error.response?.status
     if (status === 401) {
+      sessionStorage.removeItem(ADMIN_TOKEN_KEY)
+      sessionStorage.removeItem('velore_admin_user')
+      // Also clear any old localStorage remnants
       localStorage.removeItem(ADMIN_TOKEN_KEY)
       localStorage.removeItem('velore_admin_user')
       if (!window.location.pathname.startsWith('/admin/login')) {
@@ -34,11 +38,7 @@ adminApiClient.interceptors.response.use(
 )
 
 export function unwrapData(payload) {
-  // Common contracts:
-  // 1) { success, message, data }
-  // 2) { success, message, data: [...], pagination, errors }
   if (!payload || typeof payload !== 'object') return payload
   if (Object.prototype.hasOwnProperty.call(payload, 'data')) return payload.data
   return payload
 }
-

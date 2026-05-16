@@ -62,6 +62,15 @@ export default function CRMReviews() {
         ),
       },
       {
+        key: 'product',
+        header: 'Product',
+        cell: (r) => (
+          <div className="min-w-[180px] text-slate-700">
+            {r.products?.name || <span className="text-slate-400">—</span>}
+          </div>
+        ),
+      },
+      {
         key: 'rating',
         header: 'Rating',
         cell: (r) => <span className="tabular-nums">{r.rating ?? '—'}</span>,
@@ -198,4 +207,3 @@ export default function CRMReviews() {
     </div>
   )
 }
-

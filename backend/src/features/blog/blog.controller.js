@@ -1,9 +1,13 @@
 const blogService = require('./blog.service')
 
-const serializeBlog = (blog) => ({
-  ...blog,
-  post_id: blog.post_id.toString()
-})
+const serializeBlog = (blog) => {
+  if (!blog) return null;
+  return {
+    ...blog,
+    // Safely convert to string if post_id exists, otherwise default to empty string or fallback id
+    post_id: blog.post_id ? blog.post_id.toString() : ''
+  }
+}
 
 const blogController = {
   async createBlog(req, res) {
@@ -34,51 +38,51 @@ const blogController = {
         is_published
       })
 
-      res.status(201).json({ success: true, data: serializeBlog(data) })
+      return res.status(201).json({ success: true, data: serializeBlog(data) })
     } catch (error) {
-      res.status(400).json({ success: false, error: error.message })
+      return res.status(400).json({ success: false, error: error.message })
     }
   },
 
   async updateBlog(req, res) {
     try {
       const data = await blogService.updateBlog(req.params.id, req.body)
-      res.json({ success: true, data: serializeBlog(data) })
+      return res.json({ success: true, data: serializeBlog(data) })
     } catch (error) {
       if (error.code === 'P2025') {
         return res.status(404).json({ success: false, message: 'Blog not found' })
       }
-      res.status(400).json({ success: false, error: error.message })
+      return res.status(400).json({ success: false, error: error.message })
     }
   },
 
   async deleteBlog(req, res) {
     try {
       await blogService.deleteBlog(req.params.id)
-      res.json({ success: true, message: 'Blog deleted successfully' })
+      return res.json({ success: true, message: 'Blog deleted successfully' })
     } catch (error) {
       if (error.code === 'P2025') {
         return res.status(404).json({ success: false, message: 'Blog not found' })
       }
-      res.status(400).json({ success: false, error: error.message })
+      return res.status(400).json({ success: false, error: error.message })
     }
   },
 
   async getPublishedBlogs(req, res) {
     try {
       const data = await blogService.getPublishedBlogs()
-      res.json({ success: true, data: data.map(serializeBlog) })
+      return res.json({ success: true, data: data.map(serializeBlog) })
     } catch (error) {
-      res.status(400).json({ success: false, error: error.message })
+      return res.status(400).json({ success: false, error: error.message })
     }
   },
 
   async getAllBlogs(req, res) {
     try {
       const data = await blogService.getAllBlogs()
-      res.json({ success: true, data: data.map(serializeBlog) })
+      return res.json({ success: true, data: data.map(serializeBlog) })
     } catch (error) {
-      res.status(400).json({ success: false, error: error.message })
+      return res.status(400).json({ success: false, error: error.message })
     }
   },
 
@@ -88,9 +92,9 @@ const blogController = {
       if (!data) {
         return res.status(404).json({ success: false, message: 'Blog not found' })
       }
-      res.json({ success: true, data: serializeBlog(data) })
+      return res.json({ success: true, data: serializeBlog(data) })
     } catch (error) {
-      res.status(400).json({ success: false, error: error.message })
+      return res.status(400).json({ success: false, error: error.message })
     }
   }
 }
