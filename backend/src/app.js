@@ -15,8 +15,10 @@ const loyaltyRoutes = require('./features/loyalty/loyalty.routes')
 const adminRoutes = require('./features/admin/admin.routes')
 const blogRoutes = require('./features/blog')
 const paymentRoutes = require('./features/payments/payment.routes')
+const notificationRoutes = require('./features/notifications/notification.routes')
 
 const app = express()
+app.set('json replacer', (_, v) => typeof v === 'bigint' ? v.toString() : v)
 
 const allowedOrigins = [
   process.env.FRONTEND_URL,
@@ -66,7 +68,7 @@ app.use('/api/v1/admin', adminRoutes)
 app.use('/api/v1/blogs', blogRoutes)
 app.use('/api/v1/payments', paymentRoutes)
 app.use('/api/ai-advisor', require('./features/ai-advisor'));
-
+app.use('/api/v1/notifications', notificationRoutes)
 
 
 app.use('/api/v1/cart', require('./features/cart/cart.routes'))
@@ -126,9 +128,10 @@ app.use((req, res) => {
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   const status = err.statusCode || err.status || 500
+  const safeMessage = typeof err.message === 'bigint' ? err.message.toString() : (err.message || 'Internal server error')
   res.status(status).json({
     success: false,
-    message: err.message || 'Internal server error',
+    message: safeMessage,
     errors: err.errors || []
   })
 })

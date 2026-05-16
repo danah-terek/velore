@@ -370,11 +370,30 @@ export default function Checkout() {
   const [discountApplied, setDiscountApplied] = useState(false)
   const [discountAmount, setDiscountAmount] = useState(0)
 
+  // ✅ LOYALTY POINTS STATE
+  const [loyaltyPoints, setLoyaltyPoints] = useState(0)
+  const [pointsRedeemed, setPointsRedeemed] = useState(false)
+  const [pointsDiscount, setPointsDiscount] = useState(0)
+
+  // ✅ FETCH LOYALTY POINTS ON LOAD
   useEffect(() => {
     loadCart()
     const token = localStorage.getItem('token') || sessionStorage.getItem('token')
     setIsLoggedIn(!!token)
+    if (token) fetchLoyaltyPoints(token)
   }, [])
+
+  const fetchLoyaltyPoints = async (token) => {
+    try {
+      const res = await fetch('/api/v1/loyalty/points', {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      const result = await res.json()
+      setLoyaltyPoints(result?.data?.currentPoints ?? 0)
+    } catch (e) {
+      console.error('Failed to fetch loyalty points:', e)
+    }
+  }
 
   // ✅ Auto-fill checkout form when user is logged in
   useEffect(() => {
@@ -463,7 +482,9 @@ export default function Checkout() {
   const subtotal = cartIsEmpty ? 0 : cartTotal
   const shipping = cartIsEmpty ? 0 : subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : 3
   const discountSafe = cartIsEmpty ? 0 : discountAmount
-  const total = Math.max(0, subtotal + shipping - discountSafe)
+  // ✅ UPDATED TOTAL WITH POINTS DISCOUNT
+  const pointsDiscountSafe = cartIsEmpty ? 0 : pointsDiscount
+  const total = Math.max(0, subtotal + shipping - discountSafe - pointsDiscountSafe)
 
   const applyDiscount = () => {
     if (cartIsEmpty) return
@@ -718,10 +739,10 @@ export default function Checkout() {
                       <input type="text" placeholder="City" value={shippingAddress.city} onChange={(e) => handleShippingChange('city', e.target.value)} className={`w-full border px-4 py-3 text-sm outline-none rounded-sm ${fieldErrors.city ? 'border-red-500' : 'border-gray-300 focus:border-gray-900'}`} />
                       {fieldErrors.city && <p className="text-red-500 text-xs mt-1">{fieldErrors.city}</p>}
                     </div>
-                    <input type="text" placeholder="Postal code" value={shippingAddress.postalCode} onChange={(e) => handleShippingChange('postalCode', e.target.value)} className="border border-gray-300 px-4 py-3 text-sm outline-none focus:border-gray-900 rounded-sm" />
+                    <input type="text" placeholder="Postal code" value={shippingAddress.postalCode} onChange={(e) => handleShippingChange('postalCode', e.target.value.replace(/\D/g, ''))} className="border border-gray-300 px-4 py-3 text-sm outline-none focus:border-gray-900 rounded-sm" />
                   </div>
                   <div>
-                    <input type="tel" placeholder="Phone" value={shippingAddress.phone} onChange={(e) => handleShippingChange('phone', e.target.value)} className={`w-full border px-4 py-3 text-sm outline-none rounded-sm ${fieldErrors.phone ? 'border-red-500' : 'border-gray-300 focus:border-gray-900'}`} />
+                    <input type="tel" placeholder="Phone" value={shippingAddress.phone} onChange={(e) => handleShippingChange('phone', e.target.value.replace(/\D/g, ''))} className={`w-full border px-4 py-3 text-sm outline-none rounded-sm ${fieldErrors.phone ? 'border-red-500' : 'border-gray-300 focus:border-gray-900'}`} />
                     {fieldErrors.phone && <p className="text-red-500 text-xs mt-1">{fieldErrors.phone}</p>}
                   </div>
                 </div>
@@ -820,6 +841,38 @@ export default function Checkout() {
                   })
                 )}
 
+                {/* ✅ LOYALTY POINTS SECTION */}
+                {isLoggedIn && loyaltyPoints >= 50 && (
+                  <div className="mb-4 pb-4 border-b border-gray-100">
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">🎁 Loyalty Points</p>
+                        <p className="text-xs text-gray-500">
+                          You have <span className="font-semibold text-gray-700">{loyaltyPoints} pts</span> = <span className="font-semibold text-green-600">${(loyaltyPoints / 10).toFixed(2)}</span> off available
+                        </p>
+                      </div>
+                    </div>
+                    {!pointsRedeemed ? (
+                      <button
+                        onClick={() => { setPointsDiscount(loyaltyPoints / 10); setPointsRedeemed(true) }}
+                        className="w-full py-2 bg-gray-900 text-white text-xs font-semibold rounded-sm hover:bg-gray-700 transition"
+                      >
+                        Redeem {loyaltyPoints} points for ${(loyaltyPoints / 10).toFixed(2)} off
+                      </button>
+                    ) : (
+                      <p className="text-green-600 text-xs flex items-center gap-1">
+                        <Tag size={12} /> Points redeemed! -${pointsDiscount.toFixed(2)} off
+                        <button
+                          onClick={() => { setPointsRedeemed(false); setPointsDiscount(0) }}
+                          className="text-gray-400 hover:text-gray-600 ml-2"
+                        >
+                          Remove
+                        </button>
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 {/* Discount Code */}
                 <div className="mb-4 pb-4 border-b border-gray-100">
                   <div className="flex gap-2">
@@ -850,6 +903,13 @@ export default function Checkout() {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between"><span className="text-gray-600">Subtotal</span><span>${subtotal.toFixed(2)}</span></div>
                   {discountSafe > 0 && <div className="flex justify-between text-green-600"><span>Discount</span><span>-${discountSafe.toFixed(2)}</span></div>}
+                  {/* ✅ POINTS DISCOUNT LINE */}
+                  {pointsDiscountSafe > 0 && (
+                    <div className="flex justify-between text-green-600">
+                      <span>Points Discount</span>
+                      <span>-${pointsDiscountSafe.toFixed(2)}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between"><span className="text-gray-600">Shipping</span><span className={shipping === 0 ? 'text-green-600' : ''}>{shipping === 0 ? 'FREE' : `$${shipping.toFixed(2)}`}</span></div>
                   <div className="border-t border-gray-200 pt-2 mt-2">
                     <div className="flex justify-between font-semibold text-base"><span>Total</span><span>${total.toFixed(2)}</span></div>

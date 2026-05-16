@@ -235,7 +235,25 @@ async getUserOrders(userId) {
     })
     if (!order) throw new Error('Order not found')
     return serialize(order)
+  },
+  async updateOrderStatus(orderId, status) {
+  const order = await prisma.orders.update({
+    where: { order_id: Number(orderId) },
+    data: { status },
+  })
+
+  // Auto-award loyalty points when order is delivered
+  if (status === 'delivered' && order.user_id) {
+    const { checkAndAwardPoints } = require('../loyalty/loyalty.service')
+    try {
+      await checkAndAwardPoints(BigInt(order.user_id), BigInt(order.order_id))
+    } catch (e) {
+      console.error('Loyalty points error:', e.message)
+    }
   }
+
+  return serialize(order)
+},
 }
 
 module.exports = orderService
