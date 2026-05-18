@@ -5,13 +5,14 @@ import apiClient from '../../shared/services/apiClient'
 import ReviewForm from '../reviews/ReviewForm'
 import { resolveImageUrl } from '../../shared/utils/imageUrl'
 
-export default function ProfileSidebar({ isOpen, onClose, onLogout, onContactOpen, user: userProp }) {
-  const [activeTab, setActiveTab] = useState('account')
+export default function ProfileSidebar({ isOpen, onClose, onLogout, onContactOpen, onNotifRead, user: userProp, notifCount = 0 }) {  const [activeTab, setActiveTab] = useState('account')
   const [orders, setOrders] = useState([])
   const [pointsData, setPointsData] = useState({ currentPoints: 0, transactions: [] })
   const [loading, setLoading] = useState(false)
   const [expandedOrder, setExpandedOrder] = useState(null)
   const [selectedReviewTarget, setSelectedReviewTarget] = useState(null)
+  const [notifications, setNotifications] = useState([])
+const [notifRead, setNotifRead] = useState(false)
 
   const storedUser = JSON.parse(localStorage.getItem('user') || 'null')
   const user = userProp || storedUser
@@ -44,16 +45,28 @@ export default function ProfileSidebar({ isOpen, onClose, onLogout, onContactOpe
     }
   }
 
+  const loadNotifications = async () => {
+    try {
+      const response = await apiClient.get('/notifications')
+      setNotifications(response?.data || [])
+    } catch (error) {
+      console.error('Failed to fetch notifications', error)
+      setNotifications([])
+    }
+  }
+
   useEffect(() => {
     if (!isOpen) return
     loadOrders()
     loadPoints()
+    loadNotifications()
   }, [isOpen])
 
-  useEffect(() => {
-    document.body.style.overflow = isOpen ? 'hidden' : ''
-    return () => { document.body.style.overflow = '' }
-  }, [isOpen])
+useEffect(() => {
+  document.body.style.overflow = isOpen ? 'hidden' : ''
+  if (!isOpen) setNotifRead(false)
+  return () => { document.body.style.overflow = '' }
+}, [isOpen])
 
   const memberSince = useMemo(
     () => (user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'),
@@ -107,6 +120,19 @@ export default function ProfileSidebar({ isOpen, onClose, onLogout, onContactOpe
             >
               My Orders
             </button>
+<button
+  onClick={() => { setActiveTab('notifications'); onNotifRead?.(); setNotifRead(true) }}
+  className={`relative px-4 py-2 text-sm font-medium transition-colors duration-300 ${
+    activeTab === 'notifications' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+  }`}
+>
+  Notifications
+  {notifCount > 0 && !notifRead && (
+    <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+      {notifCount > 9 ? '9+' : notifCount}
+    </span>
+  )}
+</button>
           </div>
         </div>
 
@@ -169,7 +195,9 @@ export default function ProfileSidebar({ isOpen, onClose, onLogout, onContactOpe
                     pointsData.transactions.map((tx) => (
                       <div key={tx.transaction_id || `${tx.type}-${tx.created_at}`} className="border border-gray-200 p-3 rounded-sm">
                         <div className="flex items-center justify-between">
-                          <p className="text-sm font-medium text-gray-900">{tx.type || 'transaction'}</p>
+                          <p className="text-sm font-medium text-gray-900">
+                            {tx.type === 'earn' ? '🎁 Points Earned' : tx.type === 'redeem' ? '🛍️ Points Redeemed' : tx.type || 'Transaction'}
+                          </p>
                           <p className="text-sm font-medium text-gray-900">{tx.points > 0 ? '+' : ''}{tx.points} pts</p>
                         </div>
                         <p className="text-xs text-gray-500 mt-1">{new Date(tx.created_at || Date.now()).toLocaleString()}</p>
@@ -178,6 +206,22 @@ export default function ProfileSidebar({ isOpen, onClose, onLogout, onContactOpe
                   )}
                 </div>
               </div>
+            </div>
+          ) : activeTab === 'notifications' ? (
+            <div className="space-y-3">
+              {notifications.length === 0 ? (
+                <p className="text-sm text-gray-500">No notifications yet.</p>
+              ) : (
+notifications.map((n) => (
+  <div key={n.notif_id} className="border border-gray-200 p-4 rounded-sm">
+    <p className="text-sm text-gray-800">{n.message}</p>
+    <p className="text-xs text-gray-400 mt-1">
+{new Date(n.sent_at?.replace('Z', '') + 'Z').toLocaleDateString('en-US', {        month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+      })}
+    </p>
+  </div>
+))
+              )}
             </div>
           ) : (
             loading ? (
@@ -196,10 +240,9 @@ export default function ProfileSidebar({ isOpen, onClose, onLogout, onContactOpe
                         <p className="text-sm font-medium text-gray-900 mb-1">Order #{String(order.order_id || order.id)}</p>
                         <p className="text-sm text-gray-600">Date: {new Date(order.order_date || order.created_at || order.createdAt || Date.now()).toLocaleDateString()}</p>
                         <p className="text-sm text-gray-600">Status: {order.status || 'pending'}</p>
-                        <p className="text-sm text-gray-600">Total: ${Number(order.total || order.total_price || order.amount || 0).toFixed(2)}</p>
-                        <p className="text-xs text-gray-500 mt-1">Points earned: +{Math.floor(Number(order.total || order.total_price || order.amount || 0) / 100) * 10}</p>
+                        <p className="text-sm text-gray-600">Total: ${Number(order.payments?.amount || order.payments?.[0]?.amount || 0).toFixed(2)}</p>
+                        {expandedOrder === index ? <ChevronUp size={18} className="text-gray-400" /> : <ChevronDown size={18} className="text-gray-400" />}
                       </div>
-                      {expandedOrder === index ? <ChevronUp size={18} className="text-gray-400" /> : <ChevronDown size={18} className="text-gray-400" />}
                     </button>
 
                     {expandedOrder === index && (
@@ -211,22 +254,12 @@ export default function ProfileSidebar({ isOpen, onClose, onLogout, onContactOpe
                             <div key={item.order_item_id || item.product_id} className="flex items-center justify-between gap-3">
                               <div className="flex items-center gap-2">
                                 <img
-                                  src={
-                                    resolveImageUrl(
-                                      item.image ||
-                                        item.products?.image ||
-                                        item.products?.product_variants?.[0]?.images?.[0]
-                                    ) || ''
-                                  }
+                                  src={resolveImageUrl(item.image || item.products?.image || item.products?.product_variants?.[0]?.images?.[0]) || ''}
                                   alt={item.products?.name || item.name || 'Product'}
                                   className="w-10 h-10 rounded-sm object-cover bg-gray-100"
                                   loading="lazy"
                                   decoding="async"
-                                  onError={(e) => {
-                                    const img = e.currentTarget
-                                    img.onerror = null
-                                    img.src = ''
-                                  }}
+                                  onError={(e) => { const img = e.currentTarget; img.onerror = null; img.src = '' }}
                                 />
                                 <div>
                                   <p className="text-sm text-gray-900">{item.products?.name || item.name || 'Product'}</p>

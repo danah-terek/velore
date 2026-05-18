@@ -30,18 +30,41 @@ export default function Navbar({ onCartOpen, onContactOpen }) {
   const [scrolled, setScrolled] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
+  const [notifCount, setNotifCount] = useState(0)
   const inputRef = useRef(null)
   const searchTimeoutRef = useRef(null)
   const location = useLocation()
 
-  const { favorites } = useFavorites();
-  const isHome = location.pathname === "/";
-  const isTransparent = isHome && !scrolled;
+  const { favorites } = useFavorites()
+  const isHome = location.pathname === '/'
+  const isTransparent = isHome && !scrolled
 
   useEffect(() => {
     const token = localStorage.getItem('token') || sessionStorage.getItem('token')
     setIsLoggedIn(!!token)
   }, [location.pathname])
+
+useEffect(() => {
+  if (!isLoggedIn) return
+  const fetchNotifs = () => {
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token')
+    fetch('/api/v1/notifications', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(result => {
+        const all = result?.data || []
+        const lastRead = localStorage.getItem('notif_last_read')
+        const unread = lastRead
+? all.filter(n => new Date(n.sent_at?.replace('Z', '') + 'Z') > new Date(lastRead))          : all
+        setNotifCount(unread.length)
+      })
+      .catch(() => {})
+  }
+  fetchNotifs()
+  const interval = setInterval(fetchNotifs, 30000)
+  return () => clearInterval(interval)
+}, [isLoggedIn])
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -224,9 +247,9 @@ export default function Navbar({ onCartOpen, onContactOpen }) {
                       key={product.product_id}
                       to={`/product/${product.product_id}`}
                       onClick={() => {
-                        setSearchOpen(false);
-                        setSearchQuery("");
-                        setSearchResults([]);
+                        setSearchOpen(false)
+                        setSearchQuery('')
+                        setSearchResults([])
                       }}
                       className="flex items-center gap-3 p-3 border-b border-[rgba(var(--velore-border-soft),0.7)] last:border-b-0 hover:bg-[rgba(var(--velore-accent),0.06)]"
                     >
@@ -265,9 +288,14 @@ export default function Navbar({ onCartOpen, onContactOpen }) {
               <button
                 onClick={() => setProfileOpen(true)}
                 title="My Profile"
-                className={`hidden md:flex p-1 transition-colors bg-transparent border-none cursor-pointer ${isTransparent ? "text-white hover:text-white/70" : "text-gray-700 hover:text-black"}`}
+                className={`hidden md:flex p-1 transition-colors bg-transparent border-none cursor-pointer relative ${isTransparent ? "text-white hover:text-white/70" : "text-gray-700 hover:text-black"}`}
               >
                 <User size={18} />
+                {notifCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
+                    {notifCount}
+                  </span>
+                )}
               </button>
             ) : (
               <Link
@@ -290,12 +318,15 @@ export default function Navbar({ onCartOpen, onContactOpen }) {
               )}
             </Link>
 
+            {/* Desktop cart */}
             <button
               onClick={handleCartClick}
               className={`hidden md:flex p-1 transition-colors bg-transparent border-none cursor-pointer ${isTransparent ? "text-white hover:text-white/70" : "text-gray-700 hover:text-black"}`}
             >
               <ShoppingCart size={18} />
             </button>
+
+            {/* Mobile cart */}
             <button
               onClick={handleCartClick}
               className={`md:hidden p-1 transition-colors ${isTransparent ? "text-white hover:text-white/70" : "text-gray-700 hover:text-black"}`}
@@ -345,10 +376,15 @@ export default function Navbar({ onCartOpen, onContactOpen }) {
             <div className="flex items-center gap-4 pt-2 border-t border-gray-200">
               {isLoggedIn ? (
                 <button
-                  onClick={() => { setMenuOpen(false); setProfileOpen(true); }}
+                  onClick={() => { setMenuOpen(false); setProfileOpen(true) }}
                   className="relative bg-transparent border-none cursor-pointer"
                 >
                   <User size={18} className={isTransparent ? "text-white" : "text-gray-700"} />
+                  {notifCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
+                      {notifCount}
+                    </span>
+                  )}
                 </button>
               ) : (
                 <Link to="/login" onClick={() => setMenuOpen(false)}>
@@ -377,12 +413,18 @@ export default function Navbar({ onCartOpen, onContactOpen }) {
         )}
       </nav>
 
-      <ProfileSidebar
-        isOpen={profileOpen}
-        onClose={() => setProfileOpen(false)}
-        onLogout={handleLogout}
-        onContactOpen={onContactOpen}
-      />
+<ProfileSidebar
+  isOpen={profileOpen}
+  onClose={() => {
+    setProfileOpen(false)
+    setNotifCount(0)
+    localStorage.setItem('notif_last_read', new Date().toISOString())
+  }}
+  onLogout={handleLogout}
+  onContactOpen={onContactOpen}
+  onNotifRead={() => setNotifCount(0)}
+  notifCount={notifCount}
+/>
     </>
   )
 }

@@ -423,15 +423,40 @@ const adminService = {
     const order = await prisma.orders.findUnique({ where: { order_id: Number(orderId) } })
     if (!order) throw new Error('Order not found')
 
-    const updated = await prisma.orders.update({
-      where: { order_id: Number(orderId) },
-      data: { status }
-    })
+const updated = await prisma.orders.update({
+  where: { order_id: Number(orderId) },
+  data: { status }
+})
 
-    await adminService.log(adminId, 'UPDATE_ORDER_STATUS', `Order ${orderId} => ${status}`)
+console.log('🔍 Status check:', status, 'User ID:', updated.user_id)
+if (status === 'delivered' && updated.user_id) {
+  console.log('🎁 Awarding loyalty points...')
+  const { checkAndAwardPoints } = require('../loyalty/loyalty.service')
+  const { sendNotification } = require('../notifications/notification.service')
+  try {
+    const result = await checkAndAwardPoints(BigInt(updated.user_id), BigInt(updated.order_id))
+    console.log('✅ Points check done !',result)
 
-    return { id: updated.order_id.toString(), status: updated.status }
-  },
+    if (result?.pointsAwarded) {
+      await sendNotification(
+        updated.user_id,
+        `🎁 You earned 100 points! You now have ${result.totalPoints} points total.`,
+        'loyalty_earn'
+      )
+    } else {
+      await sendNotification(
+        updated.user_id,
+        `⭐ You're ${result.ordersUntilNext} order(s) away from your next 100 points reward!`,
+        'loyalty_progress'
+      )
+    }
+  } catch (e) {
+    console.error('Loyalty/notification error:', e.message, e.stack)
+  }
+}
+await adminService.log(adminId, 'UPDATE_ORDER_STATUS', `Order ${orderId} => ${status}`)
+
+return { id: updated.order_id.toString(), status: updated.status }},
 
   // ─── Audit Logs ────────────────────────────────────────────
 

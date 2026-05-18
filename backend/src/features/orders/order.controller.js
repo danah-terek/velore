@@ -32,7 +32,16 @@ const orderController = {
     } catch (error) {
       res.status(404).json({ success: false, message: error.message, errors: [] })
     }
+  },
+  async updateOrderStatus(req, res) {
+  try {
+    const { status } = req.body
+    const order = await orderService.updateOrderStatus(req.params.id, status)
+    res.json({ success: true, message: `Order marked as ${status}`, data: order })
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message, errors: [] })
   }
+},
 }
 
 module.exports = orderController
