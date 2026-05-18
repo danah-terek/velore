@@ -76,8 +76,6 @@ async function main() {
   const adminHash = await bcrypt.hash(DEMO.adminPassword, 10)
   const admin = await prisma.admin.upsert({
     where: { email: DEMO.adminEmail },
-    // Keep legacy demo admin as "admin" role for backward compatibility.
-    // CRM should prefer creating staff accounts with role "staff_admin".
     update: { password_hash: adminHash, role_id: adminRole.role_id },
     create: {
       email: DEMO.adminEmail,
@@ -87,7 +85,6 @@ async function main() {
     }
   })
 
-  // Keep legacy superadmin if it already exists (don’t delete/overwrite blindly)
   await prisma.admin.upsert({
     where: { email: 'superadmin@velore.com' },
     update: {},
@@ -244,7 +241,6 @@ async function main() {
     }
   ]
 
-  // Add more products (12–18 total) by expanding specs below
   const extraSpecs = [
     {
       name: 'Maison Soft‑Edge Kids Frames',
@@ -542,10 +538,16 @@ async function main() {
     })
   }
 
-  // Seed approved reviews for created orders only (keeps idempotent)
+  // FIXED: Seed approved reviews - check for existing user+product combo
   for (const orderId of createdOrderIds) {
-    const existingReview = await prisma.reviews.findFirst({ where: { order_id: orderId } })
+    const existingReview = await prisma.reviews.findFirst({ 
+      where: { 
+        user_id: u1, 
+        product_id: seededProductIds[0] 
+      } 
+    })
     if (existingReview) continue
+    
     await prisma.reviews.create({
       data: {
         order_id: orderId,
@@ -579,33 +581,22 @@ async function main() {
     }
   }
 
-  // eslint-disable-next-line no-console
   console.log('✅ Seed finished')
-  // eslint-disable-next-line no-console
-  console.log('• roles:', 3)
-  // eslint-disable-next-line no-console
+  console.log('• roles:', Object.keys(await prisma.role.findMany()).length)
   console.log('• admin:', admin.email)
-  // eslint-disable-next-line no-console
   console.log('• customers:', DEMO.customers.map((c) => c.email).join(', '))
-  // eslint-disable-next-line no-console
   console.log('• categories:', Object.values(categories).length)
-  // eslint-disable-next-line no-console
   console.log('• brands:', Object.values(brands).length)
-  // eslint-disable-next-line no-console
   console.log('• products seeded/updated:', allSpecs.length)
-  // eslint-disable-next-line no-console
   console.log('• blogs seeded/updated:', blogSpecs.length)
-  // eslint-disable-next-line no-console
   console.log('• demo image paths use /uploads/products/demo/*.svg and /uploads/blogs/demo/*.svg')
 }
 
 main()
   .catch((e) => {
-    // eslint-disable-next-line no-console
     console.error('Seed error:', e)
     process.exitCode = 1
   })
   .finally(async () => {
     await prisma.$disconnect()
   })
-

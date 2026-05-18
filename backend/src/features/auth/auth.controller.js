@@ -7,6 +7,8 @@ const authController = {
     try {
       // ✅ Check validation results
       const errors = validationResult(req)
+      console.log('Request body:', req.body)
+console.log('Validation errors:', errors.array())
       if (!errors.isEmpty()) {
         return res.status(400).json({
           success: false,
