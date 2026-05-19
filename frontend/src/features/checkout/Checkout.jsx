@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ChevronLeft, Truck, Shield, RotateCcw, Tag, CheckCircle, X } from 'lucide-react'
 import cartService from '../cart/cartService'
+import useCurrency from '../../shared/hooks/useCurrency'
 import orderService from './orderService'
 
 const COUNTRIES = ['Lebanon', 'United States', 'Canada', 'United Kingdom', 'France', 'UAE']
@@ -348,6 +349,7 @@ function WhishPaymentModal({ total, onClose, onSubmit }) {
 export default function Checkout() {
   const navigate = useNavigate()
   const [cartItems, setCartItems] = useState([])
+  const { formatPrice } = useCurrency()
   const [cartTotal, setCartTotal] = useState(0)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -486,14 +488,23 @@ export default function Checkout() {
   const pointsDiscountSafe = cartIsEmpty ? 0 : pointsDiscount
   const total = Math.max(0, subtotal + shipping - discountSafe - pointsDiscountSafe)
 
-  const applyDiscount = () => {
-    if (cartIsEmpty) return
-    if (discountCode.toUpperCase() === 'WELCOME10' && !discountApplied) {
-      setDiscountAmount(subtotal * 0.1); setDiscountApplied(true)
-    } else if (discountCode.toUpperCase() === 'FREESHIP' && !discountApplied) {
-      setDiscountAmount(shipping); setDiscountApplied(true)
-    } else {
-      alert('Invalid discount code')
+const applyDiscount = async () => {
+    if (cartIsEmpty || !discountCode) return
+    try {
+      const res = await fetch('/api/v1/discounts/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: discountCode, orderTotal: subtotal })
+      })
+      const result = await res.json()
+      if (result.valid) {
+        setDiscountAmount(result.discountAmount)
+        setDiscountApplied(true)
+      } else {
+        alert(result.message || 'Invalid discount code')
+      }
+    } catch (e) {
+      alert('Failed to apply discount code. Please try again.')
     }
   }
 
@@ -530,6 +541,8 @@ export default function Checkout() {
     
     const payload = {
       payment_method: selectedPayment,
+      discount_code: discountApplied ? discountCode : null,
+discount_amount: discountSafe + pointsDiscountSafe,
       email: contactInfo.email,
       name: `${shippingAddress.firstName} ${shippingAddress.lastName}`,
       phone: shippingAddress.phone,
@@ -628,9 +641,9 @@ export default function Checkout() {
 
   const ctaLabel = () => {
     if (loading) return 'Processing...'
-    if (selectedPayment === 'whish') return `PAY WITH WHISH  •  $${total.toFixed(2)}`
-    if (selectedPayment === 'mastercard') return `PAY BY CARD  •  $${total.toFixed(2)}`
-    return `CONFIRM ORDER  •  $${total.toFixed(2)}`
+   if (selectedPayment === 'whish') return `PAY WITH WHISH  •  ${formatPrice(total)}`
+    if (selectedPayment === 'mastercard') return `PAY BY CARD  •  ${formatPrice(total)}`
+    return `CONFIRM ORDER  •  ${formatPrice(total)}`
   }
 
   return (
@@ -835,8 +848,7 @@ export default function Checkout() {
                             </div>
                           )}
                         </div>
-                        <p className="text-sm font-semibold">${(itemPrice * item.quantity).toFixed(2)}</p>
-                      </div>
+<p className="text-sm font-semibold">{formatPrice(itemPrice * item.quantity)}</p>                      </div>
                     )
                   })
                 )}
@@ -882,13 +894,8 @@ export default function Checkout() {
                   
                   {/* ✅ Discount hints - shown only when no discount is applied */}
                   {!discountApplied && (
-                    <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
-                      <p className="text-xs text-gray-400">
-                        Use <span className="font-mono font-medium text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">WELCOME10</span> for 10% off
-                      </p>
-                      <p className="text-xs text-gray-400">
-                        Use <span className="font-mono font-medium text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">FREESHIP</span> for free shipping
-                      </p>
+                    <div className="mt-2">
+                      <p className="text-xs text-gray-400">Enter a valid discount code to get a discount</p>
                     </div>
                   )}
                   
@@ -901,19 +908,17 @@ export default function Checkout() {
                 </div>
 
                 <div className="space-y-2 text-sm">
-                  <div className="flex justify-between"><span className="text-gray-600">Subtotal</span><span>${subtotal.toFixed(2)}</span></div>
-                  {discountSafe > 0 && <div className="flex justify-between text-green-600"><span>Discount</span><span>-${discountSafe.toFixed(2)}</span></div>}
-                  {/* ✅ POINTS DISCOUNT LINE */}
+<div className="flex justify-between"><span className="text-gray-600">Subtotal</span><span>{formatPrice(subtotal)}</span></div>
+{discountSafe > 0 && <div className="flex justify-between text-green-600"><span>Discount</span><span>-{formatPrice(discountSafe)}</span></div>}                  {/* ✅ POINTS DISCOUNT LINE */}
                   {pointsDiscountSafe > 0 && (
                     <div className="flex justify-between text-green-600">
                       <span>Points Discount</span>
-                      <span>-${pointsDiscountSafe.toFixed(2)}</span>
+<span>-{formatPrice(pointsDiscountSafe)}</span>
                     </div>
                   )}
-                  <div className="flex justify-between"><span className="text-gray-600">Shipping</span><span className={shipping === 0 ? 'text-green-600' : ''}>{shipping === 0 ? 'FREE' : `$${shipping.toFixed(2)}`}</span></div>
+                  <div className="flex justify-between"><span className="text-gray-600">Shipping</span><span className={shipping === 0 ? 'text-green-600' : ''}>{shipping === 0 ? 'FREE' : formatPrice(shipping)}</span></div>
                   <div className="border-t border-gray-200 pt-2 mt-2">
-                    <div className="flex justify-between font-semibold text-base"><span>Total</span><span>${total.toFixed(2)}</span></div>
-                  </div>
+<div className="flex justify-between font-semibold text-base"><span>Total</span><span>{formatPrice(total)}</span></div>                  </div>
                 </div>
 
                 <div className="flex items-center justify-center gap-4 my-4 py-3 border-y border-gray-100">

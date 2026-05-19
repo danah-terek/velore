@@ -38,7 +38,6 @@ async function getGuestUserId() {
   let guestUser = await prisma.users.findUnique({ where: { email: GUEST_EMAIL } })
   
   if (!guestUser) {
-    // Create the guest user if it doesn't exist yet
     guestUser = await prisma.users.create({
       data: {
         email: GUEST_EMAIL,
@@ -53,7 +52,7 @@ async function getGuestUserId() {
 }
 
 const orderService = {
-  async createOrder(userId, { address_id, payment_method, email, name, phone, address: guestAddress, guestItems }) {
+  async createOrder(userId, { address_id, payment_method, email, name, phone, address: guestAddress, guestItems, discount_amount }) {
     const isGuest = !userId
     const resolvedUserId = userId ? Number(userId) : await getGuestUserId()
 
@@ -62,7 +61,6 @@ const orderService = {
       if (!guestAddress) throw new Error('Shipping address is required.')
     }
 
-    // Load cart for logged-in user
     const cart = isGuest
       ? null
       : await prisma.carts.findUnique({
@@ -75,9 +73,7 @@ const orderService = {
       throw new Error('Your cart is empty. Please add items before checking out.')
     }
 
-    // Transaction: validate stock, decrement stock, create order+items, clear cart (if any), create payment
     const result = await prisma.$transaction(async (tx) => {
-      // Resolve items against DB (never trust frontend price)
       const resolved = []
       for (const item of sourceItems) {
         const productIdNum = Number(item.product_id || item.productId)
@@ -103,7 +99,6 @@ const orderService = {
         })
       }
 
-      // Deduct stock with guard (prevents negative stock)
       for (const r of resolved) {
         const updated = await tx.product_variants.updateMany({
           where: {
@@ -113,7 +108,6 @@ const orderService = {
           data: { stock_quantity: { decrement: r.quantity } },
         })
         if (!updated || updated.count !== 1) {
-          // Re-read to provide accurate message
           const v2 = await tx.product_variants.findUnique({
             where: { variant_id: Number(r.variant_id) },
             select: { stock_quantity: true, products: { select: { name: true } } },
@@ -123,7 +117,6 @@ const orderService = {
         }
       }
 
-      // Resolve address inside tx
       let addressId
       if (!isGuest && address_id) {
         const existing = await tx.addresses.findFirst({
@@ -145,10 +138,10 @@ const orderService = {
         addressId = created.address_id
       }
 
-      // Totals from resolved items
       const subtotal = resolved.reduce((sum, r) => sum + (r.unit_price * r.quantity), 0)
       const shippingCost = subtotal >= 50 ? 0 : 3
-      const total = subtotal + shippingCost
+      const discountAmount = parseFloat(discount_amount || 0)
+      const total = Math.max(0, subtotal + shippingCost - discountAmount)
 
       const orderNumber = `VEL-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`
 
@@ -201,28 +194,28 @@ const orderService = {
     }
   },
 
-async getUserOrders(userId) {
-  const orders = await prisma.orders.findMany({
-    where: { user_id: Number(userId) },
-    include: {
-      orders_items: {
-        include: {
-          products: {
-            include: {
-              categories: true,
-              brands: true
-            }
-          },
-          product_variants: true
-        }
+  async getUserOrders(userId) {
+    const orders = await prisma.orders.findMany({
+      where: { user_id: Number(userId) },
+      include: {
+        orders_items: {
+          include: {
+            products: {
+              include: {
+                categories: true,
+                brands: true
+              }
+            },
+            product_variants: true
+          }
+        },
+        payments: true,
+        addresses: true
       },
-      payments: true,
-      addresses: true
-    },
-    orderBy: { order_date: 'desc' }
-  })
-  return serialize(orders)
-},
+      orderBy: { order_date: 'desc' }
+    })
+    return serialize(orders)
+  },
 
   async getOrderById(orderId) {
     const order = await prisma.orders.findUnique({
@@ -236,24 +229,24 @@ async getUserOrders(userId) {
     if (!order) throw new Error('Order not found')
     return serialize(order)
   },
+
   async updateOrderStatus(orderId, status) {
-  const order = await prisma.orders.update({
-    where: { order_id: Number(orderId) },
-    data: { status },
-  })
+    const order = await prisma.orders.update({
+      where: { order_id: Number(orderId) },
+      data: { status },
+    })
 
-  // Auto-award loyalty points when order is delivered
-  if (status === 'delivered' && order.user_id) {
-    const { checkAndAwardPoints } = require('../loyalty/loyalty.service')
-    try {
-      await checkAndAwardPoints(BigInt(order.user_id), BigInt(order.order_id))
-    } catch (e) {
-      console.error('Loyalty points error:', e.message)
+    if (status === 'delivered' && order.user_id) {
+      const { checkAndAwardPoints } = require('../loyalty/loyalty.service')
+      try {
+        await checkAndAwardPoints(BigInt(order.user_id), BigInt(order.order_id))
+      } catch (e) {
+        console.error('Loyalty points error:', e.message)
+      }
     }
-  }
 
-  return serialize(order)
-},
+    return serialize(order)
+  },
 }
 
 module.exports = orderService

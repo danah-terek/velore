@@ -18,6 +18,7 @@ const CRMBlogs        = lazy(() => import('./blogs/CRMBlogs'))
 const CRMAnalytics    = lazy(() => import('./analytics/CRMAnalytics'))
 const CRMStaff        = lazy(() => import('./staff/CRMStaff'))
 const CRMSettings     = lazy(() => import('./settings/CRMSettings'))
+const CRMDiscounts = lazy(() => import('./discounts/CRMDiscounts'))
 
 // ─── Clears admin session whenever the user leaves /admin entirely ────────────
 function AdminSessionGuard() {
@@ -53,7 +54,7 @@ function AdminRoutes() {
             <Route path="customers"        element={<CRMCustomers />} />
             <Route path="reviews"          element={<CRMReviews />} />
             <Route path="blogs"            element={<CRMBlogs />} />
-
+            <Route path="discounts" element={<CRMDiscounts />} />
             <Route element={<AdminRoleGuard allow={['super_admin']} />}>
               <Route path="analytics" element={<CRMAnalytics />} />
               <Route path="staff"     element={<CRMStaff />} />

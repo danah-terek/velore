@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Check, Heart } from 'lucide-react'
 import { useFavorites } from '../../contexts'
+import useCurrency from '../../hooks/useCurrency'
 import { resolveImageUrl } from '../../utils/imageUrl'
 import cartService from '../../../features/cart/cartService'
 
@@ -18,6 +19,7 @@ export default function EyewearCard({
   colors,
 }) {
   const { toggleFavorite, isFavorite } = useFavorites()
+  const { formatPrice } = useCurrency()
   const [addingToCart, setAddingToCart] = useState(false)
   const [justAdded, setJustAdded] = useState(false)
   
@@ -130,8 +132,8 @@ export default function EyewearCard({
 
         <div className="px-3 md:px-4 mb-3 md:mb-4">
           <h3 className="font-medium text-xs md:text-sm text-[rgb(var(--velore-fg))] mb-1 line-clamp-2">{name}</h3>
-          <p className="text-xs md:text-sm v-price mb-1">${parseFloat(price).toFixed(2)}</p>
-          <p className="text-xs text-[rgba(var(--velore-fg),0.6)] hidden md:block line-clamp-2">{description}</p>
+<p className="text-xs md:text-sm v-price mb-1">{formatPrice(price)}</p>          
+<p className="text-xs text-[rgba(var(--velore-fg),0.6)] hidden md:block line-clamp-2">{description}</p>
         </div>
       </Link>
 

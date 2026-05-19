@@ -2,6 +2,7 @@ import { useParams, Link, useNavigate } from "react-router-dom"
 import { useState, useEffect } from "react"
 import { Check } from 'lucide-react'
 import shopService from "../shop/shopService"
+import useCurrency from '../../shared/hooks/useCurrency'
 import cartService from "../cart/cartService"
 import sizeguide from '../../assets/sizeguide.png'
 import { resolveImageUrl } from '../../shared/utils/imageUrl'
@@ -147,7 +148,7 @@ function PrescriptionSection({ isLenses, prescription, setPrescription }) {
 export default function ProductDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-
+const { formatPrice } = useCurrency()
   const [product, setProduct] = useState(null)
   const [loading, setLoading] = useState(true)
   const [selectedImage, setSelectedImage] = useState(0)
@@ -338,10 +339,8 @@ export default function ProductDetail() {
         <div className="flex flex-col gap-4">
           <div>
             <h1 className="text-xl md:text-2xl font-semibold text-gray-900 leading-snug mb-2">{product.name}</h1>
-            <p className="text-lg font-medium text-gray-900">${finalPrice}</p>
-            {product.compare_price && (
-              <p className="text-sm text-gray-400 line-through">${parseFloat(product.compare_price).toFixed(2)}</p>
-            )}
+<p className="text-lg font-medium text-gray-900">{formatPrice(finalPrice)}</p>            {product.compare_price && (
+<p className="text-sm text-gray-400 line-through">{formatPrice(product.compare_price)}</p>            )}
           </div>
 
           {product.brands && (

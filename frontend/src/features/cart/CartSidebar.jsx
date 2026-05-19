@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { X, Minus, Plus, Trash2 } from 'lucide-react'
 import cartService from './cartService'
+import useCurrency from '../../shared/hooks/useCurrency'
 import { resolveImageUrl } from '../../shared/utils/imageUrl'
 
 const FREE_SHIPPING_THRESHOLD = 50
 
 function CartItem({ item, onRemove, onQuantityChange, isGuest }) {
-  const name = item.products?.name || item.product?.name || item.name || 'Product'
+  const { formatPrice } = useCurrency()
+    const name = item.products?.name || item.product?.name || item.name || 'Product'
   const price = parseFloat(item.products?.price || item.product?.price || item.price || 0)
   const imageRaw = item.products?.product_variants?.[0]?.images?.[0] || item.product?.image || item.image || null
   const image = resolveImageUrl(imageRaw) || null
@@ -110,7 +112,7 @@ function CartItem({ item, onRemove, onQuantityChange, isGuest }) {
               <Plus size={14} />
             </button>
           </div>
-          <p className="text-sm font-semibold">${(price * quantity).toFixed(2)}</p>
+          <p className="text-sm font-semibold">{formatPrice(price * quantity)}</p>
         </div>
       </div>
     </div>
@@ -118,6 +120,7 @@ function CartItem({ item, onRemove, onQuantityChange, isGuest }) {
 }
 
 export default function CartSidebar({ isOpen, onClose }) {
+  const { formatPrice } = useCurrency()
   const [items, setItems] = useState([])
   const [isGuest, setIsGuest] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
@@ -294,7 +297,7 @@ export default function CartSidebar({ isOpen, onClose }) {
             {amountToFreeShipping > 0 ? (
               <>
                 <p className="text-sm text-gray-600 mb-2">
-                  Spend <span className="font-semibold">${amountToFreeShipping.toFixed(2)}</span> more for free shipping!
+                  Spend <span className="font-semibold">{formatPrice(amountToFreeShipping)}</span> more for free shipping!
                 </p>
                 <div className="h-1.5 bg-gray-200 rounded-full">
                   <div
@@ -354,7 +357,7 @@ export default function CartSidebar({ isOpen, onClose }) {
           <div className="px-6 py-5 border-t border-gray-200">
             <div className="flex items-center justify-between mb-4">
               <span className="text-sm text-gray-600">Subtotal</span>
-              <span className="text-lg font-semibold text-gray-900">${subtotal.toFixed(2)}</span>
+               <span className="text-lg font-semibold text-gray-900">{formatPrice(subtotal)}</span>
             </div>
             {hasStockIssues ? (
               <button

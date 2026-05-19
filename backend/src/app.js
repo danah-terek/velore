@@ -16,6 +16,7 @@ const adminRoutes = require('./features/admin/admin.routes')
 const blogRoutes = require('./features/blog')
 const paymentRoutes = require('./features/payments/payment.routes')
 const notificationRoutes = require('./features/notifications/notification.routes')
+const discountRoutes = require('./features/discounts/discount.routes')
 
 const app = express()
 app.set('json replacer', (_, v) => typeof v === 'bigint' ? v.toString() : v)
@@ -69,7 +70,7 @@ app.use('/api/v1/blogs', blogRoutes)
 app.use('/api/v1/payments', paymentRoutes)
 app.use('/api/ai-advisor', require('./features/ai-advisor'));
 app.use('/api/v1/notifications', notificationRoutes)
-
+app.use('/api/v1/discounts', discountRoutes)
 
 app.use('/api/v1/cart', require('./features/cart/cart.routes'))
 app.use('/api/v1/orders', require('./features/orders/order.routes'))
