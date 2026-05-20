@@ -12,6 +12,7 @@ import {
   Star,
   Tag,
   Users,
+  Megaphone,
   X,
 } from 'lucide-react'
 
@@ -50,6 +51,7 @@ export default function CRMSidebar({ mobileOpen, onClose }) {
     { to: '/admin/customers', label: 'Customers', icon: Users, show: true },
     { to: '/admin/reviews', label: 'Reviews', icon: Star, show: true },
     { to: '/admin/blogs', label: 'Blogs', icon: Newspaper, show: true },
+    { to: '/admin/banner', label: 'Banner', icon: Megaphone, show: true },
     { to: '/admin/discounts', label: 'Discounts', icon: Tag, show: true },
     { to: '/admin/staff', label: 'Staff', icon: ShieldCheck, show: isSuper },
     { to: '/admin/settings', label: 'Settings', icon: Settings, show: isSuper },

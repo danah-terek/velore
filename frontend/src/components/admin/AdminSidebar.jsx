@@ -8,7 +8,8 @@ import {
   BarChart3,
   ScrollText,
   UserCog,
-  LogOut
+  LogOut,
+  Megaphone
 } from 'lucide-react'
 
 const superAdminMenu = [
@@ -19,6 +20,7 @@ const superAdminMenu = [
   { id: 'products', label: 'Products', icon: Box },
   { id: 'reviews', label: 'Reviews', icon: ClipboardList },
   { id: 'blogs', label: 'Blogs', icon: FileText },
+  { id: 'banner', label: 'Top Banner', icon: Megaphone },
   { id: 'audit', label: 'Audit Logs', icon: ScrollText },
   { id: 'analytics', label: 'Analytics', icon: BarChart3 }
 ]
@@ -28,6 +30,7 @@ const adminMenu = [
   { id: 'products', label: 'Products', icon: Box },
   { id: 'reviews', label: 'Reviews', icon: ClipboardList },
   { id: 'blogs', label: 'Blogs', icon: FileText },
+  { id: 'banner', label: 'Top Banner', icon: Megaphone },
   { id: 'customers', label: 'Customers', icon: Users }
 ]
 

@@ -6,6 +6,7 @@ import { FavoritesProvider, useFavorites } from './shared/contexts'
 import { AIAdvisorChat } from './features/ai-advisor'
 
 import TryOn from "./features/tryon/TryOn";
+import TopBanner from './shared/components/layout/TopBanner'
 
 const Home = lazy(() => import('./features/home/Home'))
 const Shop = lazy(() => import('./features/shop/Shop'))
@@ -68,6 +69,7 @@ function PublicLayout() {
 
   return (
     <>
+    <TopBanner />
       <Navbar onCartOpen={() => setCartOpen(true)} onContactOpen={() => setContactOpen(true)} />
 
       <Suspense fallback={null}>

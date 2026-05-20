@@ -10,6 +10,7 @@ import ReviewApproval from '../components/admin/ReviewApproval'
 import BlogManager from '../components/admin/BlogManager'
 import AnalyticsPage from '../components/admin/AnalyticsPage'
 import AuditLogs from '../components/admin/AuditLogs'
+import BannerEditor from '../components/admin/BannerEditor'
 
 function readAdminRole() {
   try {
@@ -93,6 +94,7 @@ export default function Admin() {
             {activeTab === 'reviews' && <ReviewApproval />}
             {activeTab === 'blogs' && <BlogManager />}
             {activeTab === 'audit' && role === 'super_admin' && <AuditLogs />}
+            {activeTab === 'banner' && <BannerEditor />}
             {activeTab === 'analytics' && role === 'super_admin' && <AnalyticsPage />}
           </main>
         </div>
