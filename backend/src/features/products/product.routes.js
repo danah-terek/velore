@@ -13,7 +13,8 @@ const {
 // Public routes
 // List/filter products (supports query params)
 router.get("/", validateFilterProducts, productController.filterProducts);
-
+// Recommended products
+router.get("/recommended", productController.getRecommended);
 // Search products (q=...)
 // Must be BEFORE /:id routes
 router.get("/search", productController.search);

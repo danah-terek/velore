@@ -18,7 +18,6 @@ const serializeProduct = (p) => ({
 });
 
 // ✅ SEARCH PRODUCTS
-// ✅ SEARCH PRODUCTS - Simple version
 const search = async (req, res) => {
   try {
     const { q } = req.query;
@@ -27,7 +26,6 @@ const search = async (req, res) => {
     }
     const products = await searchProducts(q);
     
-    // Simple serialization that handles nulls
     const data = products.map(p => ({
       product_id: p.product_id?.toString() || String(p.product_id),
       name: p.name,
@@ -219,6 +217,29 @@ const deleteProduct = async (req, res) => {
   }
 };
 
+// ─── GET RECOMMENDED PRODUCTS ─────────────────────────────────────────────────
+const getRecommended = async (req, res) => {
+  try {
+    const { exclude = '', limit = 6 } = req.query;
+    const excludeIds = exclude ? exclude.split(',').map(Number) : [];
+    
+    const products = await productService.getRecommended({ exclude: excludeIds, limit: Number(limit) });
+    
+    const data = products.map(p => ({
+      product_id: p.product_id.toString(),
+      name: p.name,
+      price: p.price.toString(),
+      image: p.product_variants?.[0]?.images?.[0] || null,
+      brand: p.brands?.name || null,
+    }));
+    
+    res.status(200).json({ success: true, message: null, data });
+  } catch (error) {
+    console.error("getRecommended error:", error);
+    res.status(500).json({ success: false, message: "Failed to fetch recommended products", errors: [] });
+  }
+};
+
 module.exports = {
   search,
   getAllProducts,
@@ -229,4 +250,5 @@ module.exports = {
   createProduct,
   updateProduct,
   deleteProduct,
+  getRecommended,
 };

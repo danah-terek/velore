@@ -177,6 +177,34 @@ const deleteProduct = async (product_id) => {
   });
 };
 
+// ─── GET RECOMMENDED PRODUCTS ─────────────────────────────────────────────────
+const getRecommended = async ({ exclude = [], limit = 6 } = {}) => {
+  return await prisma.products.findMany({
+    where: {
+      is_active: true,
+      ...(exclude.length > 0 && {
+        product_id: { notIn: exclude.map(Number) },
+      }),
+    },
+    select: {
+      product_id: true,
+      name: true,
+      price: true,
+      product_variants: {
+        select: {
+          images: true,
+        },
+        take: 1,
+      },
+      brands: {
+        select: { name: true },
+      },
+    },
+    orderBy: { created_at: "desc" },
+    take: Number(limit),
+  });
+};
+
 module.exports = {
   getAllProducts,
   getProductById,
@@ -186,4 +214,5 @@ module.exports = {
   createProduct,
   updateProduct,
   deleteProduct,
+  getRecommended,
 };
