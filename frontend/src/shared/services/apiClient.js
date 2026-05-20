@@ -14,8 +14,9 @@ function isAdminRequest(config) {
   const method = (config.method || 'get').toLowerCase()
 
   if (path.startsWith('/admin/') && path !== '/admin/login') return true
-  if (path === '/banner' && method === 'put') return true
+  if (path.startsWith('/banner') && ['put', 'delete'].includes(method)) return true
   if (path === '/reviews/pending') return true
+  if (path === '/banner/all') return true
   if (method === 'put' && /^\/reviews\/[^/]+\/(approve|reject)$/.test(path)) return true
   if (path.startsWith('/blogs') && ['post', 'put', 'patch', 'delete'].includes(method)) return true
 
