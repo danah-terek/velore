@@ -179,30 +179,41 @@ const deleteProduct = async (product_id) => {
 
 // ─── GET RECOMMENDED PRODUCTS ─────────────────────────────────────────────────
 const getRecommended = async ({ exclude = [], limit = 6 } = {}) => {
-  return await prisma.products.findMany({
-    where: {
-      is_active: true,
-      ...(exclude.length > 0 && {
-        product_id: { notIn: exclude.map(Number) },
-      }),
-    },
-    select: {
-      product_id: true,
-      name: true,
-      price: true,
-      product_variants: {
-        select: {
-          images: true,
-        },
-        take: 1,
-      },
-      brands: {
-        select: { name: true },
-      },
-    },
-    orderBy: { created_at: "desc" },
-    take: Number(limit),
-  });
+  // Build the WHERE clause for exclusions
+  const excludeClause = exclude.length > 0 
+    ? `AND p.product_id NOT IN (${exclude.map(Number).join(',')})`
+    : '';
+
+  const products = await prisma.$queryRawUnsafe(`
+    SELECT 
+      p.product_id,
+      p.name,
+      p.price,
+      b.name as brand_name,
+      pv.images
+    FROM products p
+    LEFT JOIN brands b ON p.brand_id = b.brand_id
+    LEFT JOIN LATERAL (
+      SELECT images
+      FROM product_variants
+      WHERE product_id = p.product_id
+      ORDER BY created_at ASC
+      LIMIT 1
+    ) pv ON true
+    WHERE p.is_active = true
+    ${excludeClause}
+    ORDER BY RANDOM()
+    LIMIT ${Number(limit)}
+  `);
+
+  // Format the results to match the expected structure
+  return products.map(p => ({
+    product_id: p.product_id,
+    name: p.name,
+    price: p.price,
+    product_variants: p.images ? [{ images: p.images }] : [],
+    brands: { name: p.brand_name },
+  }));
 };
 
 module.exports = {
