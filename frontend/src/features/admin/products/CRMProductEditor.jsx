@@ -28,6 +28,7 @@ function normalizeBrandRow(b) {
 }
 
 function productToFormValues(p) {
+  const specs = p?.specifications || {}
   return {
     name: p?.name || '',
     price: p?.price?.toString?.() ? p.price.toString() : String(p?.price || ''),
@@ -36,9 +37,15 @@ function productToFormValues(p) {
     description: p?.description || '',
     compare_price: p?.compare_price?.toString?.() ? p.compare_price.toString() : (p?.compare_price ? String(p.compare_price) : ''),
     gender: p?.gender || '',
-    material: p?.material || '',
-    frame_shape: p?.frame_shape || '',
-    face_shape: p?.face_shape || '',
+    material: specs.material || p?.material || '',
+    frame_shape: specs.frame_shape || p?.frame_shape || '',
+    face_shape: specs.face_shape || p?.face_shape || '',
+    lens_width: specs.lens_width ?? p?.lens_width ?? '',
+    bridge_width: specs.bridge_width ?? p?.bridge_width ?? '',
+    temple_length: specs.temple_length ?? p?.temple_length ?? '',
+    diameter: specs.diameter ?? p?.diameter ?? '',
+    base_curve: specs.base_curve ?? p?.base_curve ?? '',
+    water_content: specs.water_content ?? p?.water_content ?? '',
     is_active: p?.is_active !== undefined ? !!p.is_active : true,
   }
 }

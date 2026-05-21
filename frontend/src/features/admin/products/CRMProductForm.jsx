@@ -57,9 +57,19 @@ export function buildProductPayload(values) {
     const cp = String(values.compare_price).trim()
     if (cp) payload.compare_price = cp
   }
-  if (values.frame_shape?.trim()) payload.frame_shape = values.frame_shape.trim()
-  if (values.face_shape?.trim()) payload.face_shape = values.face_shape.trim()
-  if (values.material?.trim()) payload.material = values.material.trim()
+
+  const specs = {}
+  if (values.frame_shape?.trim()) specs.frame_shape = values.frame_shape.trim()
+  if (values.face_shape?.trim()) specs.face_shape = values.face_shape.trim()
+  if (values.material?.trim()) specs.material = values.material.trim()
+  if (values.lens_width !== '' && values.lens_width !== null && values.lens_width !== undefined) specs.lens_width = parseFloat(values.lens_width)
+  if (values.bridge_width !== '' && values.bridge_width !== null && values.bridge_width !== undefined) specs.bridge_width = parseFloat(values.bridge_width)
+  if (values.temple_length !== '' && values.temple_length !== null && values.temple_length !== undefined) specs.temple_length = parseFloat(values.temple_length)
+  if (values.diameter !== '' && values.diameter !== null && values.diameter !== undefined) specs.diameter = parseFloat(values.diameter)
+  if (values.base_curve !== '' && values.base_curve !== null && values.base_curve !== undefined) specs.base_curve = parseFloat(values.base_curve)
+  if (values.water_content !== '' && values.water_content !== null && values.water_content !== undefined) specs.water_content = parseFloat(values.water_content)
+  if (Object.keys(specs).length > 0) payload.specifications = specs
+
   if (values.gender) payload.gender = normalizeGender(values.gender) || undefined
   if (typeof values.is_active === 'boolean') payload.is_active = values.is_active
 
@@ -124,7 +134,6 @@ export function buildVariantPayload(values, imagePaths) {
     images: Array.isArray(imagePaths) ? imagePaths : [],
   }
 
-  // Remove undefined keys to keep payload clean
   Object.keys(payload).forEach((k) => payload[k] === undefined && delete payload[k])
   return payload
 }
@@ -181,6 +190,11 @@ export default function CRMProductForm({
   const serverWarn =
     typeof serverMessage === 'string' &&
     (/variant failed/i.test(serverMessage) || /partial/i.test(serverMessage))
+
+  // Detect category type for conditional fields
+  const catId = values.category_id
+  const isGlasses = catId === '1' || catId === '2' || catId === '4' || catId === '5' // sunglasses, optical, sports, kids
+  const isLenses = catId === '3' // blue light / lenses
 
   return (
     <form
@@ -327,6 +341,72 @@ export default function CRMProductForm({
               placeholder="acetate / metal / titanium…"
             />
           </Field>
+
+          {/* Glasses / Sunglasses measurements */}
+          {isGlasses && (
+            <>
+              <Field label="Lens Width (mm)">
+                <input
+                  value={values.lens_width || ''}
+                  onChange={(e) => onChange({ lens_width: e.target.value })}
+                  className="crm-input"
+                  placeholder="52"
+                  inputMode="decimal"
+                />
+              </Field>
+              <Field label="Bridge Width (mm)">
+                <input
+                  value={values.bridge_width || ''}
+                  onChange={(e) => onChange({ bridge_width: e.target.value })}
+                  className="crm-input"
+                  placeholder="18"
+                  inputMode="decimal"
+                />
+              </Field>
+              <Field label="Temple Length (mm)">
+                <input
+                  value={values.temple_length || ''}
+                  onChange={(e) => onChange({ temple_length: e.target.value })}
+                  className="crm-input"
+                  placeholder="140"
+                  inputMode="decimal"
+                />
+              </Field>
+            </>
+          )}
+
+          {/* Lenses measurements */}
+          {isLenses && (
+            <>
+              <Field label="Diameter (mm)">
+                <input
+                  value={values.diameter || ''}
+                  onChange={(e) => onChange({ diameter: e.target.value })}
+                  className="crm-input"
+                  placeholder="14.2"
+                  inputMode="decimal"
+                />
+              </Field>
+              <Field label="Base Curve (mm)">
+                <input
+                  value={values.base_curve || ''}
+                  onChange={(e) => onChange({ base_curve: e.target.value })}
+                  className="crm-input"
+                  placeholder="8.6"
+                  inputMode="decimal"
+                />
+              </Field>
+              <Field label="Water Content (%)">
+                <input
+                  value={values.water_content || ''}
+                  onChange={(e) => onChange({ water_content: e.target.value })}
+                  className="crm-input"
+                  placeholder="55"
+                  inputMode="numeric"
+                />
+              </Field>
+            </>
+          )}
 
           <Field label="Active" error={errors.is_active}>
             <div className="flex items-center gap-3 min-h-[42px] px-3 py-2 rounded-xl border border-[rgba(var(--velore-border-soft),0.95)] bg-[rgba(var(--velore-pearl),0.85)]">
@@ -549,4 +629,3 @@ export default function CRMProductForm({
     </form>
   )
 }
-

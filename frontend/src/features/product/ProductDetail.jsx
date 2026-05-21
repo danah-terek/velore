@@ -148,7 +148,7 @@ function PrescriptionSection({ isLenses, prescription, setPrescription }) {
 export default function ProductDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-const { formatPrice } = useCurrency()
+  const { formatPrice } = useCurrency()
   const [product, setProduct] = useState(null)
   const [loading, setLoading] = useState(true)
   const [selectedImage, setSelectedImage] = useState(0)
@@ -295,7 +295,7 @@ const { formatPrice } = useCurrency()
   const stockQty = selectedVariant?.stock_quantity ?? null
   const canAdd = stockQty === null ? true : stockQty > 0
   const maxQty = stockQty === null ? null : Math.max(0, Number(stockQty))
-  
+
   // Category detection
   const categoryName = product.categories?.name?.toLowerCase()
   const isLenses = categoryName === 'lenses' || categoryName === 'blue light glasses'
@@ -354,17 +354,17 @@ const { formatPrice } = useCurrency()
           {product.categories && (
             <p className="text-sm text-gray-600">Category: <span className="font-medium">{isLenses ? 'Lenses' : product.categories.name}</span></p>
           )}
-          
+
           {/* Only show frame shape and face shape for glasses and sunglasses - NOT for lenses */}
-          {!isLenses && product.frame_shape && (
-            <p className="text-sm text-gray-600">Frame Shape: <span className="font-medium">{product.frame_shape}</span></p>
+          {!isLenses && product.specifications?.frame_shape && (
+            <p className="text-sm text-gray-600">Frame Shape: <span className="font-medium">{product.specifications.frame_shape}</span></p>
           )}
-          {!isLenses && product.face_shape && (
-            <p className="text-sm text-gray-600">Face Shape: <span className="font-medium">{product.face_shape}</span></p>
+          {!isLenses && product.specifications?.face_shape && (
+            <p className="text-sm text-gray-600">Face Shape: <span className="font-medium">{product.specifications.face_shape}</span></p>
           )}
-          
-          {product.material && (
-            <p className="text-sm text-gray-600">Material: <span className="font-medium">{product.material}</span></p>
+
+          {product.specifications?.material && (
+            <p className="text-sm text-gray-600">Material: <span className="font-medium">{product.specifications.material}</span></p>
           )}
           {product.gender && (
             <p className="text-sm text-gray-600">Gender: <span className="font-medium capitalize">{product.gender}</span></p>
@@ -456,11 +456,11 @@ const { formatPrice } = useCurrency()
             </AccordionItem>
 
             {/* Size & Fit - only for Glasses (not sunglasses, not lenses) */}
-            {isGlasses && (product.lens_width || product.bridge_width || product.temple_length) && (
+            {isGlasses && (product.specifications?.lens_width || product.specifications?.bridge_width || product.specifications?.temple_length) && (
               <AccordionItem title="Size & Fit">
-                {product.lens_width && <p>Lens Width: {product.lens_width} mm</p>}
-                {product.bridge_width && <p>Bridge Width: {product.bridge_width} mm</p>}
-                {product.temple_length && <p>Temple Length: {product.temple_length} mm</p>}
+                {product.specifications?.lens_width && <p>Lens Width: {product.specifications.lens_width} mm</p>}
+                {product.specifications?.bridge_width && <p>Bridge Width: {product.specifications.bridge_width} mm</p>}
+                {product.specifications?.temple_length && <p>Temple Length: {product.specifications.temple_length} mm</p>}
               </AccordionItem>
             )}
 
@@ -471,12 +471,12 @@ const { formatPrice } = useCurrency()
                   onClick={() => setSizeGuideOpen(true)}
                   className="flex items-center gap-2 text-sm text-gray-700 hover:text-gray-900 transition-colors"
                 >
-                  <svg 
-                    xmlns="http://www.w3.org/2000/svg" 
-                    className="w-5 h-5" 
-                    fill="none" 
-                    viewBox="0 0 24 24" 
-                    stroke="currentColor" 
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-5 h-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
                     strokeWidth={1.5}
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
@@ -487,30 +487,30 @@ const { formatPrice } = useCurrency()
             )}
 
             {/* Lens Specifications - only for Lenses (Blue Light Glasses) */}
-            {isLenses && (product.diameter || product.base_curve || product.water_content) && (
+            {isLenses && (product.specifications?.diameter || product.specifications?.base_curve || product.specifications?.water_content) && (
               <AccordionItem title="Lens Specifications">
-                {product.diameter && <p>Diameter: {product.diameter} mm</p>}
-                {product.base_curve && <p>Base Curve: {product.base_curve} mm</p>}
-                {product.water_content && <p>Water Content: {product.water_content}%</p>}
+                {product.specifications?.diameter && <p>Diameter: {product.specifications.diameter} mm</p>}
+                {product.specifications?.base_curve && <p>Base Curve: {product.specifications.base_curve} mm</p>}
+                {product.specifications?.water_content && <p>Water Content: {product.specifications.water_content}%</p>}
               </AccordionItem>
             )}
 
-{/* Materials - for all product types */}
-{(product.frame_material || product.lens_material || product.water_content || product.lens_type) && (
-  <AccordionItem title="Materials">
-    {product.frame_material && <p>Frame: {product.frame_material}</p>}
-    {product.lens_material && <p>Lenses: {product.lens_material}</p>}
-    {product.water_content && <p>Water Content: {product.water_content}%</p>}
-    {product.lens_type && <p>Lens Type: {product.lens_type}</p>}
-  </AccordionItem>
-)}
+            {/* Materials - for all product types */}
+            {(product.frame_material || product.lens_material || product.water_content || product.lens_type) && (
+              <AccordionItem title="Materials">
+                {product.frame_material && <p>Frame: {product.frame_material}</p>}
+                {product.lens_material && <p>Lenses: {product.lens_material}</p>}
+                {product.water_content && <p>Water Content: {product.water_content}%</p>}
+                {product.lens_type && <p>Lens Type: {product.lens_type}</p>}
+              </AccordionItem>
+            )}
 
-{/* How to Use - only for lenses */}
-{isLenses && product.how_to_use && (
-  <AccordionItem title="How to Use">
-    <p>{product.how_to_use}</p>
-  </AccordionItem>
-)}
+            {/* How to Use - only for lenses */}
+            {isLenses && product.how_to_use && (
+              <AccordionItem title="How to Use">
+                <p>{product.how_to_use}</p>
+              </AccordionItem>
+            )}
 
             {product.details && (
               <AccordionItem title="Details">

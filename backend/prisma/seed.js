@@ -109,7 +109,6 @@ async function main() {
     await ensureCartAndWishlist(user.user_id)
   }
 
-  // Addresses (optional but useful for orders)
   const [u1, u2] = customerIds
   const addr1 = await ensureAddress(u1, {
     street: '12 El Tahrir St',
@@ -153,9 +152,7 @@ async function main() {
       category: categories.sunglasses,
       brand: brands.velore,
       gender: 'unisex',
-      frame_shape: 'square',
-      face_shape: 'oval',
-      material: 'acetate',
+      specifications: { frame_shape: 'square', face_shape: 'oval', material: 'acetate' },
       variants: [
         { sku: 'VL-DEMO-NOIR-BLK', color_name: 'Matte Black', color_hex: '#0B0B0B', size: 'M', stock: 28, images: ['/uploads/products/demo/noir-classic-01.svg'] },
         { sku: 'VL-DEMO-NOIR-TORT', color_name: 'Tortoise', color_hex: '#6B4F3A', size: 'M', stock: 14, images: ['/uploads/products/demo/noir-classic-02.svg'] }
@@ -169,9 +166,7 @@ async function main() {
       category: categories.optical,
       brand: brands.aurelia,
       gender: 'unisex',
-      frame_shape: 'round',
-      face_shape: 'square',
-      material: 'metal',
+      specifications: { frame_shape: 'round', face_shape: 'square', material: 'metal' },
       variants: [
         { sku: 'VL-DEMO-AUR-GLD-S', color_name: 'Gold', color_hex: '#D4AF37', size: 'S', stock: 10, images: ['/uploads/products/demo/aurelia-gold-round-01.svg'] },
         { sku: 'VL-DEMO-AUR-GLD-M', color_name: 'Gold', color_hex: '#D4AF37', size: 'M', stock: 22, images: ['/uploads/products/demo/aurelia-gold-round-02.svg'] }
@@ -185,9 +180,7 @@ async function main() {
       category: categories.bluelight,
       brand: brands.urban,
       gender: 'unisex',
-      frame_shape: 'rectangle',
-      face_shape: 'round',
-      material: 'acetate',
+      specifications: { frame_shape: 'rectangle', face_shape: 'round', material: 'acetate' },
       variants: [
         { sku: 'VL-DEMO-URB-CLR-M', color_name: 'Crystal Clear', color_hex: '#E6F1FF', size: 'M', stock: 35, images: ['/uploads/products/demo/urban-clear-01.svg'] }
       ]
@@ -200,9 +193,7 @@ async function main() {
       category: categories.optical,
       brand: brands.maison,
       gender: 'unisex',
-      frame_shape: 'wayfarer',
-      face_shape: 'heart',
-      material: 'acetate',
+      specifications: { frame_shape: 'wayfarer', face_shape: 'heart', material: 'acetate' },
       variants: [
         { sku: 'VL-DEMO-MAI-TORT-M', color_name: 'Tortoise', color_hex: '#6B4F3A', size: 'M', stock: 18, images: ['/uploads/products/demo/maison-tortoise-01.svg'] }
       ]
@@ -215,9 +206,7 @@ async function main() {
       category: categories.sports,
       brand: brands.nova,
       gender: 'unisex',
-      frame_shape: 'wrap',
-      face_shape: 'oval',
-      material: 'polycarbonate',
+      specifications: { frame_shape: 'wrap', face_shape: 'oval', material: 'polycarbonate' },
       variants: [
         { sku: 'VL-DEMO-NOV-SPT-BLK', color_name: 'Black', color_hex: '#111111', size: 'L', stock: 20, images: ['/uploads/products/demo/nova-sport-01.svg'] },
         { sku: 'VL-DEMO-NOV-SPT-GRY', color_name: 'Graphite', color_hex: '#3A3A3A', size: 'L', stock: 12, images: ['/uploads/products/demo/nova-sport-02.svg'] }
@@ -231,9 +220,7 @@ async function main() {
       category: categories.sunglasses,
       brand: brands.velore,
       gender: 'unisex',
-      frame_shape: 'aviator',
-      face_shape: 'diamond',
-      material: 'metal',
+      specifications: { frame_shape: 'aviator', face_shape: 'diamond', material: 'metal' },
       variants: [
         { sku: 'VL-DEMO-AVI-GLD', color_name: 'Gold', color_hex: '#D4AF37', size: 'M', stock: 16, images: ['/uploads/products/demo/velore-aviator-01.svg'] },
         { sku: 'VL-DEMO-AVI-SLV', color_name: 'Silver', color_hex: '#C0C0C0', size: 'M', stock: 11, images: ['/uploads/products/demo/velore-aviator-02.svg'] }
@@ -250,9 +237,7 @@ async function main() {
       category: categories.kids,
       brand: brands.maison,
       gender: 'kids',
-      frame_shape: 'round',
-      face_shape: 'oval',
-      material: 'tr90',
+      specifications: { frame_shape: 'round', face_shape: 'oval', material: 'tr90' },
       variants: [
         { sku: 'VL-DEMO-KIDS-BLU-S', color_name: 'Sky Blue', color_hex: '#7EC8E3', size: 'S', stock: 25, images: ['/uploads/products/demo/kids-softedge-01.svg'] }
       ]
@@ -265,9 +250,7 @@ async function main() {
       category: categories.optical,
       brand: brands.aurelia,
       gender: 'unisex',
-      frame_shape: 'rectangle',
-      face_shape: 'oval',
-      material: 'titanium',
+      specifications: { frame_shape: 'rectangle', face_shape: 'oval', material: 'titanium' },
       variants: [
         { sku: 'VL-DEMO-TI-GRY-M', color_name: 'Titanium Grey', color_hex: '#8A8F98', size: 'M', stock: 9, images: ['/uploads/products/demo/aurelia-titanium-01.svg'] }
       ]
@@ -280,9 +263,7 @@ async function main() {
       category: categories.bluelight,
       brand: brands.urban,
       gender: 'unisex',
-      frame_shape: 'square',
-      face_shape: 'heart',
-      material: 'acetate',
+      specifications: { frame_shape: 'square', face_shape: 'heart', material: 'acetate' },
       variants: [
         { sku: 'VL-DEMO-URB-SLT-M', color_name: 'Slate', color_hex: '#5B6770', size: 'M', stock: 19, images: ['/uploads/products/demo/urban-slate-01.svg'] }
       ]
@@ -295,9 +276,7 @@ async function main() {
       category: categories.sunglasses,
       brand: brands.nova,
       gender: 'unisex',
-      frame_shape: 'rectangle',
-      face_shape: 'round',
-      material: 'acetate',
+      specifications: { frame_shape: 'rectangle', face_shape: 'round', material: 'acetate' },
       variants: [
         { sku: 'VL-DEMO-NOV-EVD-BRN', color_name: 'Brown', color_hex: '#5A3E2B', size: 'M', stock: 17, images: ['/uploads/products/demo/nova-everyday-01.svg'] }
       ]
@@ -310,9 +289,7 @@ async function main() {
       category: categories.sunglasses,
       brand: brands.velore,
       gender: 'women',
-      frame_shape: 'cat-eye',
-      face_shape: 'square',
-      material: 'acetate',
+      specifications: { frame_shape: 'cat-eye', face_shape: 'square', material: 'acetate' },
       variants: [
         { sku: 'VL-DEMO-CAT-BLK-M', color_name: 'Black', color_hex: '#0B0B0B', size: 'M', stock: 13, images: ['/uploads/products/demo/velore-cateye-01.svg'] }
       ]
@@ -325,9 +302,7 @@ async function main() {
       category: categories.optical,
       brand: brands.maison,
       gender: 'unisex',
-      frame_shape: 'browline',
-      face_shape: 'oval',
-      material: 'mixed',
+      specifications: { frame_shape: 'browline', face_shape: 'oval', material: 'mixed' },
       variants: [
         { sku: 'VL-DEMO-BROW-BLK-M', color_name: 'Black', color_hex: '#111111', size: 'M', stock: 8, images: ['/uploads/products/demo/maison-browline-01.svg'] }
       ]
@@ -354,9 +329,7 @@ async function main() {
             price: p.price,
             compare_price: p.compare_price,
             gender: p.gender,
-            frame_shape: p.frame_shape,
-            face_shape: p.face_shape,
-            material: p.material,
+            specifications: p.specifications || {},
             is_active: true
           }
         })
@@ -369,9 +342,7 @@ async function main() {
             category_id: p.category.category_id,
             brand_id: p.brand.brand_id,
             gender: p.gender,
-            frame_shape: p.frame_shape,
-            face_shape: p.face_shape,
-            material: p.material,
+            specifications: p.specifications || {},
             is_active: true,
             prescription_ready: ['optical', 'bluelight', 'kids'].includes(
               Object.keys(categories).find((k) => categories[k] === p.category) || ''
@@ -414,8 +385,7 @@ async function main() {
       author: 'Velore Team',
       image: '/uploads/blogs/demo/lens-care-guide.svg',
       read_time: '4 min',
-      content:
-        'Use lukewarm water, a gentle soap, and a microfiber cloth. Avoid paper towels. Rinse dust before wiping to prevent micro-scratches.'
+      content: 'Use lukewarm water, a gentle soap, and a microfiber cloth. Avoid paper towels. Rinse dust before wiping to prevent micro-scratches.'
     },
     {
       slug: 'frames-for-your-face-shape',
@@ -425,8 +395,7 @@ async function main() {
       author: 'Velore Team',
       image: '/uploads/blogs/demo/face-shape-guide.svg',
       read_time: '6 min',
-      content:
-        'Round faces pair well with angular frames; square faces often look great with round or oval shapes. Balance is the goal—try complementary geometry.'
+      content: 'Round faces pair well with angular frames; square faces often look great with round or oval shapes. Balance is the goal—try complementary geometry.'
     },
     {
       slug: 'sunglasses-buying-guide',
@@ -436,8 +405,7 @@ async function main() {
       author: 'Velore Team',
       image: '/uploads/blogs/demo/sunglasses-guide.svg',
       read_time: '5 min',
-      content:
-        'Prioritize UV protection, then choose polarization for glare-heavy environments. Fit matters: lenses should cover the eye area without pinching temples.'
+      content: 'Prioritize UV protection, then choose polarization for glare-heavy environments. Fit matters: lenses should cover the eye area without pinching temples.'
     },
     {
       slug: 'blue-light-glasses-explained',
@@ -447,8 +415,7 @@ async function main() {
       author: 'Velore Team',
       image: '/uploads/blogs/demo/blue-light-guide.svg',
       read_time: '5 min',
-      content:
-        'Blue‑light filtering can reduce glare and eye strain for some users. Pair it with good lighting and regular breaks for the best results.'
+      content: 'Blue‑light filtering can reduce glare and eye strain for some users. Pair it with good lighting and regular breaks for the best results.'
     }
   ]
 
@@ -479,7 +446,7 @@ async function main() {
     })
   }
 
-  // ── Orders + Payments + Reviews (optional; create only if absent) ─────
+  // ── Orders + Payments + Reviews ───────────────────────────────────────
   const existingOrdersU1 = await prisma.orders.count({ where: { user_id: u1 } })
   const existingOrdersU2 = await prisma.orders.count({ where: { user_id: u2 } })
 
@@ -511,7 +478,6 @@ async function main() {
     createdOrderIds.push(order.order_id)
   }
 
-  // Add items + payments for newly created orders
   for (const orderId of createdOrderIds) {
     const productId = seededProductIds[0]
     const variant = await prisma.product_variants.findFirst({ where: { product_id: productId } })
@@ -538,16 +504,15 @@ async function main() {
     })
   }
 
-  // FIXED: Seed approved reviews - check for existing user+product combo
   for (const orderId of createdOrderIds) {
-    const existingReview = await prisma.reviews.findFirst({ 
-      where: { 
-        user_id: u1, 
-        product_id: seededProductIds[0] 
-      } 
+    const existingReview = await prisma.reviews.findFirst({
+      where: {
+        user_id: u1,
+        product_id: seededProductIds[0]
+      }
     })
     if (existingReview) continue
-    
+
     await prisma.reviews.create({
       data: {
         order_id: orderId,
@@ -560,7 +525,6 @@ async function main() {
     })
   }
 
-  // Seed feedback rows (used by some review queries in codebase)
   const feedbackPairs = [
     { user_id: u1, product_id: seededProductIds[0], comment: 'Great build quality and quick delivery.' },
     { user_id: u2, product_id: seededProductIds[1], comment: 'Lightweight and premium feel. Love the round shape.' },
@@ -582,7 +546,7 @@ async function main() {
   }
 
   console.log('✅ Seed finished')
-  console.log('• roles:', Object.keys(await prisma.role.findMany()).length)
+  console.log('• roles:', 4)
   console.log('• admin:', admin.email)
   console.log('• customers:', DEMO.customers.map((c) => c.email).join(', '))
   console.log('• categories:', Object.values(categories).length)
