@@ -20,7 +20,6 @@ const PaymentSuccess = lazy(() => import('./features/checkout/PaymentSuccess'))
 const Favorite = lazy(() => import('./features/favorite/Favorite'))
 const Blogs = lazy(() => import('./features/blog/Blogs'))
 const BlogPost = lazy(() => import('./features/blog/BlogPost'))
-const AIAdvisor = lazy(() => import('./features/ai-advisor/AIAdvisor'))
 
 const About = lazy(() => import('./pages/About'))
 const PolicyPlaceholder = lazy(() => import('./pages/PolicyPlaceholder'))
@@ -31,6 +30,7 @@ const AdminApp = lazy(() => import('./features/admin/AdminApp'))
 
 const CartSidebar = lazy(() => import('./features/cart/CartSidebar'))
 const ContactModal = lazy(() => import('./shared/components/ui/ContactModal'))
+const CookieBanner = lazy(() => import('./shared/components/ui/CookieBanner'))
 
 function PageLoader({ label = 'Loading…' }) {
   return (
@@ -69,7 +69,7 @@ function PublicLayout() {
 
   return (
     <>
-    <TopBanner />
+      <TopBanner />
       <Navbar onCartOpen={() => setCartOpen(true)} onContactOpen={() => setContactOpen(true)} />
 
       <Suspense fallback={null}>
@@ -77,6 +77,9 @@ function PublicLayout() {
       </Suspense>
       <Suspense fallback={null}>
         <ContactModal isOpen={contactOpen} onClose={() => setContactOpen(false)} />
+      </Suspense>
+      <Suspense fallback={null}>
+        <CookieBanner />
       </Suspense>
 
       <AIAdvisorChat />
@@ -120,7 +123,6 @@ export default function App() {
             <Route path="blogs/:id" element={<BlogPost />} />
 
             <Route path="about" element={<About />} />
-            <Route path="ai-advisor" element={<AIAdvisor />} />
 
             <Route path="favorite" element={<Favorite />} />
             <Route path="favorites" element={<Navigate to="/favorite" replace />} />

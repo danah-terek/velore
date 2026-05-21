@@ -147,17 +147,6 @@ model categories {
 //}
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model face_images {
-  image_id    BigInt    @id @default(autoincrement())
-  user_id     BigInt
-  image_data  Bytes
-  uploaded_at DateTime? @default(now()) @db.Timestamptz(6)
-  users       users     @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@index([user_id], map: "idx_face_images_user")
-}
-
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model feedback {
   feedback_id   BigInt    @id @default(autoincrement())
   user_id       BigInt
@@ -364,7 +353,6 @@ model users {
   addresses            addresses[]
   ai_recommendations   ai_recommendations[]
   carts                carts?
-  face_images          face_images[]
   feedback             feedback[]
   loyalty_transactions loyalty_transactions[]
   notifications        notifications[]
@@ -453,5 +441,13 @@ model top_banner {
   message    String
   is_active  Boolean   @default(true)
   created_at DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at DateTime? @updatedAt @db.Timestamptz(6)
+}
+
+model legal_pages {
+  id         Int       @id @default(autoincrement())
+  slug       String    @unique
+  title      String
+  content    String    @default("")
   updated_at DateTime? @updatedAt @db.Timestamptz(6)
 }

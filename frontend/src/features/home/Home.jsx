@@ -38,10 +38,10 @@ export default function Home() {
       const data = result?.data || []
       const mapped = Array.isArray(data)
         ? data.map((item) => ({
-            name: item.users?.name || 'Velore Customer',
-            rating: item.rating || 0,
-            review: item.comment || ''
-          }))
+          name: item.users?.name || 'Velore Customer',
+          rating: item.rating || 0,
+          review: item.comment || ''
+        }))
         : []
       setApprovedReviews(mapped)
     } catch (error) {
@@ -56,12 +56,12 @@ export default function Home() {
       const data = result?.data || []
       const mapped = Array.isArray(data)
         ? data
-            .filter((blog) => blog.is_published === true)
-            .map((blog) => ({
-              id: blog.post_id,
-              image: blog.image || null,
-              title: blog.title,
-            }))
+          .filter((blog) => blog.is_published === true)
+          .map((blog) => ({
+            id: blog.post_id,
+            image: blog.image || null,
+            title: blog.title,
+          }))
         : []
       setBlogs(mapped)
     } catch (error) {
@@ -93,7 +93,7 @@ export default function Home() {
             <Link to="/shop" className="bg-white text-gray-900 px-5 py-2.5 text-sm font-medium hover:bg-gray-100 transition">
               Shop now
             </Link>
-            <Link to="/ai-advisor" className="border border-white text-white px-5 py-2.5 text-sm font-medium hover:bg-white hover:text-gray-900 transition">
+            <Link to="/try-on" className="border border-white text-white px-5 py-2.5 text-sm font-medium hover:bg-white hover:text-gray-900 transition">
               Try Virtual Try-On
             </Link>
           </div>
@@ -132,28 +132,107 @@ export default function Home() {
         )}
       </section>
 
-      {/* AI ASSISTANT SECTION — unchanged */}
-      <section className="px-6 md:px-16 py-16 bg-white">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-16">
-          <div className="max-w-md text-center md:text-left">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 leading-tight mb-8">
-              Hello, this is your AI assistant say
-            </h2>
-            <Link
-              to="/ai-advisor"
-              className="inline-block bg-gray-900 text-white text-sm px-8 py-4 hover:bg-gray-700 transition-colors"
-            >
-              Chat with VELORE-AI!
-            </Link>
-          </div>
-          <div className="flex gap-6 items-end justify-center mr-0 md:mr-16">
-            <div className="w-24 md:w-44 h-44 md:h-80 border-4 border-gray-300 rounded-3xl bg-white opacity-50 -mb-4" />
-            <div className="w-28 md:w-52 h-52 md:h-96 border-4 border-gray-900 rounded-3xl bg-white flex flex-col">
-              <div className="w-12 md:w-16 h-1.5 bg-gray-900 rounded-full mx-auto mt-4" />
+      {/* AI FEATURES SHOWCASE */}
+{/* AI FEATURES SHOWCASE */}
+<section className="relative px-6 md:px-16 py-24 overflow-hidden">
+  {/* Background texture */}
+  <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-900 to-indigo-950" />
+  <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(circle_at_50%_50%,white,transparent_70%)]" />
+
+  <div className="relative max-w-6xl mx-auto">
+    {/* Header */}
+    <div className="text-center mb-16">
+      <span className="inline-block px-4 py-1.5 bg-white/5 border border-white/10 rounded-full text-xs text-indigo-300 uppercase tracking-[0.2em] mb-6">
+        AI-Powered Eyewear
+      </span>
+      <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-[1.1] mb-4">
+        Frames that were<br />
+        <span className="bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-300 bg-clip-text text-transparent">
+          made for your face
+        </span>
+      </h2>
+      <p className="text-white/50 max-w-lg mx-auto text-sm leading-relaxed">
+        Stop guessing. Our AI analyzes your face shape and lets you try on frames in real-time — all before you click buy.
+      </p>
+    </div>
+
+    {/* Feature cards */}
+    <div className="grid md:grid-cols-2 gap-6 mb-16">
+      {/* Face Analysis */}
+      <div className="group relative bg-white/[0.03] border border-white/[0.08] rounded-2xl p-8 backdrop-blur-sm hover:bg-white/[0.06] transition-all duration-500">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl group-hover:bg-indigo-500/20 transition-all duration-500" />
+        <div className="relative">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/25">
+              <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+              </svg>
+            </div>
+            <div>
+              <span className="text-xs text-indigo-400 uppercase tracking-wider">Step 1</span>
+              <h3 className="text-xl font-semibold text-white">Face Shape Analysis</h3>
             </div>
           </div>
+          <p className="text-white/50 text-sm leading-relaxed mb-6">
+            Upload a selfie. Our AI maps 468 facial landmarks, identifies your face shape, and matches you with frames that actually flatter you — not just whatever's trending.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {['Instant', 'Private', '5 face shapes'].map(tag => (
+              <span key={tag} className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs text-white/60">
+                {tag}
+              </span>
+            ))}
+          </div>
         </div>
-      </section>
+      </div>
+
+      {/* Virtual Try-On */}
+      <div className="group relative bg-white/[0.03] border border-white/[0.08] rounded-2xl p-8 backdrop-blur-sm hover:bg-white/[0.06] transition-all duration-500">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl group-hover:bg-purple-500/20 transition-all duration-500" />
+        <div className="relative">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center shadow-lg shadow-purple-500/25">
+              <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </div>
+            <div>
+              <span className="text-xs text-purple-400 uppercase tracking-wider">Step 2</span>
+              <h3 className="text-xl font-semibold text-white">Virtual Try-On</h3>
+            </div>
+          </div>
+          <p className="text-white/50 text-sm leading-relaxed mb-6">
+            Turn on your camera. Frames appear on your face in real-time. Move, tilt, smile — the glasses stay locked to your eyes. Try dozens of styles without leaving your couch.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {['Real-time AR', 'Any device', 'Switch instantly'].map(tag => (
+              <span key={tag} className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs text-white/60">
+                {tag}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* CTA */}
+    <div className="text-center">
+      <Link
+        to="/shop"
+        className="inline-flex items-center gap-3 bg-white text-gray-900 px-8 py-4 rounded-xl text-sm font-semibold hover:bg-gray-100 transition-all hover:scale-[1.02] shadow-lg shadow-white/10"
+      >
+        Find your frames
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+        </svg>
+      </Link>
+      <p className="text-white/30 text-xs mt-4">
+        AI features available on every product page — look for the ✨ icon
+      </p>
+    </div>
+  </div>
+</section>
 
       {/* Testimonials, About us, Latest News — unchanged */}
       {approvedReviews.length > 0 ? (
@@ -168,38 +247,38 @@ export default function Home() {
       )}
 
       <section id="about-us" className="px-6 md:px-16 py-16 scroll-mt-20">
-  <h2 className="text-2xl font-semibold mb-8">About us</h2>
-  <div className="flex flex-col md:flex-row items-center gap-12">
-    {/* Left — images grid */}
-    <div className="grid grid-cols-2 gap-3 flex-1">
-      {[1,2,3,4].map(i => (
-        <div key={i} className="aspect-square rounded-2xl bg-gray-100 overflow-hidden">
-          <img src={sketchImage} alt="" className="w-full h-full object-cover" />
-        </div>
-      ))}
-    </div>
+        <h2 className="text-2xl font-semibold mb-8">About us</h2>
+        <div className="flex flex-col md:flex-row items-center gap-12">
+          {/* Left — images grid */}
+          <div className="grid grid-cols-2 gap-3 flex-1">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="aspect-square rounded-2xl bg-gray-100 overflow-hidden">
+                <img src={sketchImage} alt="" className="w-full h-full object-cover" />
+              </div>
+            ))}
+          </div>
 
-    {/* Center — text */}
-    <div className="flex-1 text-center">
-      <h2 className="text-7xl md:text-9xl font-bold text-black leading-none mb-4">20+</h2>
-      <p className="text-xl md:text-2xl font-semibold text-gray-900 mb-4">
-        years, we've refined our craft, not just in frame design
-      </p>
-      <p className="text-sm text-gray-500 leading-relaxed max-w-sm mx-auto">
-        but in understanding the unique geometry of every face. Every Velore frame is born from obsessive attention to fit, balance, and comfort. We combine precision engineering with timeless aesthetics to create eyewear that doesn't just sit on your face.
-      </p>
-    </div>
+          {/* Center — text */}
+          <div className="flex-1 text-center">
+            <h2 className="text-7xl md:text-9xl font-bold text-black leading-none mb-4">20+</h2>
+            <p className="text-xl md:text-2xl font-semibold text-gray-900 mb-4">
+              years, we've refined our craft, not just in frame design
+            </p>
+            <p className="text-sm text-gray-500 leading-relaxed max-w-sm mx-auto">
+              but in understanding the unique geometry of every face. Every Velore frame is born from obsessive attention to fit, balance, and comfort. We combine precision engineering with timeless aesthetics to create eyewear that doesn't just sit on your face.
+            </p>
+          </div>
 
-    {/* Right — images grid */}
-    <div className="grid grid-cols-2 gap-3 flex-1">
-      {[5,6,7,8].map(i => (
-        <div key={i} className="aspect-square rounded-2xl bg-gray-100 overflow-hidden">
-          <img src={sketchImage} alt="" className="w-full h-full object-cover" />
+          {/* Right — images grid */}
+          <div className="grid grid-cols-2 gap-3 flex-1">
+            {[5, 6, 7, 8].map(i => (
+              <div key={i} className="aspect-square rounded-2xl bg-gray-100 overflow-hidden">
+                <img src={sketchImage} alt="" className="w-full h-full object-cover" />
+              </div>
+            ))}
+          </div>
         </div>
-      ))}
-    </div>
-  </div>
-</section>
+      </section>
 
       <section id="latest-news" className="px-6 md:px-16 py-16 scroll-mt-20">
         <h2 className="text-2xl font-semibold mb-8">Latest news</h2>

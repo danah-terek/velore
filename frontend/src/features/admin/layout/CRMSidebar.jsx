@@ -4,15 +4,16 @@ import {
   Boxes,
   LayoutDashboard,
   LogOut,
+  Megaphone,
   Newspaper,
   Package,
+  ScrollText,
   Settings,
   ShieldCheck,
   ShoppingCart,
   Star,
   Tag,
   Users,
-  Megaphone,
   X,
 } from 'lucide-react'
 
@@ -54,6 +55,7 @@ export default function CRMSidebar({ mobileOpen, onClose }) {
     { to: '/admin/banner', label: 'Banner', icon: Megaphone, show: true },
     { to: '/admin/discounts', label: 'Discounts', icon: Tag, show: true },
     { to: '/admin/staff', label: 'Staff', icon: ShieldCheck, show: isSuper },
+    { to: '/admin/legal', label: 'Legal Pages', icon: ScrollText, show: isSuper },
     { to: '/admin/settings', label: 'Settings', icon: Settings, show: isSuper },
   ].filter((x) => x.show)
 

@@ -22,12 +22,7 @@ const aiAdvisorController = {
         return res.status(502).json({ success: false, error: 'AI service unavailable' });
       }
 
-      await prisma.face_images.create({
-        data: {
-          user_id: BigInt(Number(userId)),
-          image_data: req.file.buffer,
-        },
-      });
+      // Image is analyzed and discarded — not saved to database
 
       const faceShape = analysisResult.face_shape;
       const confidence = analysisResult.confidence;
@@ -101,16 +96,34 @@ const aiAdvisorController = {
 
   getAnalysisHistory: async (req, res) => {
     try {
-      const analyses = await prisma.face_images.findMany({
+      const analyses = await prisma.ai_recommendations.findMany({
         where: { user_id: BigInt(Number(req.user.userId)) },
-        orderBy: { uploaded_at: 'desc' },
+        orderBy: { recom_date: 'desc' },
         take: 10,
+        include: {
+          products: {
+            select: {
+              product_id: true,
+              name: true,
+              price: true,
+              frame_shape: true,
+            }
+          }
+        }
       });
       return res.status(200).json({
         success: true,
         history: analyses.map((a) => ({
-          image_id: a.image_id.toString(),
-          uploaded_at: a.uploaded_at,
+          rec_id: a.rec_id.toString(),
+          face_shape: a.face_shape,
+          confidence: parseFloat(a.confidence || 0),
+          recom_date: a.recom_date,
+          product: a.products ? {
+            product_id: a.products.product_id.toString(),
+            name: a.products.name,
+            price: parseFloat(a.products.price),
+            frame_shape: a.products.frame_shape,
+          } : null,
         })),
       });
     } catch (error) {

@@ -1,27 +1,22 @@
-import { Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import apiClient from '../shared/services/apiClient'
 
-export default function PolicyPlaceholder({ title = 'Policy' }) {
+export default function PolicyPlaceholder({ title }) {
+  const [content, setContent] = useState('')
+  const slug = title.toLowerCase().replace(/\s+/g, '-')
+
+  useEffect(() => {
+    apiClient.get(`/legal/${slug}`)
+      .then(res => setContent(res?.data?.content || 'This page is being updated.'))
+      .catch(() => setContent('This page is being updated.'))
+  }, [slug])
+
   return (
-    <div className="v-page">
-      <section className="v-section v-section-muted">
-        <div className="v-container">
-          <p className="v-eyebrow mb-3">Velore policies</p>
-          <h1 className="v-h1 mb-4">{title}</h1>
-          <p className="v-lead max-w-2xl">
-            This page is being finalized. If you need help right now, contact us and we’ll respond
-            promptly.
-          </p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Link to="/shop" className="v-btn-primary">
-              Continue shopping
-            </Link>
-            <Link to="/about" className="v-btn-secondary">
-              About Velore
-            </Link>
-          </div>
-        </div>
-      </section>
+    <div className="px-6 md:px-16 py-16 max-w-3xl mx-auto">
+      <h1 className="text-2xl font-semibold mb-8">{title}</h1>
+      <div className="prose prose-gray max-w-none text-sm leading-relaxed whitespace-pre-line">
+        {content}
+      </div>
     </div>
   )
 }
-
