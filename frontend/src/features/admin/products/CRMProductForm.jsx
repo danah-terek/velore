@@ -193,8 +193,8 @@ export default function CRMProductForm({
 
   // Detect category type for conditional fields
   const catId = values.category_id
-  const isGlasses = catId === '1' || catId === '2' || catId === '4' || catId === '5' // sunglasses, optical, sports, kids
-  const isLenses = catId === '3' // blue light / lenses
+  const isGlasses = catId === '1' || catId === '2'
+  const isLenses = catId === '3'
 
   return (
     <form
@@ -275,11 +275,13 @@ export default function CRMProductForm({
               <option value="">
                 {optionsLoading ? 'Loading categories…' : optionsError ? 'Failed to load categories' : 'Select category'}
               </option>
-              {categories.map((c) => (
-                <option key={c.category_id} value={c.category_id}>
-                  {c.name}
-                </option>
-              ))}
+              {categories
+                .filter(c => ['Sunglasses', 'Optical Glasses', 'Lenses'].includes(c.name))
+                .map((c) => (
+                  <option key={c.category_id} value={c.category_id}>
+                    {c.name}
+                  </option>
+                ))}
             </select>
           </Field>
 

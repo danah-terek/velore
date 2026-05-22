@@ -15,6 +15,7 @@ const productSelect = {
   virtual_try_on: true,
   is_active: true,
   is_bundle: true,
+  specifications: true,
   lens_width: true,
   bridge_width: true,
   temple_length: true,
