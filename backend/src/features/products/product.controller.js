@@ -230,7 +230,8 @@ const getRecommended = async (req, res) => {
       name: p.name,
       price: p.price.toString(),
       image: p.product_variants?.[0]?.images?.[0] || null,
-      brand: p.brands?.name || null,
+      brands: p.brands || null,
+      product_variants: p.product_variants || [],
     }));
     
     res.status(200).json({ success: true, message: null, data });

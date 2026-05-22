@@ -14,25 +14,19 @@ import {
 } from 'lucide-react'
 
 import logo from '../../../assets/logoEye-blue.png'
-import apiClient from '../../../shared/services/apiClient'
-import { resolveImageUrl } from '../../utils/imageUrl'
 import { useFavorites } from '../../contexts'
 import ProfileSidebar from '../../../features/profile/ProfileSidebar'
 import { CurrencyMenu } from '../ui'
+import SearchPanel from './SearchPanel'
 
 export default function Navbar({ onCartOpen, onContactOpen }) {
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [searchResults, setSearchResults] = useState([])
-  const [searchLoading, setSearchLoading] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
   const [notifCount, setNotifCount] = useState(0)
-  const inputRef = useRef(null)
-  const searchTimeoutRef = useRef(null)
   const location = useLocation()
 
   const { favorites } = useFavorites()
@@ -44,38 +38,28 @@ export default function Navbar({ onCartOpen, onContactOpen }) {
     setIsLoggedIn(!!token)
   }, [location.pathname])
 
-useEffect(() => {
-  if (!isLoggedIn) return
-  const fetchNotifs = () => {
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token')
-    fetch('/api/v1/notifications', {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => res.json())
-      .then(result => {
-        const all = result?.data || []
-        const lastRead = localStorage.getItem('notif_last_read')
-        const unread = lastRead
-? all.filter(n => new Date(n.sent_at?.replace('Z', '') + 'Z') > new Date(lastRead))          : all
-        setNotifCount(unread.length)
-      })
-      .catch(() => {})
-  }
-  fetchNotifs()
-  const interval = setInterval(fetchNotifs, 30000)
-  return () => clearInterval(interval)
-}, [isLoggedIn])
-
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (!e.target.closest('.search-container')) {
-        setSearchResults([])
-        setSearchQuery('')
-      }
+    if (!isLoggedIn) return
+    const fetchNotifs = () => {
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token')
+      fetch('/api/v1/notifications', {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+        .then(res => res.json())
+        .then(result => {
+          const all = result?.data || []
+          const lastRead = localStorage.getItem('notif_last_read')
+          const unread = lastRead
+            ? all.filter(n => new Date(n.sent_at?.replace('Z', '') + 'Z') > new Date(lastRead))
+            : all
+          setNotifCount(unread.length)
+        })
+        .catch(() => {})
     }
-    document.addEventListener('click', handleClickOutside)
-    return () => document.removeEventListener('click', handleClickOutside)
-  }, [])
+    fetchNotifs()
+    const interval = setInterval(fetchNotifs, 30000)
+    return () => clearInterval(interval)
+  }, [isLoggedIn])
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50)
@@ -87,54 +71,13 @@ useEffect(() => {
     setScrolled(window.scrollY > 50)
   }, [location.pathname])
 
-  const handleSearchClick = () => {
-    if (!searchOpen) {
-      setSearchOpen(true)
-      setTimeout(() => inputRef.current?.focus(), 100)
-    } else {
-      setSearchOpen(false)
-      setSearchQuery('')
-      setSearchResults([])
-    }
-  }
+  // Lock body scroll when search panel is open
+  useEffect(() => {
+    document.body.style.overflow = searchOpen ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [searchOpen])
 
-  const handleSearchChange = (e) => {
-    const value = e.target.value
-    setSearchQuery(value)
-
-    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current)
-
-    if (value.length < 2) {
-      setSearchResults([])
-      return
-    }
-
-    searchTimeoutRef.current = setTimeout(async () => {
-      setSearchLoading(true)
-      try {
-        const result = await apiClient.get(`/products/search?q=${encodeURIComponent(value)}`)
-        setSearchResults(result?.data || [])
-      } catch {
-        setSearchResults([])
-      } finally {
-        setSearchLoading(false)
-      }
-    }, 300)
-  }
-
-  const handleSearchSubmit = (e) => {
-    e.preventDefault()
-    if (searchQuery.trim()) {
-      navigate(`/shop?search=${encodeURIComponent(searchQuery.trim())}`)
-      setSearchOpen(false)
-      setSearchQuery('')
-      setSearchResults([])
-    }
-  }
-
-  const handleCartClick = () => {
-    onCartOpen?.()
-  }
+  const handleCartClick = () => onCartOpen?.()
 
   const handleContactClick = (e) => {
     e.preventDefault()
@@ -217,72 +160,14 @@ useEffect(() => {
               />
             </div>
 
-            <div className="flex items-center relative search-container">
-              <form onSubmit={handleSearchSubmit} className="flex items-center">
-                <input
-                  ref={inputRef}
-                  type="text"
-                  placeholder="Search products..."
-                  value={searchQuery}
-                  onChange={handleSearchChange}
-                  className={`transition-all duration-300 ease-in-out bg-transparent outline-none text-sm border-b ${
-                    isTransparent
-                      ? "border-white text-white placeholder:text-white/70"
-                      : "border-gray-400 text-gray-800"
-                  } ${searchOpen ? "w-40 md:w-56 opacity-100 ml-2" : "w-0 opacity-0 ml-0"}`}
-                />
-                <button
-                  type={searchOpen ? "submit" : "button"}
-                  onClick={searchOpen ? undefined : handleSearchClick}
-                  className={`p-1 transition-colors ${isTransparent ? "text-white hover:text-white/70" : "text-gray-700 hover:text-black"}`}
-                >
-                  <Search size={18} />
-                </button>
-              </form>
-
-              {searchOpen && searchResults.length > 0 && (
-                <div className="absolute top-full right-0 mt-2 w-80 z-50 max-h-96 overflow-y-auto v-popover v-popover-anim">
-                  {searchResults.map((product) => (
-                    <Link
-                      key={product.product_id}
-                      to={`/product/${product.product_id}`}
-                      onClick={() => {
-                        setSearchOpen(false)
-                        setSearchQuery('')
-                        setSearchResults([])
-                      }}
-                      className="flex items-center gap-3 p-3 border-b border-[rgba(var(--velore-border-soft),0.7)] last:border-b-0 hover:bg-[rgba(var(--velore-accent),0.06)]"
-                    >
-                      <img
-                        src={resolveImageUrl(product.product_variants?.[0]?.images?.[0]) || ''}
-                        alt={product.name}
-                        className="w-10 h-10 object-cover rounded-xl bg-[rgba(var(--velore-accent),0.04)] border border-[rgba(var(--velore-border-soft),0.85)]"
-                        loading="lazy"
-                        decoding="async"
-                        onError={(e) => {
-                          const img = e.currentTarget
-                          img.onerror = null
-                          img.src = ''
-                        }}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">{product.name}</p>
-                        <p className="text-xs text-gray-500">
-                          {product.brands?.name} • {product.categories?.name}
-                        </p>
-                        <p className="text-sm font-semibold text-gray-900">${parseFloat(product.price).toFixed(2)}</p>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              )}
-
-              {searchOpen && searchQuery.length >= 2 && searchResults.length === 0 && !searchLoading && (
-                <div className="absolute top-full right-0 mt-2 w-80 z-50 p-4 text-center text-sm text-gray-500 v-popover v-popover-anim">
-                  No products found
-                </div>
-              )}
-            </div>
+            {/* Search trigger — now opens the panel */}
+            <button
+              onClick={() => setSearchOpen(true)}
+              className={`p-1 transition-colors bg-transparent border-none cursor-pointer ${isTransparent ? "text-white hover:text-white/70" : "text-gray-700 hover:text-black"}`}
+              aria-label="Open search"
+            >
+              <Search size={18} />
+            </button>
 
             {isLoggedIn ? (
               <button
@@ -413,18 +298,21 @@ useEffect(() => {
         )}
       </nav>
 
-<ProfileSidebar
-  isOpen={profileOpen}
-  onClose={() => {
-    setProfileOpen(false)
-    setNotifCount(0)
-    localStorage.setItem('notif_last_read', new Date().toISOString())
-  }}
-  onLogout={handleLogout}
-  onContactOpen={onContactOpen}
-  onNotifRead={() => setNotifCount(0)}
-  notifCount={notifCount}
-/>
+      {/* Search Panel */}
+      <SearchPanel isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
+
+      <ProfileSidebar
+        isOpen={profileOpen}
+        onClose={() => {
+          setProfileOpen(false)
+          setNotifCount(0)
+          localStorage.setItem('notif_last_read', new Date().toISOString())
+        }}
+        onLogout={handleLogout}
+        onContactOpen={onContactOpen}
+        onNotifRead={() => setNotifCount(0)}
+        notifCount={notifCount}
+      />
     </>
   )
 }
