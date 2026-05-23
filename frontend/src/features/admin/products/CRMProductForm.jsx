@@ -122,7 +122,7 @@ export function validateVariant(values, { requireSku } = {}) {
   return errors
 }
 
-export function buildVariantPayload(values, imagePaths) {
+export function buildVariantPayload(values, imagePaths, tryOnImagePaths = []) {
   const payload = {
     sku: values.sku?.trim(),
     color_name: values.color_name?.trim() ? values.color_name.trim() : undefined,
@@ -132,6 +132,7 @@ export function buildVariantPayload(values, imagePaths) {
     stock_quantity: values.stock_quantity !== '' ? Number(values.stock_quantity) : undefined,
     low_stock_alert: values.low_stock_alert !== '' ? Number(values.low_stock_alert) : undefined,
     images: Array.isArray(imagePaths) ? imagePaths : [],
+    tryon_images: Array.isArray(tryOnImagePaths) ? tryOnImagePaths : [],
   }
 
   Object.keys(payload).forEach((k) => payload[k] === undefined && delete payload[k])
@@ -191,7 +192,6 @@ export default function CRMProductForm({
     typeof serverMessage === 'string' &&
     (/variant failed/i.test(serverMessage) || /partial/i.test(serverMessage))
 
-  // Detect category type for conditional fields
   const catId = values.category_id
   const isGlasses = catId === '1' || catId === '2'
   const isLenses = catId === '3'
@@ -344,7 +344,6 @@ export default function CRMProductForm({
             />
           </Field>
 
-          {/* Glasses / Sunglasses measurements */}
           {isGlasses && (
             <>
               <Field label="Lens Width (mm)">
@@ -377,7 +376,6 @@ export default function CRMProductForm({
             </>
           )}
 
-          {/* Lenses measurements */}
           {isLenses && (
             <>
               <Field label="Diameter (mm)">

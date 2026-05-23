@@ -54,6 +54,7 @@ async function listVariants(req, res) {
       stock_quantity: true,
       low_stock_alert: true,
       images: true,
+      tryon_images: true,
       created_at: true,
       updated_at: true,
     }
@@ -76,14 +77,8 @@ async function createVariant(req, res) {
   if (!Number.isInteger(productId) || productId < 1) return jsonError(res, 400, 'Invalid productId', [])
 
   const {
-    sku,
-    color_name,
-    color_hex,
-    size,
-    price_adjustment,
-    stock_quantity,
-    low_stock_alert,
-    images,
+    sku, color_name, color_hex, size, price_adjustment,
+    stock_quantity, low_stock_alert, images, tryon_images,
   } = req.body || {}
 
   if (!sku || typeof sku !== 'string' || !sku.trim()) {
@@ -108,6 +103,9 @@ async function createVariant(req, res) {
   const imgErr = validateImages(images)
   if (imgErr) return jsonError(res, 400, imgErr, [])
 
+  const tryOnErr = validateImages(tryon_images)
+  if (tryOnErr) return jsonError(res, 400, tryOnErr, [])
+
   const product = await prisma.products.findUnique({ where: { product_id: productId }, select: { product_id: true } })
   if (!product) return jsonError(res, 404, 'Product not found', [])
 
@@ -123,6 +121,7 @@ async function createVariant(req, res) {
         stock_quantity: stock ?? 0,
         low_stock_alert: low ?? 5,
         images: images ?? [],
+        tryon_images: tryon_images ?? [],
       },
       select: {
         variant_id: true,
@@ -135,6 +134,7 @@ async function createVariant(req, res) {
         stock_quantity: true,
         low_stock_alert: true,
         images: true,
+        tryon_images: true,
         created_at: true,
         updated_at: true,
       }
@@ -163,14 +163,8 @@ async function updateVariant(req, res) {
   if (!Number.isInteger(variantId) || variantId < 1) return jsonError(res, 400, 'Invalid variantId', [])
 
   const {
-    sku,
-    color_name,
-    color_hex,
-    size,
-    price_adjustment,
-    stock_quantity,
-    low_stock_alert,
-    images,
+    sku, color_name, color_hex, size, price_adjustment,
+    stock_quantity, low_stock_alert, images, tryon_images,
   } = req.body || {}
 
   if (sku !== undefined) {
@@ -195,6 +189,9 @@ async function updateVariant(req, res) {
   const imgErr = validateImages(images)
   if (imgErr) return jsonError(res, 400, imgErr, [])
 
+  const tryOnErr = validateImages(tryon_images)
+  if (tryOnErr) return jsonError(res, 400, tryOnErr, [])
+
   const existing = await prisma.product_variants.findUnique({ where: { variant_id: variantId }, select: { variant_id: true, product_id: true } })
   if (!existing) return jsonError(res, 404, 'Variant not found', [])
 
@@ -210,6 +207,7 @@ async function updateVariant(req, res) {
         ...(stock_quantity !== undefined ? { stock_quantity: stock } : {}),
         ...(low_stock_alert !== undefined ? { low_stock_alert: low } : {}),
         ...(images !== undefined ? { images } : {}),
+        ...(tryon_images !== undefined ? { tryon_images } : {}),
       },
       select: {
         variant_id: true,
@@ -222,6 +220,7 @@ async function updateVariant(req, res) {
         stock_quantity: true,
         low_stock_alert: true,
         images: true,
+        tryon_images: true,
         created_at: true,
         updated_at: true,
       }
@@ -262,4 +261,3 @@ async function deleteVariant(req, res) {
 }
 
 module.exports = { listVariants, createVariant, updateVariant, deleteVariant }
-

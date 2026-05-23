@@ -263,6 +263,7 @@ model product_variants {
   stock_quantity         Int?                     @default(0)
   low_stock_alert        Int?                     @default(5)
   images                 String[]
+  tryon_images           String[] 
   created_at             DateTime?                @default(now()) @db.Timestamptz(6)
   updated_at             DateTime?                @default(now()) @db.Timestamptz(6)
   cart_items             cart_items[]

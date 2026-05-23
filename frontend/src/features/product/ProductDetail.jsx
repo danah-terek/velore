@@ -271,9 +271,9 @@ export default function ProductDetail() {
   }
 
   const handleTryOn = () => {
-    const image = selectedVariant?.images?.[0] || product.product_variants?.[0]?.images?.[0] || ''
+    const tryOnImage = selectedVariant?.tryon_images?.[0] || selectedVariant?.images?.[0] || ''
     const name = encodeURIComponent(product.name)
-    const imageParam = encodeURIComponent(image)
+    const imageParam = encodeURIComponent(tryOnImage)
     navigate(`/try-on?image=${imageParam}&name=${name}`)
   }
 
@@ -285,8 +285,7 @@ export default function ProductDetail() {
     return <div className="p-10 text-sm text-gray-500">Product not found</div>
   }
 
-  const rawImages = product.product_variants?.flatMap(v => v.images || []).filter(Boolean) || []
-  const images = rawImages
+  const images = selectedVariant?.images?.filter(Boolean) || []
   const sizes = [...new Set(product.product_variants?.map(v => v.size).filter(Boolean))]
   const colors = product.product_variants?.filter(v => v.color_name) || []
   const basePrice = parseFloat(product.price)
@@ -381,10 +380,8 @@ export default function ProductDetail() {
                     key={v.variant_id}
                     onClick={() => {
                       setSelectedVariant(v)
-                      if (v.images?.length > 0) {
-                        const idx = images.indexOf(v.images[0])
-                        if (idx !== -1) setSelectedImage(idx)
-                      }
+                      setSelectedImage(0)
+                      console.log('Switched to:', v.color_name, 'tryon_images:', v.tryon_images)
                     }}
                     title={v.color_name}
                     className={`w-7 h-7 rounded-full border-2 transition-all ${selectedVariant?.variant_id === v.variant_id ? 'border-gray-900 scale-110' : 'border-gray-300'}`}

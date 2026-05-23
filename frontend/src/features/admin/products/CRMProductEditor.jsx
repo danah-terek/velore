@@ -65,8 +65,9 @@ export default function CRMProductEditor({ mode }) {
   const [saving, setSaving] = useState(false)
   const [serverMessage, setServerMessage] = useState(null)
   const [uploadError, setUploadError] = useState(null)
-  const [selectedImages, setSelectedImages] = useState([]) // { file: File, url: string }[]
-  const [uploadedImagePaths, setUploadedImagePaths] = useState([]) // string[]
+  const [selectedImages, setSelectedImages] = useState([])
+  const [uploadedImagePaths, setUploadedImagePaths] = useState([])
+  const [uploadedTryOnImagePaths, setUploadedTryOnImagePaths] = useState([])
 
   const [defaultVariant, setDefaultVariant] = useState({
     sku: '',
@@ -82,7 +83,7 @@ export default function CRMProductEditor({ mode }) {
   const [variantsState, setVariantsState] = useState({ loading: false, error: null, rows: [] })
   const [variantBusyId, setVariantBusyId] = useState(null)
   const [variantConfirmDeleteId, setVariantConfirmDeleteId] = useState(null)
-  const [variantDrafts, setVariantDrafts] = useState({}) // { [variantId]: partial }
+  const [variantDrafts, setVariantDrafts] = useState({})
   const [variantNew, setVariantNew] = useState({
     sku: '',
     stock_quantity: '',
@@ -93,8 +94,10 @@ export default function CRMProductEditor({ mode }) {
     price_adjustment: '',
     images: [],
   })
-  const [variantNewImages, setVariantNewImages] = useState([]) // File[]
-  const [variantNewUploadedPaths, setVariantNewUploadedPaths] = useState([]) // string[]
+  const [variantNewImages, setVariantNewImages] = useState([])
+  const [variantNewUploadedPaths, setVariantNewUploadedPaths] = useState([])
+  const [variantNewTryOnImages, setVariantNewTryOnImages] = useState([])
+  const [variantNewUploadedTryOnPaths, setVariantNewUploadedTryOnPaths] = useState([])
   const [variantNewError, setVariantNewError] = useState(null)
 
   const [values, setValues] = useState(() =>
@@ -218,13 +221,10 @@ export default function CRMProductEditor({ mode }) {
             if (isEdit) {
               const res = await adminProductService.update(productId, payload)
               setServerMessage(res?.message || 'Product updated successfully.')
-              // Refresh local product state
               setProduct((p) => ({ ...p, data: res?.data || p.data }))
             } else {
-              // 1) upload images first (if selected)
               let uploadedPaths = []
               if (selectedImages.length) {
-                // front validation (type/size)
                 const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml']
                 for (const it of selectedImages) {
                   const f = it.file
@@ -253,12 +253,10 @@ export default function CRMProductEditor({ mode }) {
                 setUploadedImagePaths(uploadedPaths)
               }
 
-              // 2) create product
               const res = await adminProductService.create(payload)
               const newId = res?.data?.product_id
               const newIdStr = newId?.toString?.() ? newId.toString() : String(newId || '')
 
-              // 3) create default variant if provided or images uploaded
               const shouldCreateVariant =
                 !isVariantEmpty(defaultVariant, selectedImages.length, uploadedPaths.length) || uploadedPaths.length > 0
 
@@ -272,7 +270,7 @@ export default function CRMProductEditor({ mode }) {
                 }
 
                 try {
-                  const variantPayload = buildVariantPayload(defaultVariant, uploadedPaths)
+                  const variantPayload = buildVariantPayload(defaultVariant, uploadedPaths, uploadedTryOnImagePaths)
                   await adminProductService.createProductVariant(newIdStr, variantPayload)
                 } catch (e) {
                   const msg = e?.message || e?.error || 'Variant creation failed'
@@ -308,7 +306,6 @@ export default function CRMProductEditor({ mode }) {
         onSelectImages={(files) => {
           setUploadError(null)
           setSelectedImages((prev) => {
-            // revoke previous urls
             for (const it of prev) URL.revokeObjectURL(it.url)
             return (files || []).map((f) => ({ file: f, url: URL.createObjectURL(f) }))
           })
@@ -347,6 +344,7 @@ export default function CRMProductEditor({ mode }) {
                 const draft = variantDrafts[v.variant_id] || {}
                 const current = { ...v, ...draft }
                 const images = Array.isArray(current.images) ? current.images : []
+                const tryOnImages = Array.isArray(current.tryon_images) ? current.tryon_images : []
 
                 return (
                   <div key={v.variant_id} className="crm-panel-solid crm-hover-lift p-4 sm:p-5">
@@ -366,7 +364,7 @@ export default function CRMProductEditor({ mode }) {
                           onClick={async () => {
                             setVariantBusyId(v.variant_id)
                             try {
-                              const payload = buildVariantPayload(current, images)
+                              const payload = buildVariantPayload(current, images, tryOnImages)
                               await adminProductService.updateProductVariant(v.variant_id, payload)
                               setVariantDrafts((m) => {
                                 const next = { ...m }
@@ -436,6 +434,7 @@ export default function CRMProductEditor({ mode }) {
                       ))}
                     </div>
 
+                    {/* Regular Images */}
                     <div className="mt-5">
                       <div className="text-sm font-semibold tracking-tight text-[rgb(var(--velore-fg))]">Images</div>
                       <div className="mt-2 flex flex-wrap gap-2">
@@ -455,7 +454,6 @@ export default function CRMProductEditor({ mode }) {
                           </span>
                         )) : <span className="text-sm text-[rgba(var(--velore-fg),0.52)]">No images</span>}
                       </div>
-
                       <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
                         <input
                           type="file"
@@ -481,7 +479,6 @@ export default function CRMProductEditor({ mode }) {
                         />
                         <span className="text-xs text-[rgba(var(--velore-fg),0.52)]">Uploads return /uploads/... paths</span>
                       </div>
-
                       {images.length ? (
                         <div className="mt-4 grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
                           {images.slice(0, 6).map((p) => (
@@ -496,12 +493,73 @@ export default function CRMProductEditor({ mode }) {
                         </div>
                       ) : null}
                     </div>
+
+                    {/* Try-On Images */}
+                    <div className="mt-5 border-t border-[rgba(var(--velore-border-soft),0.5)] pt-5">
+                      <div className="text-sm font-semibold tracking-tight text-[rgb(var(--velore-fg))]">Try-On Images (transparent background)</div>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {tryOnImages.length ? tryOnImages.map((p) => (
+                          <span key={p} className="crm-pill-muted max-w-full bg-purple-50 border-purple-200">
+                            <span className="truncate max-w-[240px]">{p}</span>
+                            <button
+                              type="button"
+                              className="text-rose-700 hover:underline shrink-0 font-medium"
+                              onClick={() => {
+                                const next = tryOnImages.filter((x) => x !== p)
+                                setVariantDrafts((m) => ({ ...m, [v.variant_id]: { ...(m[v.variant_id] || {}), tryon_images: next } }))
+                              }}
+                            >
+                              Remove
+                            </button>
+                          </span>
+                        )) : <span className="text-sm text-[rgba(var(--velore-fg),0.52)]">No try-on images</span>}
+                      </div>
+                      <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+                        <input
+                          type="file"
+                          accept="image/png"
+                          multiple
+                          onChange={async (e) => {
+                            const files = Array.from(e.target.files || [])
+                            if (!files.length) return
+                            setVariantBusyId(v.variant_id)
+                            try {
+                              const up = await adminProductService.uploadProductImages(files)
+                              const paths = up?.data?.paths || []
+                              const merged = Array.from(new Set([...tryOnImages, ...paths]))
+                              setVariantDrafts((m) => ({ ...m, [v.variant_id]: { ...(m[v.variant_id] || {}), tryon_images: merged } }))
+                            } catch (err) {
+                              setVariantsState((s) => ({ ...s, error: err?.message || err?.error || 'Upload failed' }))
+                            } finally {
+                              setVariantBusyId(null)
+                              e.target.value = ''
+                            }
+                          }}
+                          className="crm-file-trigger block w-full sm:w-auto min-w-0"
+                        />
+                        <span className="text-xs text-purple-600">Upload PNGs with transparent background for virtual try-on</span>
+                      </div>
+                      {tryOnImages.length ? (
+                        <div className="mt-4 grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
+                          {tryOnImages.slice(0, 6).map((p) => (
+                            <img
+                              key={p}
+                              src={resolveImageUrl(p) || ''}
+                              alt=""
+                              className="w-full aspect-square rounded-xl border border-purple-200 object-cover bg-purple-50 ring-1 ring-purple-200"
+                              loading="lazy"
+                            />
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
                   </div>
                 )
               })}
             </div>
           ) : null}
 
+          {/* Create new variant */}
           <div className="mt-6 border-t border-[rgba(var(--velore-border-soft),0.9)] pt-6">
             <div className="text-sm font-semibold tracking-tight text-[rgb(var(--velore-fg))]">Create new variant</div>
             <div className="mt-1 text-sm text-[rgba(var(--velore-fg),0.62)]">
@@ -537,6 +595,7 @@ export default function CRMProductEditor({ mode }) {
               ))}
             </div>
 
+            {/* New variant images */}
             <div className="mt-4">
               <label className="crm-field-label">Images</label>
               <input
@@ -551,11 +610,8 @@ export default function CRMProductEditor({ mode }) {
                   {variantNewUploadedPaths.map((p) => (
                     <span key={p} className="crm-pill-muted max-w-full">
                       <span className="truncate max-w-[240px]">{p}</span>
-                      <button
-                        type="button"
-                        className="text-rose-700 hover:underline shrink-0 font-medium"
-                        onClick={() => setVariantNewUploadedPaths((arr) => arr.filter((x) => x !== p))}
-                      >
+                      <button type="button" className="text-rose-700 hover:underline shrink-0 font-medium"
+                        onClick={() => setVariantNewUploadedPaths((arr) => arr.filter((x) => x !== p))}>
                         Remove
                       </button>
                     </span>
@@ -564,9 +620,7 @@ export default function CRMProductEditor({ mode }) {
               ) : null}
 
               <div className="mt-4 flex items-center gap-2">
-                <CRMActionButton
-                  tone="secondary"
-                  disabled={variantBusyId === 'new' || variantNewImages.length === 0}
+                <CRMActionButton tone="secondary" disabled={variantBusyId === 'new' || variantNewImages.length === 0}
                   onClick={async () => {
                     setVariantNewError(null)
                     setVariantBusyId('new')
@@ -580,9 +634,53 @@ export default function CRMProductEditor({ mode }) {
                     } finally {
                       setVariantBusyId(null)
                     }
-                  }}
-                >
+                  }}>
                   Upload images
+                </CRMActionButton>
+              </div>
+            </div>
+
+            {/* New variant try-on images */}
+            <div className="mt-4">
+              <label className="crm-field-label">Try-On Images (transparent PNG)</label>
+              <input
+                type="file"
+                accept="image/png"
+                multiple
+                onChange={(e) => setVariantNewTryOnImages(Array.from(e.target.files || []))}
+                className="crm-file-trigger block w-full max-w-full"
+              />
+              {variantNewUploadedTryOnPaths.length ? (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {variantNewUploadedTryOnPaths.map((p) => (
+                    <span key={p} className="crm-pill-muted max-w-full bg-purple-50 border-purple-200">
+                      <span className="truncate max-w-[240px]">{p}</span>
+                      <button type="button" className="text-rose-700 hover:underline shrink-0 font-medium"
+                        onClick={() => setVariantNewUploadedTryOnPaths((arr) => arr.filter((x) => x !== p))}>
+                        Remove
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+
+              <div className="mt-4 flex items-center gap-2">
+                <CRMActionButton tone="secondary" disabled={variantBusyId === 'new' || variantNewTryOnImages.length === 0}
+                  onClick={async () => {
+                    setVariantNewError(null)
+                    setVariantBusyId('new')
+                    try {
+                      const up = await adminProductService.uploadProductImages(variantNewTryOnImages)
+                      const paths = up?.data?.paths || []
+                      setVariantNewUploadedTryOnPaths((arr) => Array.from(new Set([...arr, ...paths])))
+                      setVariantNewTryOnImages([])
+                    } catch (e) {
+                      setVariantNewError(e?.message || e?.error || 'Upload failed')
+                    } finally {
+                      setVariantBusyId(null)
+                    }
+                  }}>
+                  Upload try-on images
                 </CRMActionButton>
                 <CRMActionButton
                   disabled={variantBusyId === 'new'}
@@ -599,27 +697,18 @@ export default function CRMProductEditor({ mode }) {
                     }
                     setVariantBusyId('new')
                     try {
-                      const payload = buildVariantPayload(variantNew, variantNewUploadedPaths)
+                      const payload = buildVariantPayload(variantNew, variantNewUploadedPaths, variantNewUploadedTryOnPaths)
                       await adminProductService.createProductVariant(productId, payload)
-                      setVariantNew({
-                        sku: '',
-                        stock_quantity: '',
-                        low_stock_alert: '',
-                        color_name: '',
-                        color_hex: '',
-                        size: '',
-                        price_adjustment: '',
-                        images: [],
-                      })
+                      setVariantNew({ sku: '', stock_quantity: '', low_stock_alert: '', color_name: '', color_hex: '', size: '', price_adjustment: '', images: [] })
                       setVariantNewUploadedPaths([])
+                      setVariantNewUploadedTryOnPaths([])
                       await loadVariants()
                     } catch (e) {
                       setVariantNewError(e?.message || e?.error || 'Failed to create variant')
                     } finally {
                       setVariantBusyId(null)
                     }
-                  }}
-                >
+                  }}>
                   Create variant
                 </CRMActionButton>
               </div>
@@ -630,4 +719,3 @@ export default function CRMProductEditor({ mode }) {
     </div>
   )
 }
-

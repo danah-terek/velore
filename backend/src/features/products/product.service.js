@@ -42,6 +42,7 @@ const productSelect = {
       stock_quantity: true,
       low_stock_alert: true,
       images: true,
+      tryon_images: true,
     },
   },
 };
