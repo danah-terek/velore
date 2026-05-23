@@ -8,5 +8,4 @@ build/
 coverage/
 
 logs/
-uploads/
 /src/generated/prisma
