@@ -98,16 +98,19 @@ export default function TryOn() {
     const eyeCenterY = (leftY + rightY) / 2;
     const eyeDistance = Math.abs(leftX - rightX);
 
-    const glassesW = eyeDistance * 2.4;
-    const glassesH = glassesW * 0.38;
+const glassesW = eyeDistance * 2.6;
+const img = glassesImgRef.current;
+const aspectRatio = img ? img.naturalHeight / img.naturalWidth : 0.75;
+const glassesH = glassesW * aspectRatio;
+
 
     // Tilt angle — atan2 expects (dy, dx) from left point to right point in display space
     // After mirroring, rightX is to the LEFT visually, so use leftX→rightX direction
     const angle = Math.atan2(rightY - leftY, rightX - leftX);
 
     ctx.save();
-    ctx.translate(eyeCenterX, eyeCenterY - glassesH * 0.1);
-    ctx.rotate(angle);
+ctx.translate(eyeCenterX, eyeCenterY);
+ctx.rotate(angle);
 
     if (glassesImgRef.current) {
       // The display canvas is drawn with ctx.scale(-1,1) for the mirror effect.
