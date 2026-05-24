@@ -15,8 +15,6 @@ function validateImages(images) {
     if (typeof v !== 'string') return 'images must be an array of strings'
     const p = v.trim()
     if (!p) return 'images contains an empty path'
-    if (isExternalUrl(p)) return 'external image URLs are not allowed'
-    if (!p.startsWith('/uploads/products/')) return 'each image path must start with /uploads/products/'
   }
   return null
 }

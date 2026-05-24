@@ -139,14 +139,6 @@ model categories {
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-//model embeddings {
-//  id         BigInt                 @id @default(autoincrement())
-//  content    String
-//  embedding  Unsupported("vector")?
-//  created_at DateTime?              @default(now()) @db.Timestamptz(6)
-//}
-
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model feedback {
   feedback_id   BigInt    @id @default(autoincrement())
   user_id       BigInt
@@ -263,9 +255,9 @@ model product_variants {
   stock_quantity         Int?                     @default(0)
   low_stock_alert        Int?                     @default(5)
   images                 String[]
-  tryon_images           String[] 
   created_at             DateTime?                @default(now()) @db.Timestamptz(6)
   updated_at             DateTime?                @default(now()) @db.Timestamptz(6)
+  tryon_images           String[]
   cart_items             cart_items[]
   orders_items           orders_items[]
   prescription_inventory prescription_inventory[]
@@ -293,7 +285,6 @@ model products {
   virtual_try_on     Boolean?             @default(false)
   is_active          Boolean?             @default(true)
   is_bundle          Boolean?             @default(false)
-  specifications     Json?
   created_at         DateTime?            @default(now()) @db.Timestamptz(6)
   updated_at         DateTime?            @default(now()) @db.Timestamptz(6)
   base_curve         Float?
@@ -303,6 +294,7 @@ model products {
   lens_width         Float?
   temple_length      Float?
   water_content      Float?
+  specifications     Json?
   ai_recommendations ai_recommendations[]
   cart_items         cart_items[]
   feedback           feedback[]
@@ -416,8 +408,8 @@ model reviews {
   status     String?   @default("pending") @db.VarChar
   created_at DateTime? @default(now()) @db.Timestamptz(6)
   product_id BigInt?
-  users      users     @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "fk_reviews_user")
   products   products? @relation(fields: [product_id], references: [product_id], onDelete: Cascade, onUpdate: NoAction, map: "fk_reviews_product")
+  users      users     @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "fk_reviews_user")
 
   @@unique([user_id, product_id])
   @@index([user_id], map: "idx_reviews_user")
