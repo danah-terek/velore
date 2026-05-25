@@ -163,7 +163,7 @@ export default function CRMDiscounts() {
             <div>
               <label className="block text-xs font-medium text-slate-600 mb-1">Expires At</label>
               <input
-                type="date"
+type="date" min={new Date().toISOString().split('T')[0]}
                 value={form.expires_at}
                 onChange={e => setForm(p => ({ ...p, expires_at: e.target.value }))}
                 className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-gray-900"
@@ -210,10 +210,11 @@ export default function CRMDiscounts() {
                       {c.type === 'percentage' ? `${c.value}% off` : `$${c.value} off`}
                       {c.min_order > 0 ? ` · min $${c.min_order}` : ''}
                     </p>
-                    <p className="text-xs text-slate-400">
-                      Used {c.used_count || 0}{c.max_uses ? `/${c.max_uses}` : ''} times
-                      {c.expires_at ? ` · expires ${new Date(c.expires_at).toLocaleDateString()}` : ''}
-                    </p>
+{c.expires_at && (
+  <p className="text-xs text-slate-400">
+    Expires {new Date(c.expires_at).toLocaleDateString()}
+  </p>
+)}
                   </div>
                 </div>
                 <div className="flex items-center gap-2">

@@ -369,9 +369,9 @@ export default function Checkout() {
   })
   const [selectedPayment, setSelectedPayment] = useState('cod')
   const [discountCode, setDiscountCode] = useState('')
-  const [discountApplied, setDiscountApplied] = useState(false)
-  const [discountAmount, setDiscountAmount] = useState(0)
-
+const [discountApplied, setDiscountApplied] = useState(false)
+const [discountAmount, setDiscountAmount] = useState(0)
+const [discountError, setDiscountError] = useState('')
   // ✅ LOYALTY POINTS STATE
   const [loyaltyPoints, setLoyaltyPoints] = useState(0)
   const [pointsRedeemed, setPointsRedeemed] = useState(false)
@@ -489,24 +489,26 @@ export default function Checkout() {
   const total = Math.max(0, subtotal + shipping - discountSafe - pointsDiscountSafe)
 
 const applyDiscount = async () => {
-    if (cartIsEmpty || !discountCode) return
-    try {
-      const res = await fetch('/api/v1/discounts/validate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code: discountCode, orderTotal: subtotal })
-      })
-      const result = await res.json()
-      if (result.valid) {
-        setDiscountAmount(result.discountAmount)
-        setDiscountApplied(true)
-      } else {
-        alert(result.message || 'Invalid discount code')
-      }
-    } catch (e) {
-      alert('Failed to apply discount code. Please try again.')
+  if (cartIsEmpty || !discountCode) return
+  setDiscountError('')
+  try {
+    const res = await fetch('/api/v1/discounts/validate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: discountCode, orderTotal: subtotal })
+    })
+    const result = await res.json()
+    if (result.valid) {
+      setDiscountAmount(result.discountAmount)
+      setDiscountApplied(true)
+      setDiscountError('')
+    } else {
+      setDiscountError(result.message || 'Invalid discount code')
     }
+  } catch (e) {
+    setDiscountError('Failed to apply discount code. Please try again.')
   }
+}
 
   const validateForm = () => {
     const errors = {}
@@ -893,11 +895,14 @@ discount_amount: discountSafe + pointsDiscountSafe,
                   </div>
                   
                   {/* ✅ Discount hints - shown only when no discount is applied */}
-                  {!discountApplied && (
-                    <div className="mt-2">
-                      <p className="text-xs text-gray-400">Enter a valid discount code to get a discount</p>
-                    </div>
-                  )}
+{!discountApplied && (
+  <div className="mt-2">
+    {discountError
+      ? <p className="text-xs text-red-500">{discountError}</p>
+      : <p className="text-xs text-gray-400">Enter a valid discount code to get a discount</p>
+    }
+  </div>
+)}
                   
                   {discountApplied && (
                     <p className="text-green-600 text-xs mt-2 flex items-center gap-1">
