@@ -292,6 +292,8 @@ model products {
   details            String?
   diameter           Float?
   lens_width         Float?
+  lenses_per_pack      Int?
+  blue_light_protection Boolean? @default(false)
   temple_length      Float?
   water_content      Float?
   specifications     Json?

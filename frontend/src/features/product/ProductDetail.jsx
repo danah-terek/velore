@@ -295,7 +295,6 @@ export default function ProductDetail() {
   const canAdd = stockQty === null ? true : stockQty > 0
   const maxQty = stockQty === null ? null : Math.max(0, Number(stockQty))
 
-  // Category detection
   const categoryName = product.categories?.name?.toLowerCase()
   const isLenses = categoryName === 'lenses' || categoryName === 'blue light glasses'
   const isGlasses = categoryName === 'eyeglasses' || categoryName === 'glasses' || categoryName === 'optical glasses'
@@ -354,7 +353,6 @@ export default function ProductDetail() {
             <p className="text-sm text-gray-600">Category: <span className="font-medium">{isLenses ? 'Lenses' : product.categories.name}</span></p>
           )}
 
-          {/* Only show frame shape and face shape for glasses and sunglasses - NOT for lenses */}
           {!isLenses && product.specifications?.frame_shape && (
             <p className="text-sm text-gray-600">Frame Shape: <span className="font-medium">{product.specifications.frame_shape}</span></p>
           )}
@@ -365,6 +363,14 @@ export default function ProductDetail() {
           {product.specifications?.material && (
             <p className="text-sm text-gray-600">Material: <span className="font-medium">{product.specifications.material}</span></p>
           )}
+
+          {isLenses && product.specifications?.lenses_per_pack && (
+            <p className="text-sm text-gray-600">Pack Size: <span className="font-medium">{product.specifications.lenses_per_pack} lenses</span></p>
+          )}
+          {isLenses && product.specifications?.blue_light_protection && (
+            <p className="text-sm text-gray-600">Blue Light Protection: <span className="font-medium">Yes</span></p>
+          )}
+
           {product.gender && (
             <p className="text-sm text-gray-600">Gender: <span className="font-medium capitalize">{product.gender}</span></p>
           )}
@@ -381,7 +387,6 @@ export default function ProductDetail() {
                     onClick={() => {
                       setSelectedVariant(v)
                       setSelectedImage(0)
-                      console.log('Switched to:', v.color_name, 'tryon_images:', v.tryon_images)
                     }}
                     title={v.color_name}
                     className={`w-7 h-7 rounded-full border-2 transition-all ${selectedVariant?.variant_id === v.variant_id ? 'border-gray-900 scale-110' : 'border-gray-300'}`}
@@ -438,7 +443,6 @@ export default function ProductDetail() {
             )}
           </div>
 
-          {/* Prescription section - shows for BOTH Glasses AND Lenses */}
           {(isGlasses || isLenses) && (
             <PrescriptionSection
               isLenses={isLenses}
@@ -452,7 +456,6 @@ export default function ProductDetail() {
               <p>{product.description}</p>
             </AccordionItem>
 
-            {/* Size & Fit - only for Glasses (not sunglasses, not lenses) */}
             {isGlasses && (product.specifications?.lens_width || product.specifications?.bridge_width || product.specifications?.temple_length) && (
               <AccordionItem title="Size & Fit">
                 {product.specifications?.lens_width && <p>Lens Width: {product.specifications.lens_width} mm</p>}
@@ -461,7 +464,6 @@ export default function ProductDetail() {
               </AccordionItem>
             )}
 
-            {/* Size Guide - for Glasses AND Sunglasses with photo icon */}
             {(isGlasses || isSunglasses) && (
               <AccordionItem title="Size Guide">
                 <button
@@ -483,7 +485,6 @@ export default function ProductDetail() {
               </AccordionItem>
             )}
 
-            {/* Lens Specifications - only for Lenses (Blue Light Glasses) */}
             {isLenses && (product.specifications?.diameter || product.specifications?.base_curve || product.specifications?.water_content) && (
               <AccordionItem title="Lens Specifications">
                 {product.specifications?.diameter && <p>Diameter: {product.specifications.diameter} mm</p>}
@@ -492,7 +493,6 @@ export default function ProductDetail() {
               </AccordionItem>
             )}
 
-            {/* Materials - for all product types */}
             {(product.frame_material || product.lens_material || product.water_content || product.lens_type) && (
               <AccordionItem title="Materials">
                 {product.frame_material && <p>Frame: {product.frame_material}</p>}
@@ -502,7 +502,6 @@ export default function ProductDetail() {
               </AccordionItem>
             )}
 
-            {/* How to Use - only for lenses */}
             {isLenses && product.how_to_use && (
               <AccordionItem title="How to Use">
                 <p>{product.how_to_use}</p>
@@ -566,9 +565,7 @@ export default function ProductDetail() {
         </div>
       </div>
 
-      {/* ── REVIEWS SECTION ── */}
       <ProductReviews productId={product.product_id} />
-
     </div>
   )
 }

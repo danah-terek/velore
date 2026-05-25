@@ -46,6 +46,8 @@ function productToFormValues(p) {
     diameter: specs.diameter ?? p?.diameter ?? '',
     base_curve: specs.base_curve ?? p?.base_curve ?? '',
     water_content: specs.water_content ?? p?.water_content ?? '',
+    lenses_per_pack: specs.lenses_per_pack ?? p?.lenses_per_pack ?? '',
+    blue_light_protection: specs.blue_light_protection ?? p?.blue_light_protection ?? false,
     is_active: p?.is_active !== undefined ? !!p.is_active : true,
   }
 }
@@ -68,6 +70,7 @@ export default function CRMProductEditor({ mode }) {
   const [selectedImages, setSelectedImages] = useState([])
   const [uploadedImagePaths, setUploadedImagePaths] = useState([])
   const [uploadedTryOnImagePaths, setUploadedTryOnImagePaths] = useState([])
+  const [newBrandName, setNewBrandName] = useState('')
 
   const [defaultVariant, setDefaultVariant] = useState({
     sku: '',
@@ -182,6 +185,20 @@ export default function CRMProductEditor({ mode }) {
   useEffect(() => {
     loadVariants()
   }, [loadVariants])
+
+  const handleAddBrand = async (name) => {
+    try {
+      const res = await adminProductService.createBrand(name)
+      const brand = res?.data?.brand_id
+        ? { brand_id: res.data.brand_id.toString(), name }
+        : { brand_id: res?.data?.id?.toString(), name }
+      setOptions(prev => ({ ...prev, brands: [...prev.brands, brand] }))
+      setValues(prev => ({ ...prev, brand_id: brand.brand_id }))
+      setNewBrandName('')
+    } catch (err) {
+      setUploadError(err?.message || 'Failed to create brand')
+    }
+  }
 
   if (isEdit && !productId) return <Navigate to="/admin/products" replace />
   if (product.loading) return <CRMLoadingState label="Loading product…" />
@@ -321,6 +338,9 @@ export default function CRMProductEditor({ mode }) {
         onRemoveUploadedImagePath={(p) => setUploadedImagePaths((arr) => arr.filter((x) => x !== p))}
         uploadError={uploadError}
         serverMessage={serverMessage}
+        newBrandName={newBrandName}
+        setNewBrandName={setNewBrandName}
+        onAddBrand={handleAddBrand}
       />
 
       {isEdit ? (

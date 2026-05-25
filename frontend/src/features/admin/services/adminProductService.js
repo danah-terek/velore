@@ -39,6 +39,10 @@ export const adminProductService = {
     return adminApiClient.get('/brands')
   },
 
+  async createBrand(name) {
+    return adminApiClient.post('/brands', { name })
+  },
+
   async uploadProductImages(files) {
     const form = new FormData()
     for (const f of Array.from(files || [])) form.append('files', f)
@@ -63,4 +67,3 @@ export const adminProductService = {
     return adminApiClient.delete(`/admin/variants/${variantId}`)
   },
 }
-

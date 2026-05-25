@@ -68,6 +68,8 @@ export function buildProductPayload(values) {
   if (values.diameter !== '' && values.diameter !== null && values.diameter !== undefined) specs.diameter = parseFloat(values.diameter)
   if (values.base_curve !== '' && values.base_curve !== null && values.base_curve !== undefined) specs.base_curve = parseFloat(values.base_curve)
   if (values.water_content !== '' && values.water_content !== null && values.water_content !== undefined) specs.water_content = parseFloat(values.water_content)
+  if (values.lenses_per_pack !== '' && values.lenses_per_pack !== null && values.lenses_per_pack !== undefined) specs.lenses_per_pack = parseInt(values.lenses_per_pack)
+  if (typeof values.blue_light_protection === 'boolean') specs.blue_light_protection = values.blue_light_protection
   if (Object.keys(specs).length > 0) payload.specifications = specs
 
   if (values.gender) payload.gender = normalizeGender(values.gender) || undefined
@@ -186,6 +188,9 @@ export default function CRMProductForm({
   onRemoveUploadedImagePath,
   uploadError,
   serverMessage,
+  newBrandName,
+  setNewBrandName,
+  onAddBrand,
 }) {
   const genderOptions = useMemo(() => ['', 'male', 'female', 'unisex'], [])
   const serverWarn =
@@ -301,6 +306,27 @@ export default function CRMProductForm({
                 </option>
               ))}
             </select>
+
+            {/* Quick add brand */}
+            <div className="flex gap-2 items-end mt-2">
+              <input
+                placeholder="New brand name"
+                value={newBrandName || ''}
+                onChange={(e) => setNewBrandName?.(e.target.value)}
+                className="crm-input flex-1"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  const name = newBrandName?.trim()
+                  if (!name) return
+                  onAddBrand?.(name)
+                }}
+                className="crm-btn-secondary text-sm whitespace-nowrap"
+              >
+                Add
+              </button>
+            </div>
           </Field>
 
           <Field label="Gender (optional)" error={errors.gender}>
@@ -404,6 +430,27 @@ export default function CRMProductForm({
                   placeholder="55"
                   inputMode="numeric"
                 />
+              </Field>
+              <Field label="Lenses Per Pack">
+                <input
+                  value={values.lenses_per_pack || ''}
+                  onChange={(e) => onChange({ lenses_per_pack: e.target.value })}
+                  className="crm-input"
+                  placeholder="1"
+                  inputMode="numeric"
+                />
+              </Field>
+
+              <Field label="Blue Light Protection">
+                <div className="flex items-center gap-3 min-h-[42px] px-3 py-2 rounded-xl border border-[rgba(var(--velore-border-soft),0.95)] bg-[rgba(var(--velore-pearl),0.85)]">
+                  <input
+                    type="checkbox"
+                    checked={!!values.blue_light_protection}
+                    onChange={(e) => onChange({ blue_light_protection: e.target.checked })}
+                    className="w-4 h-4 rounded border-[rgba(var(--velore-border-soft),0.95)]"
+                  />
+                  <label className="text-sm">Has blue light filter</label>
+                </div>
               </Field>
             </>
           )}
