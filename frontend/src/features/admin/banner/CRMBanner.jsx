@@ -52,48 +52,87 @@ export default function CRMBanner() {
     }
   }
 
+  const isSuccess = feedback.includes('success')
+
   return (
-    <div className="max-w-4xl mx-auto p-0 space-y-8 bg-white min-h-screen">
-      
-      {/* Header - Editorial Style */}
-      <div className="border-b border-black pb-8">
-        <h2 className="text-3xl font-light text-black">Top Banner Editor</h2>
-        <p className="text-xs text-gray-500 mt-2 tracking-widest uppercase">
+    <div className="max-w-4xl mx-auto p-0 space-y-8 min-h-screen" style={{ background: '#EFF8FE' }}>
+
+      {/* Header */}
+      <div className="pb-8" style={{ borderBottom: '1px solid rgba(118,205,214,0.30)' }}>
+        <h2 className="text-3xl font-light" style={{ color: '#1E1D22' }}>
+          Top Banner Editor
+        </h2>
+        <p
+          className="text-xs mt-2 tracking-widest uppercase"
+          style={{ color: '#76CDD6' }}
+        >
           Manage scrolling announcements.
         </p>
       </div>
 
+      {/* Feedback */}
       {feedback && (
-        <div className={`px-4 py-3 text-[10px] font-bold tracking-[0.2em] uppercase border ${feedback.includes('success') ? 'border-black text-black' : 'border-red-600 text-red-600'}`}>
+        <div
+          className="px-4 py-3 text-[10px] font-bold tracking-[0.2em] uppercase"
+          style={{
+            border: `1px solid ${isSuccess ? '#76CDD6' : '#e05555'}`,
+            color: isSuccess ? '#76CDD6' : '#e05555',
+            background: isSuccess ? 'rgba(118,205,214,0.06)' : 'rgba(224,85,85,0.05)',
+            borderRadius: '4px',
+          }}
+        >
           {feedback}
         </div>
       )}
 
       {/* Editor Grid */}
-      <div className="space-y-4">
+      <div className="space-y-3">
         {messages.map((m, i) => (
-          <div key={i} className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 border border-black hover:border-gray-500 transition-colors">
-            <span className="text-[10px] font-bold text-gray-400 w-8 shrink-0">#{i + 1}</span>
+          <div
+            key={i}
+            className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 transition-colors"
+            style={{
+              background: '#ffffff',
+              border: '1px solid rgba(118,205,214,0.22)',
+              borderRadius: '4px',
+            }}
+          >
+            <span
+              className="text-[10px] font-bold w-8 shrink-0"
+              style={{ color: '#76CDD6' }}
+            >
+              #{i + 1}
+            </span>
             <input
               value={m.message}
               onChange={e => updateSlot(i, 'message', e.target.value)}
-              className="flex-1 border-none focus:ring-0 text-sm font-light text-black placeholder:text-gray-300 outline-none"
+              className="flex-1 border-none focus:ring-0 text-sm font-light outline-none bg-transparent"
+              style={{ color: '#1E1D22' }}
               placeholder={`Enter message ${i + 1}...`}
             />
-            <div className="flex items-center justify-between sm:justify-end gap-6 border-t sm:border-t-0 pt-4 sm:pt-0">
-              <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest cursor-pointer">
-                <input 
-                  type="checkbox" 
-                  checked={m.is_active} 
+            <div className="flex items-center justify-between sm:justify-end gap-6 border-t sm:border-t-0 pt-4 sm:pt-0"
+              style={{ borderColor: 'rgba(118,205,214,0.18)' }}
+            >
+              <label
+                className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest cursor-pointer"
+                style={{ color: 'rgba(30,29,34,0.55)' }}
+              >
+                <input
+                  type="checkbox"
+                  checked={m.is_active}
                   onChange={e => updateSlot(i, 'is_active', e.target.checked)}
-                  className="accent-black w-4 h-4"
+                  className="w-4 h-4"
+                  style={{ accentColor: '#76CDD6' }}
                 />
                 Active
               </label>
               <button
                 type="button"
                 onClick={() => deleteSlot(i)}
-                className="text-gray-400 hover:text-black transition-colors"
+                className="transition-colors"
+                style={{ color: 'rgba(30,29,34,0.30)' }}
+                onMouseEnter={e => e.currentTarget.style.color = '#e05555'}
+                onMouseLeave={e => e.currentTarget.style.color = 'rgba(30,29,34,0.30)'}
                 title="Delete this banner"
               >
                 <Trash2 size={16} />
@@ -105,16 +144,38 @@ export default function CRMBanner() {
 
       {/* Action Bar */}
       <div className="flex gap-4 pt-4">
-        <button 
-          onClick={addSlot} 
-          className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] border border-black px-6 py-3 hover:bg-black hover:text-white transition-all"
+        <button
+          onClick={addSlot}
+          className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] px-6 py-3 transition-all duration-200"
+          style={{
+            border: '1px solid #76CDD6',
+            color: '#76CDD6',
+            background: 'transparent',
+            borderRadius: '4px',
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.background = '#76CDD6'
+            e.currentTarget.style.color = '#ffffff'
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.background = 'transparent'
+            e.currentTarget.style.color = '#76CDD6'
+          }}
         >
           <Plus size={14} /> Add Slot
         </button>
-        <button 
-          onClick={save} 
-          disabled={saving} 
-          className="text-[10px] font-bold uppercase tracking-[0.2em] bg-black text-white px-8 py-3 hover:bg-gray-800 disabled:opacity-50 transition-all"
+        <button
+          onClick={save}
+          disabled={saving}
+          className="text-[10px] font-bold uppercase tracking-[0.2em] px-8 py-3 transition-all duration-200 disabled:opacity-50"
+          style={{
+            background: '#76CDD6',
+            color: '#ffffff',
+            border: '1px solid #76CDD6',
+            borderRadius: '4px',
+          }}
+          onMouseEnter={e => { if (!saving) e.currentTarget.style.background = '#5bb8c2' }}
+          onMouseLeave={e => { e.currentTarget.style.background = '#76CDD6' }}
         >
           {saving ? 'Saving…' : 'Save Changes'}
         </button>

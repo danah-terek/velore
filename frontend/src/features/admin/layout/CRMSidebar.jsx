@@ -19,6 +19,96 @@ import {
 
 import { useAdminAuth } from '../auth/AdminAuthContext'
 
+// ─── palette ───────────────────────────────────────────────────────────────
+// #76CDD6  teal accent
+// #1E1D22  dark text
+// #EFF8FE  light blue background / hover fill
+// #FFFFFF  sidebar surface
+// ---------------------------------------------------------------------------
+
+const styles = `
+  .crm-sidebar {
+    background: #ffffff;
+    border-right: 1px solid rgba(118,205,214,0.18);
+  }
+
+  .crm-sidebar-brand-tile {
+    background: #76CDD6;
+    border-radius: 10px;
+    color: #ffffff;
+    transition: transform 0.2s ease;
+  }
+
+  .crm-sidebar-brand-tile:hover {
+    transform: scale(1.06);
+  }
+
+  .crm-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    color: rgba(30,29,34,0.50);
+    font-size: 13px;
+    font-weight: 400;
+    text-decoration: none;
+    transition: background 0.16s ease, color 0.16s ease, transform 0.15s ease;
+    position: relative;
+    width: 100%;
+  }
+
+  .crm-nav-item:hover {
+    background: #EFF8FE;
+    color: #1E1D22;
+    transform: translateX(2px);
+  }
+
+  .crm-nav-item:hover .crm-nav-icon {
+    color: #76CDD6;
+    opacity: 1;
+  }
+
+  .crm-nav-item-active {
+    background: #EFF8FE;
+    color: #1E1D22;
+    font-weight: 500;
+  }
+
+  .crm-nav-item-active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 20%;
+    height: 60%;
+    width: 3px;
+    background: #76CDD6;
+    border-radius: 0 3px 3px 0;
+  }
+
+  .crm-nav-item-active .crm-nav-icon {
+    color: #76CDD6;
+    opacity: 1;
+  }
+
+  .crm-nav-icon {
+    width: 17px;
+    height: 17px;
+    flex-shrink: 0;
+    color: rgba(30,29,34,0.40);
+    transition: color 0.16s ease, opacity 0.16s ease;
+  }
+
+  .crm-logout-btn {
+    transition: background 0.16s ease, color 0.16s ease;
+  }
+
+  .crm-logout-btn:hover {
+    background: #fff0f0 !important;
+    color: #e05555 !important;
+  }
+`
+
 function normalizeRole(role) {
   if (!role) return null
   if (role === 'admin') return 'staff_admin'
@@ -30,9 +120,11 @@ function NavItem({ to, icon: Icon, label, onNavigate }) {
     <NavLink
       to={to}
       onClick={() => onNavigate?.()}
-      className={({ isActive }) => ['crm-nav-item group', isActive ? 'crm-nav-item-active' : ''].join(' ')}
+      className={({ isActive }) =>
+        ['crm-nav-item group', isActive ? 'crm-nav-item-active' : ''].join(' ')
+      }
     >
-      <Icon className="crm-nav-icon opacity-90 group-hover:opacity-100" aria-hidden />
+      <Icon className="crm-nav-icon" aria-hidden />
       <span className="truncate">{label}</span>
     </NavLink>
   )
@@ -44,38 +136,54 @@ export default function CRMSidebar({ mobileOpen, onClose }) {
   const isSuper = role === 'super_admin'
 
   const primary = [
-    { to: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard, show: true },
-    { to: '/admin/analytics', label: 'Analytics', icon: BarChart3, show: isSuper },
-    { to: '/admin/products', label: 'Products', icon: Package, show: true },
-    { to: '/admin/inventory', label: 'Inventory', icon: Boxes, show: true },
-    { to: '/admin/orders', label: 'Orders', icon: ShoppingCart, show: true },
-    { to: '/admin/customers', label: 'Customers', icon: Users, show: true },
-    { to: '/admin/reviews', label: 'Reviews', icon: Star, show: true },
-    { to: '/admin/blogs', label: 'Blogs', icon: Newspaper, show: true },
-    { to: '/admin/banner', label: 'Banner', icon: Megaphone, show: true },
-    { to: '/admin/discounts', label: 'Discounts', icon: Tag, show: true },
-    { to: '/admin/staff', label: 'Staff', icon: ShieldCheck, show: isSuper },
-    { to: '/admin/legal', label: 'Legal Pages', icon: ScrollText, show: isSuper },
-    { to: '/admin/settings', label: 'Settings', icon: Settings, show: isSuper },
+    { to: '/admin/dashboard',  label: 'Dashboard',   icon: LayoutDashboard, show: true },
+    { to: '/admin/analytics',  label: 'Analytics',   icon: BarChart3,       show: isSuper },
+    { to: '/admin/products',   label: 'Products',    icon: Package,         show: true },
+    { to: '/admin/inventory',  label: 'Inventory',   icon: Boxes,           show: true },
+    { to: '/admin/orders',     label: 'Orders',      icon: ShoppingCart,    show: true },
+    { to: '/admin/customers',  label: 'Customers',   icon: Users,           show: true },
+    { to: '/admin/reviews',    label: 'Reviews',     icon: Star,            show: true },
+    { to: '/admin/blogs',      label: 'Blogs',       icon: Newspaper,       show: true },
+    { to: '/admin/banner',     label: 'Banner',      icon: Megaphone,       show: true },
+    { to: '/admin/discounts',  label: 'Discounts',   icon: Tag,             show: true },
+    { to: '/admin/staff',      label: 'Staff',       icon: ShieldCheck,     show: isSuper },
+    { to: '/admin/legal',      label: 'Legal Pages', icon: ScrollText,      show: isSuper },
+    { to: '/admin/settings',   label: 'Settings',    icon: Settings,        show: isSuper },
   ].filter((x) => x.show)
 
   const inner = (
     <div className="crm-sidebar flex flex-col h-full min-h-0">
-      <div className="px-5 py-5 border-b border-white/[0.06] shrink-0">
+
+      {/* Brand */}
+      <div
+        className="px-5 py-5 shrink-0"
+        style={{ borderBottom: '1px solid rgba(118,205,214,0.15)' }}
+      >
         <div className="flex items-center gap-3">
-          <div className="crm-sidebar-brand-tile w-11 h-11 flex items-center justify-center text-white font-semibold tracking-tight">
+          <div className="crm-sidebar-brand-tile w-10 h-10 flex items-center justify-center font-semibold tracking-tight">
             V
           </div>
           <div className="min-w-0 flex-1">
-            <div className="text-white font-semibold tracking-tight truncate">Velore CRM</div>
-            <div className="text-[10px] text-slate-400 uppercase tracking-[0.16em] truncate font-medium">
+            <div
+              className="font-semibold tracking-tight truncate text-sm"
+              style={{ color: '#1E1D22' }}
+            >
+              Velore CRM
+            </div>
+            <div
+              className="text-[9px] uppercase tracking-[0.16em] truncate font-semibold mt-0.5"
+              style={{ color: '#76CDD6' }}
+            >
               Operations
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="lg:hidden p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors shrink-0"
+            className="lg:hidden p-2 rounded-xl transition-colors shrink-0"
+            style={{ color: 'rgba(30,29,34,0.40)' }}
+            onMouseEnter={e => { e.currentTarget.style.color = '#1E1D22'; e.currentTarget.style.background = '#EFF8FE' }}
+            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(30,29,34,0.40)'; e.currentTarget.style.background = 'transparent' }}
             aria-label="Close menu"
           >
             <X className="w-5 h-5" aria-hidden />
@@ -83,34 +191,62 @@ export default function CRMSidebar({ mobileOpen, onClose }) {
         </div>
       </div>
 
-      <div className="px-5 py-4 border-b border-white/[0.06] shrink-0">
+      {/* User */}
+      <div
+        className="px-5 py-4 shrink-0"
+        style={{ borderBottom: '1px solid rgba(118,205,214,0.15)' }}
+      >
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-white/[0.08] ring-1 ring-white/[0.12] text-white flex items-center justify-center text-sm font-semibold shrink-0">
+          <div
+            className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold shrink-0"
+            style={{
+              background: '#EFF8FE',
+              border: '1.5px solid #76CDD6',
+              color: '#76CDD6',
+            }}
+          >
             {(admin?.email || 'A')[0]?.toUpperCase()}
           </div>
           <div className="min-w-0 flex-1">
-            <div className="text-sm text-white font-medium truncate">{admin?.email}</div>
-            <div className="text-[11px] text-slate-400 capitalize truncate font-medium">
+            <div
+              className="text-sm font-medium truncate"
+              style={{ color: '#1E1D22' }}
+            >
+              {admin?.email}
+            </div>
+            <div
+              className="text-[10px] capitalize truncate font-medium mt-0.5"
+              style={{ color: '#76CDD6' }}
+            >
               {role === 'super_admin' ? 'Super Admin' : 'Staff Admin'}
             </div>
           </div>
         </div>
       </div>
 
-      <nav className="flex-1 min-h-0 px-3 py-4 space-y-1 overflow-y-auto">
+      {/* Nav */}
+      <nav className="flex-1 min-h-0 px-3 py-4 space-y-0.5 overflow-y-auto">
         {primary.map((item) => (
-          <NavItem key={item.to} to={item.to} icon={item.icon} label={item.label} onNavigate={onClose} />
+          <NavItem
+            key={item.to}
+            to={item.to}
+            icon={item.icon}
+            label={item.label}
+            onNavigate={onClose}
+          />
         ))}
       </nav>
 
-      <div className="px-3 py-4 border-t border-white/[0.06] shrink-0">
+      {/* Logout */}
+      <div
+        className="px-3 py-4 shrink-0"
+        style={{ borderTop: '1px solid rgba(118,205,214,0.15)' }}
+      >
         <button
           type="button"
-          onClick={() => {
-            onClose?.()
-            logout()
-          }}
-          className="w-full crm-nav-item text-slate-300 hover:text-white hover:bg-white/[0.07]"
+          onClick={() => { onClose?.(); logout() }}
+          className="crm-nav-item crm-logout-btn"
+          style={{ color: 'rgba(30,29,34,0.38)' }}
         >
           <LogOut className="crm-nav-icon" aria-hidden />
           <span>Logout</span>
@@ -121,10 +257,21 @@ export default function CRMSidebar({ mobileOpen, onClose }) {
 
   return (
     <>
-      <aside className="hidden lg:flex lg:flex-col lg:w-[17.5rem] lg:sticky lg:top-0 lg:h-screen shrink-0 border-r border-white/[0.06] shadow-[8px_0_32px_rgba(0,0,0,0.14)]">
+      {/* inject styles once */}
+      <style>{styles}</style>
+
+      {/* Desktop */}
+      <aside
+        className="hidden lg:flex lg:flex-col lg:w-[17.5rem] lg:sticky lg:top-0 lg:h-screen shrink-0"
+        style={{
+          borderRight: '1px solid rgba(118,205,214,0.18)',
+          boxShadow: '4px 0 24px rgba(118,205,214,0.08)',
+        }}
+      >
         {inner}
       </aside>
 
+      {/* Mobile overlay */}
       <div
         className={[
           'fixed inset-0 z-40 lg:hidden transition-opacity duration-200',
@@ -134,7 +281,8 @@ export default function CRMSidebar({ mobileOpen, onClose }) {
       >
         <button
           type="button"
-          className="absolute inset-0 bg-slate-950/55 backdrop-blur-[2px]"
+          className="absolute inset-0 backdrop-blur-[2px]"
+          style={{ background: 'rgba(30,29,34,0.35)' }}
           onClick={onClose}
           aria-label="Close navigation overlay"
         />
