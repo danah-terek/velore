@@ -246,39 +246,166 @@ export default function Home() {
         </section>
       )}
 
-      <section id="about-us" className="px-6 md:px-16 py-16 scroll-mt-20">
-        <h2 className="text-2xl font-semibold mb-8">About us</h2>
-        <div className="flex flex-col md:flex-row items-center gap-12">
-          {/* Left — images grid */}
-          <div className="grid grid-cols-2 gap-3 flex-1">
-            {[1, 2, 3, 4].map(i => (
-              <div key={i} className="aspect-square rounded-2xl bg-gray-100 overflow-hidden">
-                <img src={sketchImage} alt="" className="w-full h-full object-cover" />
-              </div>
-            ))}
-          </div>
-
-          {/* Center — text */}
-          <div className="flex-1 text-center">
-            <h2 className="text-7xl md:text-9xl font-bold text-black leading-none mb-4">20+</h2>
-            <p className="text-xl md:text-2xl font-semibold text-gray-900 mb-4">
-              years, we've refined our craft, not just in frame design
-            </p>
-            <p className="text-sm text-gray-500 leading-relaxed max-w-sm mx-auto">
-              but in understanding the unique geometry of every face. Every Velore frame is born from obsessive attention to fit, balance, and comfort. We combine precision engineering with timeless aesthetics to create eyewear that doesn't just sit on your face.
-            </p>
-          </div>
-
-          {/* Right — images grid */}
-          <div className="grid grid-cols-2 gap-3 flex-1">
-            {[5, 6, 7, 8].map(i => (
-              <div key={i} className="aspect-square rounded-2xl bg-gray-100 overflow-hidden">
-                <img src={sketchImage} alt="" className="w-full h-full object-cover" />
-              </div>
-            ))}
-          </div>
+      {/* ── ABOUT US — scattered photo layout (ENLARGED) ────────────────────────── */}
+<section
+  id="about-us"
+  className="scroll-mt-20 py-20 overflow-hidden bg-gray-50"
+  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+>
+  {/* Mobile layout — stacked */}
+  <div className="flex md:hidden flex-col items-center gap-8 px-6 w-full">
+    {/* Mobile: larger scattered photos */}
+    <div style={{ position: 'relative', width: '100%', height: 320 }}>
+      {[
+        { w: '48%', h: 150, top: 0,   left: '2%',  rot: -5, z: 2 },
+        { w: '52%', h: 170, top: 0,   left: '48%', rot:  4, z: 1 },
+        { w: '44%', h: 140, top: 155, left: '6%',  rot:  3, z: 3 },
+        { w: '50%', h: 160, top: 145, left: '48%', rot: -4, z: 2 },
+        { w: '40%', h: 130, top: 260, left: '30%', rot:  2, z: 1 },
+      ].map((p, i) => (
+        <div key={i} style={{
+          position: 'absolute',
+          width: p.w, height: p.h,
+          top: p.top, left: p.left,
+          transform: `rotate(${p.rot}deg)`,
+          borderRadius: 16,
+          overflow: 'hidden',
+          boxShadow: '0 12px 32px rgba(0,0,0,0.15)',
+          zIndex: p.z,
+        }}>
+          <img src={sketchImage} alt="" aria-hidden="true"
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
         </div>
-      </section>
+      ))}
+    </div>
+    <div className="text-center px-2">
+      <p style={{ fontSize: 72, fontWeight: 700, lineHeight: 1, letterSpacing: '-2px' }} className="text-gray-950 mb-3">20+</p>
+      <p className="text-lg font-semibold text-gray-900 mb-3 leading-snug">
+        years, we've refined our craft, not just in frame design
+      </p>
+      <p className="text-sm text-gray-500 leading-relaxed">
+        but in understanding the unique geometry of every face. Every Velore frame is born from obsessive attention to fit, balance, and comfort.
+      </p>
+    </div>
+  </div>
+
+  {/* Desktop layout — ENLARGED scattered clouds */}
+  <div className="hidden md:flex items-center justify-center w-full max-w-7xl mx-auto">
+    {/* LEFT PHOTOS — bigger */}
+    <div
+      style={{
+        position: 'relative',
+        width: '380px',
+        flexShrink: 0,
+        height: '600px',
+        marginRight: '-30px',
+      }}
+    >
+      {[
+        { w: 140, h: 140, top: 15,  left: 20,  rot: -6, z: 3 },
+        { w: 165, h: 190, top: 0,   left: 150, rot:  5, z: 2 },
+        { w: 150, h: 150, top: 130, left: 0,   rot:  4, z: 4 },
+        { w: 130, h: 170, top: 170, left: 160, rot: -4, z: 5 },
+        { w: 165, h: 140, top: 290, left: 10,  rot: -5, z: 2 },
+        { w: 148, h: 165, top: 330, left: 170, rot:  6, z: 3 },
+        { w: 135, h: 135, top: 440, left: 40,  rot:  3, z: 4 },
+        { w: 155, h: 130, top: 470, left: 185, rot: -4, z: 3 },
+      ].map((p, i) => (
+        <div
+          key={i}
+          style={{
+            position: 'absolute',
+            width: p.w,
+            height: p.h,
+            top: p.top,
+            left: p.left,
+            transform: `rotate(${p.rot}deg)`,
+            zIndex: p.z,
+            borderRadius: 20,
+            overflow: 'hidden',
+            boxShadow: '0 16px 40px rgba(0,0,0,0.12)',
+            transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+          }}
+          className="hover:scale-105 hover:shadow-2xl"
+        >
+          <img
+            src={sketchImage}
+            alt=""
+            aria-hidden="true"
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+      ))}
+    </div>
+
+    {/* CENTER TEXT */}
+    <div style={{ flex: 1, maxWidth: 440, textAlign: 'center', padding: '0 2rem', zIndex: 10 }}>
+      <p
+        style={{ fontSize: 'clamp(88px, 10vw, 128px)', fontWeight: 700, lineHeight: 1, letterSpacing: '-3px', marginBottom: '1.5rem' }}
+        className="text-gray-950"
+      >
+        20+
+      </p>
+      <p className="text-2xl md:text-3xl font-semibold text-gray-900 mb-5 leading-snug">
+        years, we've refined our craft, not just in frame design
+      </p>
+      <p className="text-base text-gray-500 leading-relaxed max-w-sm mx-auto">
+        but in understanding the unique geometry of every face. Every Velore frame is born from obsessive attention to fit, balance, and comfort. We combine precision engineering with timeless aesthetics to create eyewear that doesn't just sit on your face — it becomes part of your expression.
+      </p>
+    </div>
+
+    {/* RIGHT PHOTOS — bigger */}
+    <div
+      style={{
+        position: 'relative',
+        width: '380px',
+        flexShrink: 0,
+        height: '600px',
+        marginLeft: '-30px',
+      }}
+    >
+      {[
+        { w: 140, h: 140, top: 10,  right: 15,  rot:  6, z: 3 },
+        { w: 160, h: 185, top: 0,   right: 155, rot: -5, z: 2 },
+        { w: 148, h: 148, top: 125, right: 0,   rot: -4, z: 4 },
+        { w: 130, h: 170, top: 165, right: 160, rot:  5, z: 5 },
+        { w: 165, h: 138, top: 285, right: 10,  rot:  5, z: 2 },
+        { w: 150, h: 165, top: 325, right: 170, rot: -6, z: 3 },
+        { w: 135, h: 135, top: 435, right: 35,  rot: -3, z: 4 },
+        { w: 155, h: 130, top: 465, right: 185, rot:  4, z: 3 },
+      ].map((p, i) => (
+        <div
+          key={i}
+          style={{
+            position: 'absolute',
+            width: p.w,
+            height: p.h,
+            top: p.top,
+            right: p.right,
+            transform: `rotate(${p.rot}deg)`,
+            zIndex: p.z,
+            borderRadius: 20,
+            overflow: 'hidden',
+            boxShadow: '0 16px 40px rgba(0,0,0,0.12)',
+            transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+          }}
+          className="hover:scale-105 hover:shadow-2xl"
+        >
+          <img
+            src={sketchImage}
+            alt=""
+            aria-hidden="true"
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
 
       <section id="latest-news" className="px-6 md:px-16 py-16 scroll-mt-20">
         <h2 className="text-2xl font-semibold mb-8">Latest news</h2>
