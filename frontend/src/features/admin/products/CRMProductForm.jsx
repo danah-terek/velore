@@ -58,7 +58,7 @@ export function buildProductPayload(values) {
     if (cp) payload.compare_price = cp
   }
 
-  const specs = {}
+    const specs = {}
   if (values.frame_shape?.trim()) specs.frame_shape = values.frame_shape.trim()
   if (values.face_shape?.trim()) specs.face_shape = values.face_shape.trim()
   if (values.material?.trim()) specs.material = values.material.trim()
@@ -70,10 +70,12 @@ export function buildProductPayload(values) {
   if (values.water_content !== '' && values.water_content !== null && values.water_content !== undefined) specs.water_content = parseFloat(values.water_content)
   if (values.lenses_per_pack !== '' && values.lenses_per_pack !== null && values.lenses_per_pack !== undefined) specs.lenses_per_pack = parseInt(values.lenses_per_pack)
   if (typeof values.blue_light_protection === 'boolean') specs.blue_light_protection = values.blue_light_protection
+  if (values.duration) specs.duration = values.duration
+  if (typeof values.prescription_applies === 'boolean') specs.prescription_applies = values.prescription_applies
   if (Object.keys(specs).length > 0) payload.specifications = specs
-
   if (values.gender) payload.gender = normalizeGender(values.gender) || undefined
   if (typeof values.is_active === 'boolean') payload.is_active = values.is_active
+  if (values.thumbnail) payload.thumbnail = values.thumbnail
 
   return payload
 }
@@ -191,6 +193,9 @@ export default function CRMProductForm({
   newBrandName,
   setNewBrandName,
   onAddBrand,
+  thumbnailUrl,
+  allVariantImages,
+  onThumbnailChange,
 }) {
   const genderOptions = useMemo(() => ['', 'male', 'female', 'unisex'], [])
   const serverWarn =
@@ -452,6 +457,29 @@ export default function CRMProductForm({
                   <label className="text-sm">Has blue light filter</label>
                 </div>
               </Field>
+              <Field label="Duration">
+                <select
+                  value={values.duration || ''}
+                  onChange={(e) => onChange({ duration: e.target.value })}
+                  className="crm-select"
+                >
+                  <option value="">Select duration</option>
+                  <option value="daily">Daily</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly">Monthly</option>
+                </select>
+              </Field>
+              <Field label="Prescription Applies">
+                <div className="flex items-center gap-3 min-h-[42px] px-3 py-2 rounded-xl border border-[rgba(var(--velore-border-soft),0.95)] bg-[rgba(var(--velore-pearl),0.85)]">
+                  <input
+                    type="checkbox"
+                    checked={values.prescription_applies !== false}
+                    onChange={(e) => onChange({ prescription_applies: e.target.checked })}
+                    className="w-4 h-4 rounded border-[rgba(var(--velore-border-soft),0.95)]"
+                  />
+                  <label className="text-sm">Prescription lenses available</label>
+                </div>
+              </Field>
             </>
           )}
 
@@ -644,23 +672,32 @@ export default function CRMProductForm({
       ) : null}
 
       {mode === 'edit' ? (
-        <FormSection
-          title="Primary thumbnail preview"
-          subtitle="First available variant image — read-only. Manage images inside variants below."
-        >
-          <div className="mt-2">
-            {readOnlyImageUrl ? (
-              <img
-                src={readOnlyImageUrl}
-                alt=""
-                className="w-40 h-40 rounded-2xl border border-[rgba(var(--velore-border-soft),0.95)] object-cover bg-[rgba(var(--velore-accent),0.05)] ring-1 ring-[rgba(var(--velore-border-soft),0.65)]"
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none'
+        <FormSection title="Primary thumbnail" subtitle="Select which image appears as the product thumbnail.">
+          <div className="flex gap-4">
+            <div className="w-40 h-40 rounded-2xl border border-[rgba(var(--velore-border-soft),0.95)] overflow-hidden bg-[rgba(var(--velore-accent),0.05)] flex-shrink-0">
+              {thumbnailUrl ? (
+                <img src={thumbnailUrl} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-sm text-[rgba(var(--velore-fg),0.55)]">No image</div>
+              )}
+            </div>
+            <div className="flex-1">
+              <select
+                value={thumbnailUrl || ''}
+                onChange={(e) => {
+                  const img = allVariantImages.find(v => resolveImageUrl(v.url) === e.target.value)
+                  if (img) onThumbnailChange?.(e.target.value)
                 }}
-              />
-            ) : (
-              <div className="text-sm text-[rgba(var(--velore-fg),0.55)]">No image available.</div>
-            )}
+                className="crm-select"
+              >
+                <option value="">Select thumbnail</option>
+                {allVariantImages.map((img, i) => (
+                  <option key={i} value={resolveImageUrl(img.url)}>
+                    {img.color ? `${img.color} — ` : ''}{img.url.split('/').pop()}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </FormSection>
       ) : null}

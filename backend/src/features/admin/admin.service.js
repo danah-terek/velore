@@ -101,9 +101,9 @@ const adminService = {
       }),
       isSuperAdmin
         ? prisma.payments.aggregate({
-            _sum: { amount: true },
-            where: { status: 'completed' }
-          })
+          _sum: { amount: true },
+          where: { status: 'completed' }
+        })
         : Promise.resolve(null)
     ])
 
@@ -342,6 +342,11 @@ const adminService = {
       virtual_try_on: product.virtual_try_on,
       is_active: product.is_active,
       is_bundle: product.is_bundle,
+      specifications: product.specifications,
+      lenses_per_pack: product.lenses_per_pack,
+      blue_light_protection: product.blue_light_protection,
+      prescription_applies: product.prescription_applies,
+      thumbnail: product.thumbnail,
       created_at: product.created_at,
       updated_at: product.updated_at,
       brands: product.brands
@@ -423,40 +428,41 @@ const adminService = {
     const order = await prisma.orders.findUnique({ where: { order_id: Number(orderId) } })
     if (!order) throw new Error('Order not found')
 
-const updated = await prisma.orders.update({
-  where: { order_id: Number(orderId) },
-  data: { status }
-})
+    const updated = await prisma.orders.update({
+      where: { order_id: Number(orderId) },
+      data: { status }
+    })
 
-console.log('🔍 Status check:', status, 'User ID:', updated.user_id)
-if (status === 'delivered' && updated.user_id) {
-  console.log('🎁 Awarding loyalty points...')
-  const { checkAndAwardPoints } = require('../loyalty/loyalty.service')
-  const { sendNotification } = require('../notifications/notification.service')
-  try {
-    const result = await checkAndAwardPoints(BigInt(updated.user_id), BigInt(updated.order_id))
-    console.log('✅ Points check done !',result)
+    console.log('🔍 Status check:', status, 'User ID:', updated.user_id)
+    if (status === 'delivered' && updated.user_id) {
+      console.log('🎁 Awarding loyalty points...')
+      const { checkAndAwardPoints } = require('../loyalty/loyalty.service')
+      const { sendNotification } = require('../notifications/notification.service')
+      try {
+        const result = await checkAndAwardPoints(BigInt(updated.user_id), BigInt(updated.order_id))
+        console.log('✅ Points check done !', result)
 
-    if (result?.pointsAwarded) {
-      await sendNotification(
-        updated.user_id,
-        `🎁 You earned 100 points! You now have ${result.totalPoints} points total.`,
-        'loyalty_earn'
-      )
-    } else {
-      await sendNotification(
-        updated.user_id,
-        `⭐ You're ${result.ordersUntilNext} order(s) away from your next 100 points reward!`,
-        'loyalty_progress'
-      )
+        if (result?.pointsAwarded) {
+          await sendNotification(
+            updated.user_id,
+            `🎁 You earned 100 points! You now have ${result.totalPoints} points total.`,
+            'loyalty_earn'
+          )
+        } else {
+          await sendNotification(
+            updated.user_id,
+            `⭐ You're ${result.ordersUntilNext} order(s) away from your next 100 points reward!`,
+            'loyalty_progress'
+          )
+        }
+      } catch (e) {
+        console.error('Loyalty/notification error:', e.message, e.stack)
+      }
     }
-  } catch (e) {
-    console.error('Loyalty/notification error:', e.message, e.stack)
-  }
-}
-await adminService.log(adminId, 'UPDATE_ORDER_STATUS', `Order ${orderId} => ${status}`)
+    await adminService.log(adminId, 'UPDATE_ORDER_STATUS', `Order ${orderId} => ${status}`)
 
-return { id: updated.order_id.toString(), status: updated.status }},
+    return { id: updated.order_id.toString(), status: updated.status }
+  },
 
   // ─── Audit Logs ────────────────────────────────────────────
 
@@ -486,24 +492,24 @@ return { id: updated.order_id.toString(), status: updated.status }},
   },
 
   async getAdmins() {
-  const admins = await prisma.admin.findMany({
-    select: {
-      admin_id: true,
-      email: true,
-      name: true,
-      created_at: true,
-      roles: { select: { name: true } }
-    },
-    orderBy: { created_at: 'desc' }
-  });
-  return admins.map(a => ({
-    id: a.admin_id.toString(),
-    email: a.email,
-    name: a.name,
-    role: a.roles?.name,
-    created_at: a.created_at
-  }));
-},
+    const admins = await prisma.admin.findMany({
+      select: {
+        admin_id: true,
+        email: true,
+        name: true,
+        created_at: true,
+        roles: { select: { name: true } }
+      },
+      orderBy: { created_at: 'desc' }
+    });
+    return admins.map(a => ({
+      id: a.admin_id.toString(),
+      email: a.email,
+      name: a.name,
+      role: a.roles?.name,
+      created_at: a.created_at
+    }));
+  },
 
   async log(adminId, action, details) {
     try {
@@ -514,21 +520,21 @@ return { id: updated.order_id.toString(), status: updated.status }},
           details
         }
       })
-    } catch (_) {}
+    } catch (_) { }
   },
-  
+
   async getAllStaff({ page = 1, limit = 20, search = '', role = '' }) {
     const skip = (page - 1) * limit
-   
+
     // Get the role IDs for staff and admin roles
     const staffRoles = await prisma.role.findMany({
       where: {
         name: { in: ['staff', 'admin', 'staff_admin'] }
       }
     })
-   
+
     const roleIds = staffRoles.map(r => r.role_id)
-   
+
     const where = {
       role_id: { in: roleIds },
       ...(search && {
@@ -580,7 +586,7 @@ return { id: updated.order_id.toString(), status: updated.status }},
         roles: { select: { name: true, role_id: true } }
       }
     })
-   
+
     if (!staff) throw new Error('Staff member not found')
 
     return {
@@ -595,7 +601,7 @@ return { id: updated.order_id.toString(), status: updated.status }},
 
   async createStaff(creatorAdminId, data) {
     const { email, password, name, role } = data
-   
+
     // Check if staff role exists, if not create it
     let roleRecord = await prisma.role.findUnique({ where: { name: role || 'staff' } })
     if (!roleRecord) {
@@ -638,7 +644,7 @@ return { id: updated.order_id.toString(), status: updated.status }},
     if (!staff) throw new Error('Staff member not found')
 
     const updateData = {}
-   
+
     if (data.name) updateData.name = data.name
     if (data.email) updateData.email = data.email
     if (data.password) {
@@ -669,7 +675,7 @@ return { id: updated.order_id.toString(), status: updated.status }},
   async deleteStaff(adminId, staffId) {
     const staff = await prisma.admin.findUnique({ where: { admin_id: BigInt(staffId) } })
     if (!staff) throw new Error('Staff member not found')
-   
+
     // Don't allow deleting super admin
     if (staff.roles?.name === 'super_admin') {
       throw new Error('Cannot delete super admin')
@@ -700,7 +706,8 @@ return { id: updated.order_id.toString(), status: updated.status }},
       description: r.description
     }))
 
-}};
+  }
+};
 
 
 

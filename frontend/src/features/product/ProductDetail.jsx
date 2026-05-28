@@ -370,6 +370,10 @@ export default function ProductDetail() {
           {isLenses && product.specifications?.blue_light_protection && (
             <p className="text-sm text-gray-600">Blue Light Protection: <span className="font-medium">Yes</span></p>
           )}
+          {isLenses && product.specifications?.duration && (
+            <p className="text-sm text-gray-600">Duration: <span className="font-medium capitalize">{product.specifications.duration}</span></p>
+          )}
+
 
           {product.gender && (
             <p className="text-sm text-gray-600">Gender: <span className="font-medium capitalize">{product.gender}</span></p>
@@ -443,7 +447,7 @@ export default function ProductDetail() {
             )}
           </div>
 
-          {(isGlasses || isLenses) && (
+          {(isGlasses || (isLenses && product.specifications?.prescription_applies !== false)) && (
             <PrescriptionSection
               isLenses={isLenses}
               prescription={prescription}

@@ -49,6 +49,9 @@ function productToFormValues(p) {
     lenses_per_pack: specs.lenses_per_pack ?? p?.lenses_per_pack ?? '',
     blue_light_protection: specs.blue_light_protection ?? p?.blue_light_protection ?? false,
     is_active: p?.is_active !== undefined ? !!p.is_active : true,
+    duration: specs.duration ?? p?.duration ?? '',
+    prescription_applies: specs.prescription_applies ?? p?.prescription_applies ?? true,
+    thumbnail: p?.thumbnail || '',
   }
 }
 
@@ -71,6 +74,7 @@ export default function CRMProductEditor({ mode }) {
   const [uploadedImagePaths, setUploadedImagePaths] = useState([])
   const [uploadedTryOnImagePaths, setUploadedTryOnImagePaths] = useState([])
   const [newBrandName, setNewBrandName] = useState('')
+  const [thumbnailUrl, setThumbnailUrl] = useState('')
 
   const [defaultVariant, setDefaultVariant] = useState({
     sku: '',
@@ -107,18 +111,19 @@ export default function CRMProductEditor({ mode }) {
     isEdit
       ? productToFormValues(null)
       : {
-          name: '',
-          price: '',
-          category_id: '',
-          brand_id: '',
-          description: '',
-          compare_price: '',
-          gender: '',
-          material: '',
-          frame_shape: '',
-          face_shape: '',
-          is_active: true,
-        }
+        name: '',
+        price: '',
+        category_id: '',
+        brand_id: '',
+        description: '',
+        compare_price: '',
+        gender: '',
+        material: '',
+        frame_shape: '',
+        face_shape: '',
+        is_active: true,
+        thumbnail: '',
+      }
   )
   const [errors, setErrors] = useState({})
 
@@ -152,6 +157,8 @@ export default function CRMProductEditor({ mode }) {
       const res = await adminProductService.getAdminProduct(productId)
       setProduct({ loading: false, error: null, data: res.data })
       setValues(productToFormValues(res.data))
+      const raw = res.data?.product_variants?.[0]?.images?.[0]
+      if (raw) setThumbnailUrl(resolveImageUrl(raw))
     } catch (e) {
       setProduct({ loading: false, error: e?.message || e?.error || 'Failed to load product', data: null })
     }
@@ -165,10 +172,11 @@ export default function CRMProductEditor({ mode }) {
     loadProduct()
   }, [loadProduct])
 
-  const readOnlyImageUrl = useMemo(() => {
-    const p = product.data
-    const raw = p?.product_variants?.[0]?.images?.[0]
-    return resolveImageUrl(raw)
+  const allVariantImages = useMemo(() => {
+    if (!product.data) return []
+    return product.data.product_variants?.flatMap(v =>
+      (v.images || []).map(img => ({ url: img, variantId: v.variant_id, color: v.color_name }))
+    ) || []
   }, [product.data])
 
   const loadVariants = useCallback(async () => {
@@ -225,6 +233,8 @@ export default function CRMProductEditor({ mode }) {
         }}
         onCancel={() => navigate('/admin/products')}
         onSubmit={async () => {
+          console.log('VALUES:', JSON.stringify(values, null, 2))
+          console.log('THUMBNAIL:', values.thumbnail)
           setServerMessage(null)
           setUploadError(null)
           const nextErrors = validateProductForm(values)
@@ -235,6 +245,7 @@ export default function CRMProductEditor({ mode }) {
           setSaving(true)
           try {
             const payload = buildProductPayload(values)
+            payload.thumbnail = values.thumbnail
             if (isEdit) {
               const res = await adminProductService.update(productId, payload)
               setServerMessage(res?.message || 'Product updated successfully.')
@@ -312,7 +323,15 @@ export default function CRMProductEditor({ mode }) {
         brands={options.brands}
         optionsLoading={options.loading}
         optionsError={options.error}
-        readOnlyImageUrl={readOnlyImageUrl}
+        thumbnailUrl={thumbnailUrl}
+        allVariantImages={allVariantImages}
+        onThumbnailChange={(resolvedUrl) => {
+          setThumbnailUrl(resolvedUrl)
+          const img = allVariantImages.find(v => resolveImageUrl(v.url) === resolvedUrl)
+          if (img) {
+            setValues(prev => ({ ...prev, thumbnail: img.url }))
+          }
+        }}
         defaultVariant={defaultVariant}
         defaultVariantErrors={defaultVariantErrors}
         onDefaultVariantChange={(patch) => {
@@ -454,7 +473,6 @@ export default function CRMProductEditor({ mode }) {
                       ))}
                     </div>
 
-                    {/* Regular Images */}
                     <div className="mt-5">
                       <div className="text-sm font-semibold tracking-tight text-[rgb(var(--velore-fg))]">Images</div>
                       <div className="mt-2 flex flex-wrap gap-2">
@@ -514,7 +532,6 @@ export default function CRMProductEditor({ mode }) {
                       ) : null}
                     </div>
 
-                    {/* Try-On Images */}
                     <div className="mt-5 border-t border-[rgba(var(--velore-border-soft),0.5)] pt-5">
                       <div className="text-sm font-semibold tracking-tight text-[rgb(var(--velore-fg))]">Try-On Images (transparent background)</div>
                       <div className="mt-2 flex flex-wrap gap-2">
@@ -579,7 +596,6 @@ export default function CRMProductEditor({ mode }) {
             </div>
           ) : null}
 
-          {/* Create new variant */}
           <div className="mt-6 border-t border-[rgba(var(--velore-border-soft),0.9)] pt-6">
             <div className="text-sm font-semibold tracking-tight text-[rgb(var(--velore-fg))]">Create new variant</div>
             <div className="mt-1 text-sm text-[rgba(var(--velore-fg),0.62)]">
@@ -615,7 +631,6 @@ export default function CRMProductEditor({ mode }) {
               ))}
             </div>
 
-            {/* New variant images */}
             <div className="mt-4">
               <label className="crm-field-label">Images</label>
               <input
@@ -660,7 +675,6 @@ export default function CRMProductEditor({ mode }) {
               </div>
             </div>
 
-            {/* New variant try-on images */}
             <div className="mt-4">
               <label className="crm-field-label">Try-On Images (transparent PNG)</label>
               <input
