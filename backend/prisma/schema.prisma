@@ -270,44 +270,44 @@ model product_variants {
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model products {
-  product_id         BigInt               @id @default(autoincrement())
-  name               String
-  description        String?
-  price              Decimal              @db.Decimal(10, 2)
-  compare_price      Decimal?             @db.Decimal(10, 2)
-  category_id        BigInt
-  brand_id           BigInt
-  frame_shape        String?
-  face_shape         String?
-  gender             String?
-  material           String?
-  prescription_ready Boolean?             @default(false)
-  virtual_try_on     Boolean?             @default(false)
-  is_active          Boolean?             @default(true)
-  is_bundle          Boolean?             @default(false)
-  thumbnail          String?
-  created_at         DateTime?            @default(now()) @db.Timestamptz(6)
-  updated_at         DateTime?            @default(now()) @db.Timestamptz(6)
-  base_curve         Float?
-  bridge_width       Float?
-  details            String?
-  diameter           Float?
-  lens_width         Float?
-  lenses_per_pack      Int?
-  blue_light_protection Boolean? @default(false)
-  prescription_applies Boolean? @default(true)
-  temple_length      Float?
-  water_content      Float?
-  specifications     Json?
-  ai_recommendations ai_recommendations[]
-  cart_items         cart_items[]
-  feedback           feedback[]
-  orders_items       orders_items[]
-  product_variants   product_variants[]
-  brands             brands               @relation(fields: [brand_id], references: [brand_id], onDelete: NoAction, onUpdate: NoAction)
-  categories         categories           @relation(fields: [category_id], references: [category_id], onDelete: NoAction, onUpdate: NoAction)
-  reviews            reviews[]
-  wishlist_items     wishlist_items[]
+  product_id            BigInt               @id @default(autoincrement())
+  name                  String
+  description           String?
+  price                 Decimal              @db.Decimal(10, 2)
+  compare_price         Decimal?             @db.Decimal(10, 2)
+  category_id           BigInt
+  brand_id              BigInt
+  frame_shape           String?
+  face_shape            String?
+  gender                String?
+  material              String?
+  prescription_ready    Boolean?             @default(false)
+  virtual_try_on        Boolean?             @default(false)
+  is_active             Boolean?             @default(true)
+  is_bundle             Boolean?             @default(false)
+  created_at            DateTime?            @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime?            @default(now()) @db.Timestamptz(6)
+  base_curve            Float?
+  bridge_width          Float?
+  details               String?
+  diameter              Float?
+  lens_width            Float?
+  temple_length         Float?
+  water_content         Float?
+  specifications        Json?
+  blue_light_protection Boolean?             @default(false)
+  lenses_per_pack       Int?
+  prescription_applies  Boolean?             @default(true)
+  thumbnail             String?
+  ai_recommendations    ai_recommendations[]
+  cart_items            cart_items[]
+  feedback              feedback[]
+  orders_items          orders_items[]
+  product_variants      product_variants[]
+  brands                brands               @relation(fields: [brand_id], references: [brand_id], onDelete: NoAction, onUpdate: NoAction)
+  categories            categories           @relation(fields: [category_id], references: [category_id], onDelete: NoAction, onUpdate: NoAction)
+  reviews               reviews[]
+  wishlist_items        wishlist_items[]
 
   @@index([brand_id], map: "idx_products_brand")
   @@index([category_id], map: "idx_products_category")
