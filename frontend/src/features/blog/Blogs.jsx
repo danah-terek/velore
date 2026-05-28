@@ -16,31 +16,34 @@ export default function Blogs() {
 
   return (
     <div className="min-h-screen bg-white">
-      <section className="px-6 md:px-16 py-16 bg-gray-50">
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Velore Journal
+      {/* Editorial Header Section */}
+      <section className="bg-white border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-20 text-center">
+          <h1 className="text-3xl md:text-4xl font-normal tracking-wide text-gray-900 mb-3">
+            VELORE JOURNAL
           </h1>
-          <p className="text-gray-600 text-lg">
+          <p className="text-sm tracking-wide text-gray-400 max-w-md mx-auto uppercase text-[11px]">
             Insights on eyewear trends, eye health, and style inspiration
           </p>
         </div>
       </section>
 
-      <section className="px-6 md:px-16 py-16">
+      {/* Main Grid Section */}
+      <section className="max-w-7xl mx-auto px-6 lg:px-8 py-16">
         {loading ? (
-          <p className="text-center text-gray-500">Loading...</p>
+          <p className="text-center text-sm text-gray-400 tracking-widest">LOADING...</p>
         ) : blogs.length === 0 ? (
-          <p className="text-center text-gray-500">No blog posts yet.</p>
+          <p className="text-center text-sm text-gray-400 tracking-widest">NO BLOG POSTS YET.</p>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-14">
             {blogs.map(blog => (
-              <Link key={blog.post_id} to={`/blogs/${blog.post_id}`} className="group">
-                <div className="aspect-[4/3] rounded-sm overflow-hidden mb-4">
+              <Link key={blog.post_id} to={`/blogs/${blog.post_id}`} className="group flex flex-col">
+                {/* Image Wrapper */}
+                <div className="aspect-[3/4] w-full overflow-hidden bg-gray-50 border border-gray-100 mb-5">
                   <img 
                     src={resolveImageUrl(blog.image) || ''}
                     alt={blog.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-500 ease-out"
                     loading="lazy"
                     decoding="async"
                     onError={(e) => {
@@ -50,12 +53,16 @@ export default function Blogs() {
                     }}
                   />
                 </div>
-                <div className="flex items-center gap-3 text-xs text-gray-500 mb-2">
-                  <span>{new Date(blog.published_at || blog.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                
+                {/* Meta details matching footer tracking styling */}
+                <div className="flex items-center gap-2 text-[10px] font-semibold tracking-widest text-gray-400 uppercase mb-3">
+                  <span>{new Date(blog.published_at || blog.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                   <span>•</span>
-                  <span>{blog.read_time || '5 min read'}</span>
+                  <span>{blog.read_time || '5 MIN READ'}</span>
                 </div>
-                <h2 className="text-xl font-semibold text-gray-900 group-hover:text-gray-600 transition-colors mb-2">
+
+                {/* Post Title */}
+                <h2 className="text-lg font-normal text-gray-900 group-hover:opacity-60 transition-opacity duration-200 leading-snug">
                   {blog.title}
                 </h2>
               </Link>

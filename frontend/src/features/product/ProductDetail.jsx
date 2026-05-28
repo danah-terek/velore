@@ -1,6 +1,6 @@
 import { useParams, Link, useNavigate } from "react-router-dom"
 import { useState, useEffect } from "react"
-import { Check } from 'lucide-react'
+import { Check, Sliders, Info, ShieldCheck, HelpCircle, X } from 'lucide-react'
 import shopService from "../shop/shopService"
 import useCurrency from '../../shared/hooks/useCurrency'
 import cartService from "../cart/cartService"
@@ -11,15 +11,23 @@ import ProductReviews from './ProductReviews'
 function AccordionItem({ title, children }) {
   const [open, setOpen] = useState(false)
   return (
-    <div className="border-t border-gray-200">
+    <div className="border-b border-neutral-100 last:border-0">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between py-4 text-sm font-medium text-gray-900"
+        className="w-full flex items-center justify-between py-4 text-sm font-medium text-neutral-900 text-left transition-colors hover:text-neutral-500"
       >
         {title}
-        <span className="text-lg text-gray-400">{open ? '−' : '+'}</span>
+        <span className="text-lg text-neutral-400 font-light ml-4">{open ? '−' : '+'}</span>
       </button>
-      {open && <div className="pb-4 text-sm text-gray-500">{children}</div>}
+      <div 
+        className={`grid transition-all duration-300 ease-in-out ${open ? 'grid-rows-[1fr] opacity-100 pb-4' : 'grid-rows-[0fr] opacity-0'}`}
+      >
+        <div className="overflow-hidden">
+          <div className="text-sm text-neutral-600 leading-relaxed space-y-1">
+            {children}
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
@@ -43,27 +51,30 @@ function SizeGuideModal({ onClose }) {
   return (
     <div
       onClick={handleBackdrop}
-      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all duration-300"
     >
-      <div className="relative bg-white w-full max-w-lg md:max-w-2xl rounded-sm shadow-2xl">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
-          <h3 className="text-sm font-semibold text-gray-900">Size Guide</h3>
+      <div className="relative bg-white w-full max-w-lg md:max-w-2xl rounded-2xl shadow-xl border border-neutral-100 overflow-hidden transform transition-all">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100">
+          <div className="flex items-center gap-2">
+            <Sliders size={16} className="text-neutral-400" />
+            <h3 className="text-base font-semibold text-neutral-900">Size Guide</h3>
+          </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-900 transition-colors p-1"
+            className="text-neutral-400 hover:text-neutral-900 transition-colors p-1.5 rounded-full hover:bg-neutral-50"
             aria-label="Close"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <X size={18} />
           </button>
         </div>
-        <div className="p-4">
-          <img
-            src={sizeguide}
-            alt="Size Guide"
-            className="w-full h-auto object-contain max-h-[70vh]"
-          />
+        <div className="p-6 bg-neutral-50/50 flex items-center justify-center">
+          <div className="bg-white p-4 border border-neutral-100 shadow-sm rounded-xl w-full">
+            <img
+              src={sizeguide}
+              alt="Size Guide"
+              className="w-full h-auto object-contain max-h-[60vh] mx-auto rounded-lg"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -73,74 +84,95 @@ function SizeGuideModal({ onClose }) {
 function PrescriptionField({ label, value, onChange }) {
   return (
     <div className="flex flex-col gap-1">
-      <label className="text-xs text-gray-500">{label}</label>
-      <input
-        type="number"
-        step="0.25"
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        placeholder="0.00"
-        className="border border-gray-300 px-2 py-1.5 text-sm text-gray-700 w-full outline-none focus:border-gray-500 transition-colors"
-      />
+      <label className="text-xs text-neutral-500 font-medium">{label}</label>
+      <div className="relative">
+        <input
+          type="number"
+          step="0.25"
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          placeholder="0.00"
+          className="border border-neutral-200 px-3 py-2 text-sm text-neutral-800 w-full rounded-md outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 transition-all bg-neutral-50/50 focus:bg-white"
+        />
+      </div>
     </div>
   )
 }
 
 function PrescriptionSection({ isLenses, prescription, setPrescription }) {
   return (
-    <div className="border border-gray-200 p-4 flex flex-col gap-4">
+    <div className="border border-neutral-200/80 bg-neutral-50/30 rounded-2xl p-5 md:p-6 flex flex-col gap-5 my-2 shadow-sm">
+      <div className="flex items-center gap-2 border-b border-neutral-100 pb-3">
+        <ShieldCheck size={16} className="text-neutral-500" />
+        <span className="text-sm font-semibold text-neutral-800">Prescription Configuration</span>
+      </div>
+      
       <div>
-        <p className="text-sm font-medium text-gray-900 mb-0.5">SPH (Sphere / Power)</p>
-        <p className="text-xs text-gray-400 mb-2">The main lens power to correct nearsightedness or farsightedness</p>
+        <div className="flex items-center gap-1.5 mb-1">
+          <p className="text-sm font-medium text-neutral-900">SPH (Sphere)</p>
+          <HelpCircle size={14} className="text-neutral-300" title="Main lens power correction" />
+        </div>
+        <p className="text-xs text-neutral-400 mb-3">Main correction metric for vision variance.</p>
         <div className="grid grid-cols-2 gap-3">
-          <PrescriptionField label="R" value={prescription.sph_r} onChange={val => setPrescription(p => ({ ...p, sph_r: val }))} />
-          <PrescriptionField label="L" value={prescription.sph_l} onChange={val => setPrescription(p => ({ ...p, sph_l: val }))} />
+          <PrescriptionField label="Right Eye (OD)" value={prescription.sph_r} onChange={val => setPrescription(p => ({ ...p, sph_r: val }))} />
+          <PrescriptionField label="Left Eye (OS)" value={prescription.sph_l} onChange={val => setPrescription(p => ({ ...p, sph_l: val }))} />
         </div>
       </div>
+
       <div>
-        <p className="text-sm font-medium text-gray-900 mb-0.5">CYL (Cylinder)</p>
-        <p className="text-xs text-gray-400 mb-2">Only used if you have astigmatism</p>
+        <div className="flex items-center gap-1.5 mb-1">
+          <p className="text-sm font-medium text-neutral-900">CYL (Cylinder)</p>
+        </div>
+        <p className="text-xs text-neutral-400 mb-3">Astigmatism correction framework.</p>
         <div className="grid grid-cols-2 gap-3">
-          <PrescriptionField label="R" value={prescription.cyl_r} onChange={val => setPrescription(p => ({ ...p, cyl_r: val }))} />
-          <PrescriptionField label="L" value={prescription.cyl_l} onChange={val => setPrescription(p => ({ ...p, cyl_l: val }))} />
+          <PrescriptionField label="Right Eye (OD)" value={prescription.cyl_r} onChange={val => setPrescription(p => ({ ...p, cyl_r: val }))} />
+          <PrescriptionField label="Left Eye (OS)" value={prescription.cyl_l} onChange={val => setPrescription(p => ({ ...p, cyl_l: val }))} />
         </div>
       </div>
-      <div>
-        <p className="text-sm font-medium text-gray-900 mb-0.5">Axis</p>
-        <p className="text-xs text-gray-400 mb-2">Only used if you have astigmatism</p>
-        <div className="flex items-center gap-2">
-          <input
-            type="number"
-            min="0"
-            max="180"
-            step="1"
-            value={prescription.axis}
-            onChange={e => setPrescription(p => ({ ...p, axis: e.target.value }))}
-            placeholder="0"
-            className="border border-gray-300 px-2 py-1.5 text-sm text-gray-700 w-20 outline-none focus:border-gray-500 transition-colors"
-          />
-          <span className="text-xs text-gray-400">°</span>
-        </div>
-      </div>
-      {!isLenses && (
+
+      <div className="grid grid-cols-2 gap-4 border-t border-neutral-100/70 pt-4">
         <div>
-          <p className="text-sm font-medium text-gray-900 mb-0.5">PD (Pupillary Distance)</p>
-          <p className="text-xs text-gray-400 mb-2">Distance between the centers of your two pupils in mm</p>
+          <p className="text-sm font-medium text-neutral-900 mb-1">Axis</p>
+          <p className="text-xs text-neutral-400 mb-2">Required if CYL is specified.</p>
           <div className="flex items-center gap-2">
-            <input
-              type="number"
-              min="40"
-              max="80"
-              step="0.5"
-              value={prescription.pd}
-              onChange={e => setPrescription(p => ({ ...p, pd: e.target.value }))}
-              placeholder="63"
-              className="border border-gray-300 px-2 py-1.5 text-sm text-gray-700 w-20 outline-none focus:border-gray-500 transition-colors"
-            />
-            <span className="text-xs text-gray-400">mm</span>
+            <div className="relative flex-1">
+              <input
+                type="number"
+                min="0"
+                max="180"
+                step="1"
+                value={prescription.axis}
+                onChange={e => setPrescription(p => ({ ...p, axis: e.target.value }))}
+                placeholder="0"
+                className="border border-neutral-200 px-3 py-2 text-sm text-neutral-800 w-full rounded-md outline-none focus:border-neutral-900 transition-all bg-neutral-50/50 focus:bg-white"
+              />
+            </div>
+            <span className="text-sm text-neutral-400">°</span>
           </div>
         </div>
-      )}
+
+        {!isLenses && (
+          <div>
+            <p className="text-sm font-medium text-neutral-900 mb-1">PD (Pupillary Distance)</p>
+            <p className="text-xs text-neutral-400 mb-2">Center-to-center pupil metric.</p>
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <input
+                  type="number"
+                  min="40"
+                  max="80"
+                  step="0.5"
+                  value={prescription.pd}
+                  onChange={e => setPrescription(p => ({ ...p, pd: e.target.value }))}
+                  placeholder="63"
+                  className="border border-neutral-200 px-3 py-2 text-sm text-neutral-800 w-full rounded-md outline-none focus:border-neutral-900 transition-all bg-neutral-50/50 focus:bg-white"
+                />
+              </div>
+              <span className="text-sm text-neutral-400">mm</span>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
@@ -244,7 +276,7 @@ export default function ProductDetail() {
         const nextQty = existing.quantity + quantity
         if (maxQty !== null && nextQty > maxQty) {
           setCartError(`Only ${maxQty} units available for ${product.name}.`)
-          existing.quantity = maxQty
+          return
         } else {
           existing.quantity = nextQty
         }
@@ -278,11 +310,21 @@ export default function ProductDetail() {
   }
 
   if (loading) {
-    return <div className="flex justify-center items-center min-h-screen">Loading...</div>
+    return (
+      <div className="flex flex-col justify-center items-center min-h-[60vh] gap-3">
+        <div className="w-5 h-5 border-2 border-neutral-900 border-t-transparent rounded-full animate-spin" />
+        <span className="text-xs text-neutral-400">Loading product details...</span>
+      </div>
+    )
   }
 
   if (!product) {
-    return <div className="p-10 text-sm text-gray-500">Product not found</div>
+    return (
+      <div className="max-w-6xl mx-auto px-4 py-24 text-center">
+        <p className="text-sm font-medium text-neutral-400">Product not found</p>
+        <p className="text-base text-neutral-600 mt-2">The specified product profile could not be loaded.</p>
+      </div>
+    )
   }
 
   const images = selectedVariant?.images?.filter(Boolean) || []
@@ -301,90 +343,125 @@ export default function ProductDetail() {
   const isSunglasses = categoryName === 'sunglasses'
 
   return (
-    <div className="px-4 md:px-16 py-8 max-w-6xl mx-auto">
+    <div className="px-4 md:px-8 lg:px-12 py-10 max-w-6xl mx-auto bg-white text-neutral-900">
       {sizeGuideOpen && <SizeGuideModal onClose={() => setSizeGuideOpen(false)} />}
+      
+      <style>{`
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
 
-      <div className="grid md:grid-cols-2 gap-10 md:gap-16">
-        {/* LEFT — Images */}
-        <div className="flex gap-3">
-          <div className="flex flex-col gap-2">
+      {/* REFINED 50/50 BALANCED GRID */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 xl:gap-14 items-start">
+        
+        {/* LEFT — COMPACT PICTURE CANVAS */}
+        <div className="flex flex-col gap-4 lg:sticky lg:top-24 w-full max-w-xl mx-auto lg:mx-0">
+          
+          {/* Main Visual Node (Kept proportionate and max-height optimized) */}
+          <div className="bg-neutral-50 rounded-2xl border border-neutral-100 overflow-hidden relative group aspect-square max-h-[520px]">
+            <img
+              src={resolveImageUrl(images[selectedImage]) || ''}
+              alt={product.name}
+              className="w-full h-full object-cover transition-transform duration-[1.2s] ease-out group-hover:scale-102"
+              decoding="async"
+              onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '' }}
+            />
+            <div className="absolute top-4 right-4 bg-white/80 backdrop-blur-md border border-neutral-200/40 text-xs px-2.5 py-1 rounded-full shadow-sm text-neutral-500">
+              {selectedImage + 1} / {images.length}
+            </div>
+          </div>
+
+          {/* Under-Image Micro Horizontal Thumb Array */}
+          <div className="flex gap-2.5 overflow-x-auto no-scrollbar py-1">
             {images.map((img, i) => (
               <button
                 key={i}
                 onClick={() => setSelectedImage(i)}
-                className={`w-16 h-16 border-2 overflow-hidden flex-shrink-0 ${selectedImage === i ? 'border-gray-900' : 'border-gray-200'}`}
+                className={`w-14 h-14 md:w-16 md:h-16 rounded-xl overflow-hidden flex-shrink-0 relative transition-all duration-300 bg-neutral-50 border p-0.5 ${
+                  selectedImage === i 
+                    ? 'border-neutral-900 shadow-sm scale-[1.02]' 
+                    : 'border-neutral-100 hover:border-neutral-300'
+                }`}
               >
                 <img
                   src={resolveImageUrl(img) || ''}
                   alt=""
-                  className="w-full h-full object-cover bg-gray-100"
+                  className="w-full h-full object-cover rounded-lg"
                   loading="lazy"
-                  decoding="async"
                   onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '' }}
                 />
               </button>
             ))}
           </div>
-          <div className="flex-1 border border-gray-100">
-            <img
-              src={resolveImageUrl(images[selectedImage]) || ''}
-              alt={product.name}
-              className="w-full h-80 md:h-[520px] object-cover bg-gray-100"
-              decoding="async"
-              onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '' }}
-            />
-          </div>
         </div>
 
-        {/* RIGHT — Info */}
-        <div className="flex flex-col gap-4">
-          <div>
-            <h1 className="text-xl md:text-2xl font-semibold text-gray-900 leading-snug mb-2">{product.name}</h1>
-            <p className="text-lg font-medium text-gray-900">{formatPrice(finalPrice)}</p>
-            {product.compare_price && (
-              <p className="text-sm text-gray-400 line-through">{formatPrice(product.compare_price)}</p>
+        {/* RIGHT — DETAILED DESIGN SPECIFICATIONS */}
+        <div className="flex flex-col gap-5 w-full">
+          
+          {/* Header Typography Group */}
+          <div className="border-b border-neutral-100 pb-4">
+            <div className="mb-1.5">
+              <span className="text-xs bg-neutral-50 border border-neutral-100 px-2.5 py-1 rounded text-neutral-500">
+                Collection Edition
+              </span>
+            </div>
+            <h1 className="text-2xl md:text-3xl font-semibold text-neutral-950 mb-2">{product.name}</h1>
+            
+            <div className="flex items-baseline gap-2.5">
+              <span className="text-xl font-bold text-neutral-950">{formatPrice(finalPrice)}</span>
+              {product.compare_price && (
+                <span className="text-sm text-neutral-400 line-through font-light">{formatPrice(product.compare_price)}</span>
+              )}
+            </div>
+          </div>
+
+          {/* Technical Blueprint Layout */}
+          <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm bg-neutral-50/40 p-4 rounded-xl border border-neutral-100">
+            {product.brands && (
+              <div className="flex flex-col">
+                <span className="text-xs text-neutral-400">Brand</span>
+                <span className="font-medium text-neutral-800">{product.brands.name}</span>
+              </div>
+            )}
+            {product.categories && (
+              <div className="flex flex-col">
+                <span className="text-xs text-neutral-400">Category</span>
+                <span className="font-medium text-neutral-800">{isLenses ? 'Lenses' : product.categories.name}</span>
+              </div>
+            )}
+            {!isLenses && product.specifications?.frame_shape && (
+              <div className="flex flex-col">
+                <span className="text-xs text-neutral-400">Frame Shape</span>
+                <span className="font-medium text-neutral-800">{product.specifications.frame_shape}</span>
+              </div>
+            )}
+            {!isLenses && product.specifications?.face_shape && (
+              <div className="flex flex-col">
+                <span className="text-xs text-neutral-400">Face Shape</span>
+                <span className="font-medium text-neutral-800">{product.specifications.face_shape}</span>
+              </div>
+            )}
+            {product.specifications?.material && (
+              <div className="flex flex-col">
+                <span className="text-xs text-neutral-400">Material</span>
+                <span className="font-medium text-neutral-800">{product.specifications.material}</span>
+              </div>
+            )}
+            {product.gender && (
+              <div className="flex flex-col">
+                <span className="text-xs text-neutral-400">Gender</span>
+                <span className="font-medium text-neutral-800 capitalize">{product.gender}</span>
+              </div>
             )}
           </div>
 
-          {product.brands && (
-            <p className="text-sm text-gray-600">Brand: <span className="font-medium">{product.brands.name}</span></p>
-          )}
-          {product.categories && (
-            <p className="text-sm text-gray-600">Category: <span className="font-medium">{isLenses ? 'Lenses' : product.categories.name}</span></p>
-          )}
-
-          {!isLenses && product.specifications?.frame_shape && (
-            <p className="text-sm text-gray-600">Frame Shape: <span className="font-medium">{product.specifications.frame_shape}</span></p>
-          )}
-          {!isLenses && product.specifications?.face_shape && (
-            <p className="text-sm text-gray-600">Face Shape: <span className="font-medium">{product.specifications.face_shape}</span></p>
-          )}
-
-          {product.specifications?.material && (
-            <p className="text-sm text-gray-600">Material: <span className="font-medium">{product.specifications.material}</span></p>
-          )}
-
-          {isLenses && product.specifications?.lenses_per_pack && (
-            <p className="text-sm text-gray-600">Pack Size: <span className="font-medium">{product.specifications.lenses_per_pack} lenses</span></p>
-          )}
-          {isLenses && product.specifications?.blue_light_protection && (
-            <p className="text-sm text-gray-600">Blue Light Protection: <span className="font-medium">Yes</span></p>
-          )}
-          {isLenses && product.specifications?.duration && (
-            <p className="text-sm text-gray-600">Duration: <span className="font-medium capitalize">{product.specifications.duration}</span></p>
-          )}
-
-
-          {product.gender && (
-            <p className="text-sm text-gray-600">Gender: <span className="font-medium capitalize">{product.gender}</span></p>
-          )}
-
+          {/* Color Matrix Controls */}
           {colors.length > 0 && (
-            <div>
-              <p className="text-sm font-medium text-gray-900 mb-2">
-                Color: <span className="font-normal text-gray-600">{selectedVariant?.color_name || colors[0].color_name}</span>
-              </p>
-              <div className="flex gap-2 flex-wrap">
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-neutral-500 block">
+                Color: <span className="text-neutral-850 font-normal">{selectedVariant?.color_name || colors[0].color_name}</span>
+              </label>
+              <div className="flex gap-2.5 flex-wrap">
                 {colors.map(v => (
                   <button
                     key={v.variant_id}
@@ -393,7 +470,11 @@ export default function ProductDetail() {
                       setSelectedImage(0)
                     }}
                     title={v.color_name}
-                    className={`w-7 h-7 rounded-full border-2 transition-all ${selectedVariant?.variant_id === v.variant_id ? 'border-gray-900 scale-110' : 'border-gray-300'}`}
+                    className={`w-6 h-6 rounded-full border transition-all duration-300 flex items-center justify-center ${
+                      selectedVariant?.variant_id === v.variant_id 
+                        ? 'ring-2 ring-neutral-900 border-white ring-offset-1 scale-105' 
+                        : 'border-neutral-200 hover:scale-105'
+                    }`}
                     style={{ backgroundColor: v.color_hex || '#ccc' }}
                   />
                 ))}
@@ -401,9 +482,10 @@ export default function ProductDetail() {
             </div>
           )}
 
+          {/* Size Profiles Matrix */}
           {sizes.length > 0 && (
-            <div>
-              <p className="text-sm font-medium text-gray-900 mb-2">Size</p>
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-neutral-500 block">Select Size</label>
               <div className="flex gap-2 flex-wrap">
                 {sizes.map(size => {
                   const variantForSize = product.product_variants.find(v => v.size === size)
@@ -412,7 +494,11 @@ export default function ProductDetail() {
                     <button
                       key={size}
                       onClick={() => variantForSize && setSelectedVariant(variantForSize)}
-                      className={`px-3 py-1.5 text-xs border transition-colors ${isSelected ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-300 text-gray-600 hover:border-gray-500'}`}
+                      className={`px-4 py-2 text-sm border rounded-lg transition-all ${
+                        isSelected 
+                          ? 'bg-neutral-950 text-white border-neutral-950 shadow-sm scale-[1.02]' 
+                          : 'border-neutral-200 text-neutral-600 hover:border-neutral-400 bg-white'
+                      }`}
                     >
                       {size}
                     </button>
@@ -422,31 +508,37 @@ export default function ProductDetail() {
             </div>
           )}
 
-          {stockQty !== null && (
-            <p className={`text-xs ${stockQty <= (selectedVariant?.low_stock_alert || 5) ? 'text-orange-500' : 'text-green-600'}`}>
-              {stockQty === 0 ? 'Out of stock' : stockQty <= (selectedVariant?.low_stock_alert || 5) ? `Only ${stockQty} left` : 'In stock'}
-            </p>
-          )}
-
-          {stockMessage && (
-            <div className="text-xs text-orange-600 bg-orange-50 border border-orange-200 px-3 py-2">{stockMessage}</div>
-          )}
-          {cartError && (
-            <div className="text-xs text-red-600 bg-red-50 border border-red-200 px-3 py-2">{cartError}</div>
-          )}
-
-          <div className="flex gap-2 flex-wrap">
+          {/* Status Badges Row */}
+          <div className="flex gap-1.5 flex-wrap">
             {product.prescription_ready && (
-              <span className="text-xs bg-blue-50 text-blue-700 border border-blue-200 px-2 py-1">Prescription Ready</span>
+              <span className="text-xs bg-neutral-950 text-white border border-neutral-900 px-2.5 py-0.5 rounded font-medium">Prescription Ready</span>
             )}
             {product.virtual_try_on && (
-              <span className="text-xs bg-purple-50 text-purple-700 border border-purple-200 px-2 py-1">Virtual Try-On</span>
+              <span className="text-xs bg-white text-neutral-800 border border-neutral-200 px-2.5 py-0.5 rounded font-medium">Virtual Try-On</span>
             )}
             {product.is_bundle && (
-              <span className="text-xs bg-green-50 text-green-700 border border-green-200 px-2 py-1">Bundle Deal</span>
+              <span className="text-xs bg-neutral-100 text-neutral-600 border border-neutral-200 px-2.5 py-0.5 rounded font-medium">Bundle Package</span>
             )}
           </div>
 
+          {/* Stock Monitor Alert System */}
+          {stockQty !== null && (
+            <div className="flex items-center gap-2 border-t border-neutral-100 pt-3">
+              <span className={`w-2 h-2 rounded-full ${stockQty === 0 ? 'bg-red-500' : stockQty <= (selectedVariant?.low_stock_alert || 5) ? 'bg-orange-400 animate-pulse' : 'bg-green-500'}`} />
+              <p className={`text-xs ${stockQty === 0 ? 'text-red-500 font-medium' : stockQty <= (selectedVariant?.low_stock_alert || 5) ? 'text-orange-500 font-semibold' : 'text-neutral-400'}`}>
+                {stockQty === 0 ? 'Out of stock' : stockQty <= (selectedVariant?.low_stock_alert || 5) ? `Low Stock: Only ${stockQty} remaining` : 'In Stock'}
+              </p>
+            </div>
+          )}
+
+          {stockMessage && (
+            <div className="text-sm text-orange-600 bg-orange-50/60 border border-orange-100 px-4 py-2 rounded-xl">{stockMessage}</div>
+          )}
+          {cartError && (
+            <div className="text-sm text-red-600 bg-red-50/60 border border-red-100 px-4 py-2 rounded-xl">{cartError}</div>
+          )}
+
+          {/* Adaptive Prescription Drawer Injection */}
           {(isGlasses || (isLenses && product.specifications?.prescription_applies !== false)) && (
             <PrescriptionSection
               isLenses={isLenses}
@@ -455,83 +547,18 @@ export default function ProductDetail() {
             />
           )}
 
-          <div>
-            <AccordionItem title="Description">
-              <p>{product.description}</p>
-            </AccordionItem>
-
-            {isGlasses && (product.specifications?.lens_width || product.specifications?.bridge_width || product.specifications?.temple_length) && (
-              <AccordionItem title="Size & Fit">
-                {product.specifications?.lens_width && <p>Lens Width: {product.specifications.lens_width} mm</p>}
-                {product.specifications?.bridge_width && <p>Bridge Width: {product.specifications.bridge_width} mm</p>}
-                {product.specifications?.temple_length && <p>Temple Length: {product.specifications.temple_length} mm</p>}
-              </AccordionItem>
-            )}
-
-            {(isGlasses || isSunglasses) && (
-              <AccordionItem title="Size Guide">
-                <button
-                  onClick={() => setSizeGuideOpen(true)}
-                  className="flex items-center gap-2 text-sm text-gray-700 hover:text-gray-900 transition-colors"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="w-5 h-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={1.5}
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                  </svg>
-                  <span>View Size Guide</span>
-                </button>
-              </AccordionItem>
-            )}
-
-            {isLenses && (product.specifications?.diameter || product.specifications?.base_curve || product.specifications?.water_content) && (
-              <AccordionItem title="Lens Specifications">
-                {product.specifications?.diameter && <p>Diameter: {product.specifications.diameter} mm</p>}
-                {product.specifications?.base_curve && <p>Base Curve: {product.specifications.base_curve} mm</p>}
-                {product.specifications?.water_content && <p>Water Content: {product.specifications.water_content}%</p>}
-              </AccordionItem>
-            )}
-
-            {(product.frame_material || product.lens_material || product.water_content || product.lens_type) && (
-              <AccordionItem title="Materials">
-                {product.frame_material && <p>Frame: {product.frame_material}</p>}
-                {product.lens_material && <p>Lenses: {product.lens_material}</p>}
-                {product.water_content && <p>Water Content: {product.water_content}%</p>}
-                {product.lens_type && <p>Lens Type: {product.lens_type}</p>}
-              </AccordionItem>
-            )}
-
-            {isLenses && product.how_to_use && (
-              <AccordionItem title="How to Use">
-                <p>{product.how_to_use}</p>
-              </AccordionItem>
-            )}
-
-            {product.details && (
-              <AccordionItem title="Details">
-                <p>{product.details}</p>
-              </AccordionItem>
-            )}
-
-            <AccordionItem title="Shipping & exchange">
-              <p>Free shipping on orders over $50. Returns accepted within 30 days.</p>
-            </AccordionItem>
-          </div>
-
-          {/* ── Add to Cart + Try On ── */}
-          <div className="flex flex-col gap-3 pt-2 border-t border-gray-200">
-            <div className="flex items-center gap-4">
-              <div className="flex border border-gray-300">
+          {/* DOCK TRANSACTION SYSTEM */}
+          <div className="flex flex-col gap-3 pt-4 border-t border-neutral-100">
+            <div className="flex gap-3">
+              {/* Counter */}
+              <div className="flex items-center border border-neutral-200 bg-neutral-50/50 rounded-xl overflow-hidden shadow-sm">
                 <button
                   onClick={() => { setStockMessage(''); setQuantity(q => Math.max(1, q - 1)) }}
-                  className="px-3 py-2 text-gray-600 hover:bg-gray-100"
-                >−</button>
-                <span className="px-4 py-2 text-sm">{quantity}</span>
+                  className="px-4 h-full text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 transition-colors text-lg"
+                >
+                  −
+                </button>
+                <span className="px-2 text-sm font-semibold text-neutral-800 w-8 text-center select-none">{quantity}</span>
                 <button
                   onClick={() => {
                     setStockMessage('')
@@ -541,35 +568,100 @@ export default function ProductDetail() {
                     }
                     setQuantity(q => q + 1)
                   }}
-                  className="px-3 py-2 text-gray-600 hover:bg-gray-100 disabled:opacity-50"
+                  className="px-4 h-full text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 transition-colors text-lg disabled:opacity-30"
                   disabled={maxQty !== null && quantity >= maxQty}
-                >+</button>
+                >
+                  +
+                </button>
               </div>
+
+              {/* Action Button */}
               <button
                 onClick={handleAddToCart}
                 disabled={addingToCart || !canAdd}
-                className="flex-1 bg-black text-white py-2.5 text-sm font-medium hover:bg-gray-800 transition-colors disabled:bg-gray-400"
+                className="flex-1 bg-neutral-950 text-white py-3.5 px-6 rounded-xl text-sm font-medium hover:bg-neutral-800 active:scale-[0.99] transition-all duration-300 disabled:bg-neutral-200 disabled:text-neutral-400 disabled:transform-none shadow-sm flex items-center justify-center"
               >
-                {addingToCart ? 'Adding...' : justAdded ? (
+                {addingToCart ? (
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : justAdded ? (
                   <span className="inline-flex items-center justify-center gap-2">
-                    <Check size={16} aria-hidden="true" />
-                    Added
+                    <Check size={16} className="animate-bounce" />
+                    Added to Cart
                   </span>
-                ) : !canAdd ? 'Out of Stock' : 'Add to cart'}
+                ) : !canAdd ? (
+                  'Out of Stock'
+                ) : (
+                  'Add to Cart'
+                )}
               </button>
             </div>
 
-            <button
-              onClick={handleTryOn}
-              className="w-full border-2 border-black text-black py-2.5 text-sm font-medium hover:bg-black hover:text-white transition-colors flex items-center justify-center gap-2"
-            >
-              👓 Virtual Try-On
-            </button>
+            {/* Virtual Try-On Link */}
+            {product.virtual_try_on && (
+              <button
+                onClick={handleTryOn}
+                className="w-full border border-neutral-200 text-neutral-900 bg-white py-3.5 px-6 rounded-xl text-sm font-medium hover:bg-neutral-50 active:scale-[0.99] transition-all duration-300 flex items-center justify-center gap-2 shadow-sm"
+              >
+                <span>✨</span> Launch Virtual Try-On
+              </button>
+            )}
           </div>
+
+          {/* Disclosure Navigation Dropdowns */}
+          <div className="border-t border-neutral-100 pt-2 mt-2">
+            <AccordionItem title="Description">
+              <p>{product.description}</p>
+            </AccordionItem>
+
+            {isGlasses && (product.specifications?.lens_width || product.specifications?.bridge_width || product.specifications?.temple_length) && (
+              <AccordionItem title="Dimensions & Proportions">
+                {product.specifications?.lens_width && <p className="flex justify-between py-1"><span className="text-neutral-400">Lens Width</span> <span className="text-neutral-800 font-medium">{product.specifications.lens_width} mm</span></p>}
+                {product.specifications?.bridge_width && <p className="flex justify-between py-1"><span className="text-neutral-400">Bridge Width</span> <span className="text-neutral-800 font-medium">{product.specifications.bridge_width} mm</span></p>}
+                {product.specifications?.temple_length && <p className="flex justify-between py-1"><span className="text-neutral-400">Temple Arm Length</span> <span className="text-neutral-800 font-medium">{product.specifications.temple_length} mm</span></p>}
+              </AccordionItem>
+            )}
+
+            {(isGlasses || isSunglasses) && (
+              <AccordionItem title="Sizing Information">
+                <div className="flex items-center justify-between bg-neutral-50 p-3 rounded-lg border border-neutral-100">
+                  <div className="flex items-center gap-2">
+                    <Info size={14} className="text-neutral-400" />
+                    <span className="text-neutral-600 text-xs">Calibration chart ready.</span>
+                  </div>
+                  <button
+                    onClick={() => setSizeGuideOpen(true)}
+                    className="text-neutral-900 hover:underline text-xs font-semibold"
+                  >
+                    View Size Guide
+                  </button>
+                </div>
+              </AccordionItem>
+            )}
+
+            {isLenses && (product.specifications?.diameter || product.specifications?.base_curve || product.specifications?.water_content) && (
+              <AccordionItem title="Curvature Specifications">
+                {product.specifications?.diameter && <p className="flex justify-between py-1"><span className="text-neutral-400">Diameter</span> <span className="text-neutral-800 font-medium">{product.specifications.diameter} mm</span></p>}
+                {product.specifications?.base_curve && <p className="flex justify-between py-1"><span className="text-neutral-400">Base Curve</span> <span className="text-neutral-800 font-medium">{product.specifications.base_curve} mm</span></p>}
+                {product.specifications?.water_content && <p className="flex justify-between py-1"><span className="text-neutral-400">Water Content</span> <span className="text-neutral-800 font-medium">{product.specifications.water_content}%</span></p>}
+              </AccordionItem>
+            )}
+
+            {(product.frame_material || product.lens_material || product.water_content || product.lens_type) && (
+              <AccordionItem title="Material & Composition">
+                {product.frame_material && <p className="flex justify-between py-1"><span className="text-neutral-400">Frame Material</span> <span className="text-neutral-800 font-medium">{product.frame_material}</span></p>}
+                {product.lens_material && <p className="flex justify-between py-1"><span className="text-neutral-400">Lens Material</span> <span className="text-neutral-800 font-medium">{product.lens_material}</span></p>}
+                {product.lens_type && <p className="flex justify-between py-1"><span className="text-neutral-400">Lens Type</span> <span className="text-neutral-800 font-medium">{product.lens_type}</span></p>}
+              </AccordionItem>
+            )}
+          </div>
+
         </div>
       </div>
 
-      <ProductReviews productId={product.product_id} />
+      {/* FEEDBACK & REVIEWS */}
+      <div className="mt-14 md:mt-20 pt-10 border-t border-neutral-100">
+        <ProductReviews productId={product.product_id} />
+      </div>
     </div>
   )
 }

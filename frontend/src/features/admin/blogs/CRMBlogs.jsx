@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react'
-import { ImageOff, Pencil, Trash2, Eye, EyeOff, Plus } from 'lucide-react'
+import { useCallback, useEffect, useState, useRef } from 'react'
+import { ImageOff, Pencil, Trash2, Eye, EyeOff, Plus, Upload, X } from 'lucide-react'
 
 import { adminBlogService } from '../services/adminBlogService'
 import { resolveImageUrl } from '../../../shared/utils/imageUrl'
@@ -20,6 +20,8 @@ export default function CRMBlogs() {
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState(null)
   const [formSuccess, setFormSuccess] = useState(null)
+  
+  const fileInputRef = useRef(null)
 
   const load = useCallback(async () => {
     setState({ loading: true, error: null, rows: [] })
@@ -46,18 +48,8 @@ export default function CRMBlogs() {
   }
 
   const handleEdit = (blog) => {
-    setForm({
-      title: blog.title || '',
-      content: blog.content || '',
-      excerpt: blog.excerpt || '',
-      author: blog.author || '',
-      category: blog.category || '',
-      image: blog.image || '',
-      is_published: blog.is_published || false,
-    })
+    setForm({ ...blog })
     setEditingId(blog.post_id)
-    setFormError(null)
-    setFormSuccess(null)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -67,199 +59,90 @@ export default function CRMBlogs() {
       return
     }
     setSaving(true)
-    setFormError(null)
-    setFormSuccess(null)
     try {
-      if (editingId) {
-        await adminBlogService.update(editingId, form)
-        setFormSuccess('Post updated successfully!')
-      } else {
-        await adminBlogService.create(form)
-        setFormSuccess('Post created successfully!')
-      }
+      if (editingId) await adminBlogService.update(editingId, form)
+      else await adminBlogService.create(form)
+      setFormSuccess('Post saved successfully!')
       resetForm()
       load()
-    } catch (e) {
-      setFormError(e?.message || e?.error || 'Failed to save blog.')
-    } finally {
-      setSaving(false)
+    } catch (e) { setFormError(e?.message || 'Failed to save.') }
+    finally { setSaving(false) }
+  }
+
+  // Handle single file selection
+  const handleFileChange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      // Logic placeholder: Replace this with your actual upload API call logic
+      // e.g., const url = await uploadService.upload(file);
+      // setForm(f => ({ ...f, image: url }));
+      console.log('File selected:', file.name)
     }
   }
 
-  const handleDelete = async (blog) => {
-    if (!window.confirm(`Delete "${blog.title}"?`)) return
-    try {
-      await adminBlogService.remove(blog.post_id)
-      if (editingId === blog.post_id) resetForm()
-      load()
-    } catch (e) {
-      alert(e?.message || 'Failed to delete.')
-    }
-  }
-
-  const handleTogglePublish = async (blog) => {
-    try {
-      await adminBlogService.update(blog.post_id, { is_published: !blog.is_published })
-      load()
-    } catch (e) {
-      alert(e?.message || 'Failed to update.')
-    }
-  }
-
-  const field = 'w-full border border-[rgba(var(--velore-border-soft),0.7)] rounded-lg px-3 py-2 text-sm bg-transparent focus:outline-none focus:ring-2 focus:ring-[rgba(var(--velore-accent),0.4)]'
+  const field = "w-full border border-black px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-black bg-white"
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-5xl mx-auto space-y-12 bg-white min-h-screen p-6">
       <CRMPageHeader title="Blogs" subtitle="Write and manage blog posts." />
 
-      {/* ── Editor ── */}
-      <CRMSectionCard
-        title={editingId ? 'Edit Post' : 'New Post'}
-        subtitle={editingId ? 'Editing an existing post.' : 'Fill in the fields and save.'}
-      >
-        <div className="space-y-4 pt-2">
-          {formError && (
-            <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-2">
-              {formError}
-            </div>
-          )}
-          {formSuccess && (
-            <div className="text-sm text-green-600 bg-green-50 border border-green-200 rounded-lg px-4 py-2">
-              {formSuccess}
-            </div>
-          )}
+      <CRMSectionCard title={editingId ? 'Edit Post' : 'New Post'}>
+        <div className="space-y-6 pt-2">
+          {formError && <div className="p-4 border border-red-600 text-red-600 text-[10px] font-bold tracking-widest uppercase">{formError}</div>}
+          {formSuccess && <div className="p-4 border border-black text-black text-[10px] font-bold tracking-widest uppercase">{formSuccess}</div>}
 
-          <div>
-            <label className="block text-sm font-medium mb-1">Title *</label>
-            <input
-              className={field}
-              value={form.title}
-              onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-              placeholder="Post title"
-            />
+          <input className={field} value={form.title} onChange={e => setForm(f => ({...f, title: e.target.value}))} placeholder="Title *" />
+          
+          <div className="grid grid-cols-2 gap-4">
+            <input className={field} value={form.author} onChange={e => setForm(f => ({...f, author: e.target.value}))} placeholder="Author *" />
+            <input className={field} value={form.category} onChange={e => setForm(f => ({...f, category: e.target.value}))} placeholder="Category" />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Author *</label>
-              <input
-                className={field}
-                value={form.author}
-                onChange={e => setForm(f => ({ ...f, author: e.target.value }))}
-                placeholder="Author name"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Category</label>
-              <input
-                className={field}
-                value={form.category}
-                onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
-                placeholder="e.g. Style, Guide, Care"
-              />
-            </div>
+          <input className={field} value={form.excerpt} onChange={e => setForm(f => ({...f, excerpt: e.target.value}))} placeholder="Excerpt" />
+
+          {/* File Upload Component */}
+          <div className="border border-black p-4 flex items-center justify-between">
+            <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
+            <button onClick={() => fileInputRef.current.click()} className="flex items-center gap-2 text-[10px] font-bold uppercase border border-black px-4 py-2 hover:bg-black hover:text-white transition-all">
+              <Upload size={14} /> Select Max 1 Image
+            </button>
+            {form.image && <span className="text-[10px] text-gray-500">Image selected: {form.image.split('/').pop()}</span>}
           </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-1">Excerpt</label>
-            <input
-              className={field}
-              value={form.excerpt}
-              onChange={e => setForm(f => ({ ...f, excerpt: e.target.value }))}
-              placeholder="Short description shown on listing page"
-            />
-          </div>
+          <textarea className={`${field} h-48`} value={form.content} onChange={e => setForm(f => ({...f, content: e.target.value}))} placeholder="Content *" />
 
-          <div>
-            <label className="block text-sm font-medium mb-1">Image URL</label>
-            <input
-              className={field}
-              value={form.image}
-              onChange={e => setForm(f => ({ ...f, image: e.target.value }))}
-              placeholder="/uploads/blogs/my-image.jpg"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">Content *</label>
-            <textarea
-              className={`${field} resize-none`}
-              rows={10}
-              value={form.content}
-              onChange={e => setForm(f => ({ ...f, content: e.target.value }))}
-              placeholder="Write your blog content here..."
-            />
-          </div>
-
-          <label className="flex items-center gap-3 cursor-pointer select-none">
-            <div
-              onClick={() => setForm(f => ({ ...f, is_published: !f.is_published }))}
-              className={`w-10 h-6 rounded-full transition-colors flex items-center px-1 ${form.is_published ? 'bg-green-500' : 'bg-gray-300'}`}
-            >
-              <div className={`w-4 h-4 rounded-full bg-white shadow transition-transform ${form.is_published ? 'translate-x-4' : 'translate-x-0'}`} />
-            </div>
-            <span className="text-sm font-medium">{form.is_published ? 'Publish immediately' : 'Save as draft'}</span>
+          <label className="flex items-center gap-4 cursor-pointer text-[10px] font-bold uppercase tracking-widest">
+            <input type="checkbox" className="accent-black w-4 h-4" checked={form.is_published} onChange={e => setForm(f => ({...f, is_published: e.target.checked}))} />
+            {form.is_published ? 'Publish immediately' : 'Save as draft'}
           </label>
 
-          <div className="flex gap-3 pt-1">
-            <CRMActionButton onClick={handleSave} disabled={saving}>
-              {saving ? 'Saving…' : editingId ? 'Save Changes' : 'Create Post'}
-            </CRMActionButton>
-            {editingId && (
-              <CRMActionButton tone="secondary" onClick={resetForm}>
-                Cancel Edit
-              </CRMActionButton>
-            )}
+          <div className="flex gap-4">
+            <CRMActionButton onClick={handleSave} disabled={saving}>{saving ? 'Saving...' : 'Save Changes'}</CRMActionButton>
+            {editingId && <CRMActionButton tone="secondary" onClick={resetForm}>Cancel</CRMActionButton>}
           </div>
         </div>
       </CRMSectionCard>
 
-      {/* ── Blog List ── */}
-      <CRMSectionCard title="All posts" subtitle="Real data from your database">
-        {state.loading && <CRMLoadingState label="Loading blogs…" />}
-        {!state.loading && state.error && <CRMErrorState message={state.error} onRetry={load} />}
-        {!state.loading && !state.error && state.rows.length === 0 && (
-          <CRMEmptyState title="No posts yet" message="Create your first blog post above." />
-        )}
-        {!state.loading && !state.error && state.rows.length > 0 && (
-          <div className="divide-y divide-[rgba(var(--velore-border-soft),0.4)]">
-            {state.rows.map(blog => {
-              const url = resolveImageUrl(blog.image)
-              return (
-                <div key={blog.post_id} className="flex items-center gap-4 py-3 px-1">
-                  <div className="w-12 h-12 rounded-xl bg-[rgba(var(--velore-accent),0.06)] border border-[rgba(var(--velore-border-soft),0.95)] overflow-hidden flex items-center justify-center shrink-0">
-                    {url ? (
-                      <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" onError={e => { e.currentTarget.style.display = 'none' }} />
-                    ) : (
-                      <ImageOff className="w-5 h-5 text-[rgba(var(--velore-fg),0.38)]" />
-                    )}
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="font-semibold truncate">{blog.title}</div>
-                    <div className="text-xs text-[rgba(var(--velore-fg),0.52)] truncate">{blog.category || '—'} · {blog.author}</div>
-                  </div>
-
-                  <CRMStatusBadge tone={blog.is_published ? 'success' : 'neutral'}>
-                    {blog.is_published ? 'Published' : 'Draft'}
-                  </CRMStatusBadge>
-
-                  <div className="flex items-center gap-1 shrink-0">
-                    <button onClick={() => handleTogglePublish(blog)} title={blog.is_published ? 'Unpublish' : 'Publish'} className="p-2 rounded-lg hover:bg-[rgba(var(--velore-fg),0.06)] transition">
-                      {blog.is_published ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                    <button onClick={() => handleEdit(blog)} title="Edit" className="p-2 rounded-lg hover:bg-[rgba(var(--velore-fg),0.06)] transition">
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                    <button onClick={() => handleDelete(blog)} title="Delete" className="p-2 rounded-lg hover:bg-red-50 text-red-500 transition">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
+      <CRMSectionCard title="All posts">
+        <div className="divide-y divide-black">
+          {state.rows.map(blog => (
+            <div key={blog.post_id} className="flex items-center justify-between py-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 border border-black overflow-hidden">{blog.image && <img src={resolveImageUrl(blog.image)} className="w-full h-full object-cover" />}</div>
+                <div>
+                  <div className="text-sm font-bold">{blog.title}</div>
+                  <div className="text-[9px] uppercase tracking-widest text-gray-400">{blog.category || '—'} · {blog.author}</div>
                 </div>
-              )
-            })}
-          </div>
-        )}
+              </div>
+              <div className="flex items-center gap-2">
+                <CRMStatusBadge tone={blog.is_published ? 'success' : 'neutral'}>{blog.is_published ? 'Published' : 'Draft'}</CRMStatusBadge>
+                <button onClick={() => adminBlogService.update(blog.post_id, { is_published: !blog.is_published }).then(load)} className="p-2"><Eye size={14} /></button>
+                <button onClick={() => handleEdit(blog)} className="p-2"><Pencil size={14} /></button>
+                <button onClick={() => adminBlogService.remove(blog.post_id).then(load)} className="p-2 text-red-600"><Trash2 size={14} /></button>
+              </div>
+            </div>
+          ))}
+        </div>
       </CRMSectionCard>
     </div>
   )

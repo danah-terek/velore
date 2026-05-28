@@ -4,18 +4,30 @@ import { Package, ShoppingCart, Users, Star, Newspaper, TrendingUp } from 'lucid
 import { useAdminAuth } from '../auth/AdminAuthContext'
 import { adminDashboardService } from '../services/adminDashboardService'
 import CRMPageHeader from '../shared/CRMPageHeader'
-import CRMStatCard from '../shared/CRMStatCard'
 import CRMSectionCard from '../shared/CRMSectionCard'
 import CRMLoadingState from '../shared/CRMLoadingState'
 import CRMErrorState from '../shared/CRMErrorState'
 import CRMEmptyState from '../shared/CRMEmptyState'
-import CRMStatusBadge from '../shared/CRMStatusBadge'
 
 function normalizeRole(role) {
   if (!role) return null
   if (role === 'admin') return 'staff_admin'
   return role
 }
+
+// Elegant, muted status palette
+const getStatusStyles = (status) => {
+  switch (status?.toLowerCase()) {
+    case 'pending':
+      return 'bg-amber-50 text-amber-800 border-amber-200';
+    case 'cancelled':
+      return 'bg-rose-50 text-rose-800 border-rose-200';
+    case 'completed':
+      return 'bg-emerald-50 text-emerald-800 border-emerald-200';
+    default:
+      return 'bg-gray-50 text-gray-800 border-gray-200';
+  }
+};
 
 export default function CRMDashboard() {
   const { admin } = useAdminAuth()
@@ -41,23 +53,19 @@ export default function CRMDashboard() {
   const cards = useMemo(() => {
     const d = state.data
     if (!d) return []
-
     const items = [
-      { label: 'Products', value: d.products?.total ?? '—', icon: Package, accent: 'sky' },
-      { label: 'Orders', value: d.orders?.total ?? '—', icon: ShoppingCart, accent: 'teal' },
-      { label: 'Customers', value: d.users?.total ?? '—', icon: Users, accent: 'amber' },
+      { label: 'Products', value: d.products?.total ?? '—', icon: Package },
+      { label: 'Orders', value: d.orders?.total ?? '—', icon: ShoppingCart },
+      { label: 'Customers', value: d.users?.total ?? '—', icon: Users },
     ]
-
     if (isSuper && d.revenue?.total !== undefined) {
       items.unshift({
         label: 'Revenue',
         value: `$${Number(d.revenue.total || 0).toLocaleString()}`,
         icon: TrendingUp,
-        accent: 'teal',
-        hint: 'From completed payments',
+        hint: 'Completed payments',
       })
     }
-
     return items
   }, [state.data, isSuper])
 
@@ -68,49 +76,45 @@ export default function CRMDashboard() {
   if (!d) return <CRMEmptyState title="No dashboard data" message="The dashboard did not return any data." />
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-12 bg-white min-h-screen">
       <CRMPageHeader
         title="Dashboard"
-        subtitle={isSuper ? 'Operational overview + analytics access' : 'Operational overview'}
+        subtitle={isSuper ? 'Operational Overview + Analytics Access' : 'Operational Overview'}
       />
 
-      <div className={`grid gap-4 ${cards.length >= 4 ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-2 lg:grid-cols-3'}`}>
+      {/* KPI Grid */}
+      <div className={`grid gap-6 ${cards.length >= 4 ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-2 lg:grid-cols-3'}`}>
         {cards.map((c) => (
-          <CRMStatCard
-            key={c.label}
-            label={c.label}
-            value={typeof c.value === 'number' ? c.value.toLocaleString() : c.value}
-            icon={c.icon}
-            accent={c.accent}
-            hint={c.hint}
-          />
+          <div key={c.label} className="border border-black p-8 hover:bg-black group transition-colors">
+            <c.icon className="w-5 h-5 text-black group-hover:text-white mb-6" />
+            <div className="text-[10px] uppercase tracking-[0.2em] font-bold text-gray-400 group-hover:text-gray-300">{c.label}</div>
+            <div className="text-3xl font-light text-black group-hover:text-white mt-1">{c.value}</div>
+            {c.hint && <div className="text-[9px] font-serif italic text-gray-400 mt-2">{c.hint}</div>}
+          </div>
         ))}
       </div>
 
-      <CRMSectionCard
-        title="Recent orders"
-        subtitle="Most recent activity from real order data"
-      >
+      {/* Recent Orders List */}
+      <CRMSectionCard title="Recent orders" subtitle="Real-time activity log">
         {!Array.isArray(d.recent_orders) || d.recent_orders.length === 0 ? (
           <CRMEmptyState title="No recent orders" message="Orders will appear here once available." />
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-0 border-t border-black">
             {d.recent_orders.map((o) => (
-              <div
-                key={o.order_id}
-                className="flex items-center justify-between gap-4 rounded-[1.05rem] border border-[rgba(var(--velore-border-soft),0.92)] bg-[rgba(var(--velore-pearl),0.85)] px-4 py-3.5 crm-hover-lift"
-              >
-                <div className="min-w-0">
-                  <div className="text-sm font-semibold truncate">{o.user || '—'}</div>
-                  <div className="text-xs text-slate-500 truncate">
+              <div key={o.order_id} className="flex items-center justify-between py-6 border-b border-black">
+                <div>
+                  <div className="text-sm font-bold text-black">{o.user || '—'}</div>
+                  <div className="text-[10px] uppercase tracking-widest text-gray-500">
                     #{o.order_id} · {o.date ? new Date(o.date).toLocaleDateString() : '—'}
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <CRMStatusBadge tone={o.status === 'pending' ? 'warning' : o.status === 'cancelled' ? 'danger' : 'neutral'}>
+                
+                <div className="flex items-center gap-6">
+                  {/* Elegant Color-Coded Status */}
+                  <span className={`text-[9px] font-bold uppercase tracking-[0.1em] border px-3 py-1 ${getStatusStyles(o.status)}`}>
                     {o.status}
-                  </CRMStatusBadge>
-                  <div className="text-sm font-semibold tabular-nums">
+                  </span>
+                  <div className="text-sm font-bold tabular-nums">
                     ${Number(o.amount || 0).toFixed(2)}
                   </div>
                 </div>
@@ -120,22 +124,23 @@ export default function CRMDashboard() {
         )}
       </CRMSectionCard>
 
-      {/* Placeholder slots: these will become real when endpoints exist */}
-      <div className="grid gap-4 lg:grid-cols-2">
-        <CRMSectionCard title="Reviews" subtitle="Moderation uses real pending/approved endpoints" right={null}>
-          <div className="flex items-center gap-3 text-sm text-slate-600">
-            <Star className="w-4 h-4 text-slate-500" />
+      {/* Secondary Modules */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <div className="border border-black p-8">
+          <h3 className="text-xs font-bold uppercase tracking-[0.2em] mb-4">Reviews</h3>
+          <div className="flex items-center gap-3 text-xs text-gray-500 italic">
+            <Star className="w-4 h-4 text-black" />
             Use the Reviews page to approve/reject pending reviews.
           </div>
-        </CRMSectionCard>
-        <CRMSectionCard title="Blogs" subtitle="Uses real blogs endpoint (published only)">
-          <div className="flex items-center gap-3 text-sm text-slate-600">
-            <Newspaper className="w-4 h-4 text-slate-500" />
-            Use the Blogs page to view published posts (admin list-all is not available yet).
+        </div>
+        <div className="border border-black p-8">
+          <h3 className="text-xs font-bold uppercase tracking-[0.2em] mb-4">Blogs</h3>
+          <div className="flex items-center gap-3 text-xs text-gray-500 italic">
+            <Newspaper className="w-4 h-4 text-black" />
+            Use the Blogs page to view published posts.
           </div>
-        </CRMSectionCard>
+        </div>
       </div>
     </div>
   )
 }
-

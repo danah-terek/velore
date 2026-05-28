@@ -53,55 +53,73 @@ export default function CRMBanner() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="crm-card p-6">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-2xl font-semibold">Top Banner Editor</h2>
-            <p className="text-sm text-gray-500 mt-1">Manage the scrolling announcement bar. Uncheck Active to hide a message without deleting it.</p>
-          </div>
-          <button onClick={addSlot} className="crm-btn-secondary flex items-center gap-2">
-            <Plus size={16} />
-            Add
-          </button>
+    <div className="max-w-4xl mx-auto p-0 space-y-8 bg-white min-h-screen">
+      
+      {/* Header - Editorial Style */}
+      <div className="border-b border-black pb-8">
+        <h2 className="text-3xl font-light text-black">Top Banner Editor</h2>
+        <p className="text-xs text-gray-500 mt-2 tracking-widest uppercase">
+          Manage scrolling announcements.
+        </p>
+      </div>
+
+      {feedback && (
+        <div className={`px-4 py-3 text-[10px] font-bold tracking-[0.2em] uppercase border ${feedback.includes('success') ? 'border-black text-black' : 'border-red-600 text-red-600'}`}>
+          {feedback}
         </div>
+      )}
 
-        {feedback && (
-          <div className={`mb-4 px-4 py-3 text-sm rounded-sm ${feedback.includes('success') ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
-            {feedback}
-          </div>
-        )}
-
-        <div className="space-y-3">
-          {messages.map((m, i) => (
-            <div key={i} className="flex items-center gap-3">
-              <span className="text-xs text-gray-400 w-6">#{i + 1}</span>
-              <input
-                value={m.message}
-                onChange={e => updateSlot(i, 'message', e.target.value)}
-                className="crm-input flex-1"
-                placeholder={`Message ${i + 1}...`}
-              />
-              <label className="flex items-center gap-1 text-xs cursor-pointer whitespace-nowrap">
-                <input type="checkbox" checked={m.is_active} onChange={e => updateSlot(i, 'is_active', e.target.checked)} />
+      {/* Editor Grid */}
+      <div className="space-y-4">
+        {messages.map((m, i) => (
+          <div key={i} className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 border border-black hover:border-gray-500 transition-colors">
+            <span className="text-[10px] font-bold text-gray-400 w-8 shrink-0">#{i + 1}</span>
+            <input
+              value={m.message}
+              onChange={e => updateSlot(i, 'message', e.target.value)}
+              className="flex-1 border-none focus:ring-0 text-sm font-light text-black placeholder:text-gray-300 outline-none"
+              placeholder={`Enter message ${i + 1}...`}
+            />
+            <div className="flex items-center justify-between sm:justify-end gap-6 border-t sm:border-t-0 pt-4 sm:pt-0">
+              <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  checked={m.is_active} 
+                  onChange={e => updateSlot(i, 'is_active', e.target.checked)}
+                  className="accent-black w-4 h-4"
+                />
                 Active
               </label>
               <button
                 type="button"
                 onClick={() => deleteSlot(i)}
-                className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                className="text-gray-400 hover:text-black transition-colors"
                 title="Delete this banner"
               >
                 <Trash2 size={16} />
               </button>
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
+      </div>
 
-        <button onClick={save} disabled={saving} className="crm-btn-primary mt-6">
-          {saving ? 'Saving…' : 'Save Banner'}
+      {/* Action Bar */}
+      <div className="flex gap-4 pt-4">
+        <button 
+          onClick={addSlot} 
+          className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] border border-black px-6 py-3 hover:bg-black hover:text-white transition-all"
+        >
+          <Plus size={14} /> Add Slot
+        </button>
+        <button 
+          onClick={save} 
+          disabled={saving} 
+          className="text-[10px] font-bold uppercase tracking-[0.2em] bg-black text-white px-8 py-3 hover:bg-gray-800 disabled:opacity-50 transition-all"
+        >
+          {saving ? 'Saving…' : 'Save Changes'}
         </button>
       </div>
+
     </div>
   )
 }
