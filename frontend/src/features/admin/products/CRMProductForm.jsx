@@ -67,6 +67,7 @@ export function buildProductPayload(values) {
   if (Object.keys(specs).length > 0) payload.specifications = specs
   if (values.gender) payload.gender = normalizeGender(values.gender) || undefined
   if (typeof values.is_active === 'boolean') payload.is_active = values.is_active
+  if (typeof values.virtual_try_on === 'boolean') payload.virtual_try_on = values.virtual_try_on
   if (values.thumbnail) payload.thumbnail = values.thumbnail
   return payload
 }
@@ -435,6 +436,20 @@ export default function CRMProductForm({
               label="Visible in storefront"
             />
           </Field>
+          <Field label="Virtual Try-On">
+  <div className="flex items-center gap-3 min-h-[42px] px-3 py-2 rounded-xl border border-[rgba(var(--velore-border-soft),0.95)] bg-[rgba(var(--velore-pearl),0.85)]">
+    <input
+      id="virtual_try_on"
+      type="checkbox"
+      checked={!!values.virtual_try_on}
+      onChange={(e) => onChange({ virtual_try_on: e.target.checked })}
+      className="w-4 h-4 rounded border-[rgba(var(--velore-border-soft),0.95)] text-[rgb(var(--velore-accent))] focus:ring-[rgba(var(--velore-ring),0.35)]"
+    />
+    <label htmlFor="virtual_try_on" className="text-sm text-[rgba(var(--velore-fg),0.78)]">
+      Enable Virtual Try-On
+    </label>
+  </div>
+</Field>
         </div>
       </FormSection>
 

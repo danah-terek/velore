@@ -303,11 +303,17 @@ export default function ProductDetail() {
   }
 
   const handleTryOn = () => {
-    const tryOnImage = selectedVariant?.tryon_images?.[0] || selectedVariant?.images?.[0] || ''
-    const name = encodeURIComponent(product.name)
-    const imageParam = encodeURIComponent(tryOnImage)
-    navigate(`/try-on?image=${imageParam}&name=${name}`)
+  const getFirstImage = (img) => {
+    if (!img) return ''
+    if (Array.isArray(img)) return img[0] || ''
+    if (typeof img === 'string') return img.trim().split(' ')[0] || ''
+    return ''
   }
+  const tryOnImage = getFirstImage(selectedVariant?.tryon_images) || getFirstImage(selectedVariant?.images) || ''
+  const name = encodeURIComponent(product.name)
+  const imageParam = encodeURIComponent(tryOnImage)
+  navigate(`/try-on?image=${imageParam}&name=${name}`)
+}
 
   if (loading) {
     return (

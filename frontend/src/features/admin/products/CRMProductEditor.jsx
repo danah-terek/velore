@@ -58,6 +58,7 @@ function productToFormValues(p) {
     duration: specs.duration ?? p?.duration ?? '',
     prescription_applies: specs.prescription_applies ?? p?.prescription_applies ?? true,
     thumbnail: p?.thumbnail || '',
+    virtual_try_on: p?.virtual_try_on ?? false,
   }
 }
 

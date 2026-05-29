@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Mail, MapPin, Phone, Send, X } from 'lucide-react'
+import { Mail, MapPin, Phone, Send, X, CheckCircle } from 'lucide-react'
 
 const PHONE_VALUE = '+961 1 234 567'
 const PHONE_HREF = 'tel:+9611234567'
@@ -14,16 +14,16 @@ function ContactTile({ href, label, value, icon, newTab = false, ariaLabel }) {
     <a
       href={href}
       {...props}
-      className="v-icon-tile v-hover-lift v-motion focus:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(var(--velore-ring),0.16)] cursor-pointer"
+      className="group flex items-center gap-3 p-3 bg-stone-50/50 rounded-xl border border-stone-100 hover:border-[#76CDD6] hover:bg-stone-50 transition-all duration-300 hover:shadow-md"
       aria-label={ariaLabel}
     >
-      <span className="v-icon-circle" aria-hidden="true">
+      <div className="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center text-stone-400 group-hover:text-[#76CDD6] transition-colors duration-300">
         {icon}
-      </span>
-      <span className="min-w-0">
-        <span className="block text-xs text-[rgba(var(--velore-fg),0.55)]">{label}</span>
-        <span className="block text-sm font-semibold text-[rgb(var(--velore-fg))] truncate">{value}</span>
-      </span>
+      </div>
+      <div>
+        <p className="text-[9px] font-medium text-stone-400 uppercase tracking-wider">{label}</p>
+        <p className="text-xs font-medium text-stone-800">{value}</p>
+      </div>
     </a>
   )
 }
@@ -85,7 +85,7 @@ export default function ContactModal({ isOpen, onClose }) {
         setSubmitted(false)
         setFormData({ name: '', email: '', subject: '', message: '' })
         onClose?.()
-      }, 1800)
+      }, 2000)
     } catch {
       setError('Something went wrong. Please try again.')
     } finally {
@@ -97,114 +97,164 @@ export default function ContactModal({ isOpen, onClose }) {
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/35 z-[60] transition-opacity" onClick={onClose} role="presentation" />
+      {/* Backdrop */}
+      <div 
+        className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 transition-all duration-300" 
+        onClick={onClose} 
+        role="presentation" 
+      />
 
-      <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+      {/* Modal - fixed height, no scroll */}
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div
           role="dialog"
           aria-modal="true"
           aria-label="Contact Velore"
-          className="w-full max-w-3xl max-h-[92vh] overflow-y-auto v-card-luxury v-soft-enter"
+          className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl animate-scaleIn overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="flex items-center justify-between px-6 py-5 border-b border-[rgba(var(--velore-border-soft),0.85)]">
+          {/* Header */}
+          <div className="flex items-center justify-between px-5 py-4 border-b border-stone-100">
             <div>
-              <div className="v-eyebrow">Support</div>
-              <h2 className="text-lg font-semibold text-[rgb(var(--velore-fg))]">Contact Velore</h2>
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className="inline-block w-5 h-px bg-[#76CDD6]" />
+                <span className="text-[9px] font-medium text-stone-400 uppercase tracking-[0.2em]">Get in touch</span>
+              </div>
+              <h2 className="text-lg font-light tracking-tight text-[#1E1D22]">Contact Velore</h2>
             </div>
             <button
               ref={closeBtnRef}
               type="button"
               onClick={onClose}
-              className="v-icon-btn v-motion focus:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(var(--velore-ring),0.16)]"
+              className="w-7 h-7 rounded-full bg-stone-50 hover:bg-stone-100 flex items-center justify-center text-stone-400 hover:text-stone-800 transition-all duration-300"
               aria-label="Close contact dialog"
             >
-              <X size={18} aria-hidden="true" />
+              <X size={14} />
             </button>
           </div>
 
-          <div className="px-6 py-6">
+          {/* Content - compact, no scroll */}
+          <div className="px-5 py-5">
             {submitted ? (
-              <div className="v-empty p-8 text-center">
-                <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-emerald-50 border border-emerald-200 mb-4">
-                  <Send size={20} className="text-emerald-700" aria-hidden="true" />
+              <div className="text-center py-8">
+                <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center mx-auto mb-3">
+                  <CheckCircle size={22} className="text-emerald-500" />
                 </div>
-                <div className="text-base font-semibold text-[rgb(var(--velore-fg))]">Message sent</div>
-                <div className="v-caption mt-1">We’ll get back to you within 24 hours.</div>
+                <h3 className="text-base font-medium text-[#1E1D22] mb-1">Message sent</h3>
+                <p className="text-xs text-stone-400">We'll get back to you within 24 hours.</p>
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6 pb-6 border-b border-[rgba(var(--velore-border-soft),0.85)]">
+                {/* Contact Tiles - compact */}
+                <div className="grid grid-cols-3 gap-2 mb-5 pb-4 border-b border-stone-100">
                   <ContactTile
                     href={PHONE_HREF}
                     label="Call us"
                     value={PHONE_VALUE}
-                    icon={<Phone size={16} aria-hidden="true" />}
+                    icon={<Phone size={13} />}
                     ariaLabel={`Call Velore at ${PHONE_VALUE}`}
                   />
                   <ContactTile
                     href={EMAIL_HREF}
                     label="Email us"
                     value={EMAIL_VALUE}
-                    icon={<Mail size={16} aria-hidden="true" />}
+                    icon={<Mail size={13} />}
                     ariaLabel={`Email Velore at ${EMAIL_VALUE}`}
                   />
                   <ContactTile
                     href={MAPS_HREF}
                     label="Visit us"
                     value={LOCATION_VALUE}
-                    icon={<MapPin size={16} aria-hidden="true" />}
+                    icon={<MapPin size={13} />}
                     ariaLabel="Open Velore location in Google Maps"
                     newTab
                   />
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {/* Form - compact */}
+                <form onSubmit={handleSubmit} className="space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[9px] font-medium text-stone-400 uppercase tracking-wider mb-1">
+                        Name
+                      </label>
+                      <input
+                        type="text"
+                        name="name"
+                        placeholder="John Doe"
+                        value={formData.name}
+                        onChange={handleChange}
+                        className="w-full px-3 py-2 bg-stone-50/50 border border-stone-200 rounded-lg focus:outline-none focus:border-[#76CDD6] focus:ring-2 focus:ring-[#76CDD6]/20 transition-all duration-300 text-sm text-stone-800 placeholder:text-stone-300"
+                        autoComplete="name"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[9px] font-medium text-stone-400 uppercase tracking-wider mb-1">
+                        Email
+                      </label>
+                      <input
+                        type="email"
+                        name="email"
+                        placeholder="hello@example.com"
+                        value={formData.email}
+                        onChange={handleChange}
+                        className="w-full px-3 py-2 bg-stone-50/50 border border-stone-200 rounded-lg focus:outline-none focus:border-[#76CDD6] focus:ring-2 focus:ring-[#76CDD6]/20 transition-all duration-300 text-sm text-stone-800 placeholder:text-stone-300"
+                        autoComplete="email"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[9px] font-medium text-stone-400 uppercase tracking-wider mb-1">
+                      Subject
+                    </label>
                     <input
                       type="text"
-                      name="name"
-                      placeholder="Your name"
-                      value={formData.name}
+                      name="subject"
+                      placeholder="How can we help?"
+                      value={formData.subject}
                       onChange={handleChange}
-                      className="v-input"
-                      autoComplete="name"
-                      required
-                    />
-                    <input
-                      type="email"
-                      name="email"
-                      placeholder="Your email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      className="v-input"
-                      autoComplete="email"
+                      className="w-full px-3 py-2 bg-stone-50/50 border border-stone-200 rounded-lg focus:outline-none focus:border-[#76CDD6] focus:ring-2 focus:ring-[#76CDD6]/20 transition-all duration-300 text-sm text-stone-800 placeholder:text-stone-300"
                       required
                     />
                   </div>
-                  <input
-                    type="text"
-                    name="subject"
-                    placeholder="Subject"
-                    value={formData.subject}
-                    onChange={handleChange}
-                    className="v-input"
-                    required
-                  />
-                  <textarea
-                    name="message"
-                    placeholder="How can we help?"
-                    value={formData.message}
-                    onChange={handleChange}
-                    rows={5}
-                    className="v-input resize-none"
-                    required
-                  />
 
-                  {error && <p className="v-field-error">{error}</p>}
+                  <div>
+                    <label className="block text-[9px] font-medium text-stone-400 uppercase tracking-wider mb-1">
+                      Message
+                    </label>
+                    <textarea
+                      name="message"
+                      placeholder="Tell us more..."
+                      value={formData.message}
+                      onChange={handleChange}
+                      rows={3}
+                      className="w-full px-3 py-2 bg-stone-50/50 border border-stone-200 rounded-lg focus:outline-none focus:border-[#76CDD6] focus:ring-2 focus:ring-[#76CDD6]/20 transition-all duration-300 text-sm text-stone-800 placeholder:text-stone-300 resize-none"
+                      required
+                    />
+                  </div>
 
-                  <button type="submit" className="v-btn-primary w-full" disabled={loading}>
-                    {loading ? 'Sending…' : 'Send message'}
+                  {error && (
+                    <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-lg">
+                      <p className="text-[11px] text-rose-600">{error}</p>
+                    </div>
+                  )}
+
+                  <button 
+                    type="submit" 
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1E1D22] text-white text-sm font-medium rounded-full hover:bg-stone-700 transition-all duration-300 hover:gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <>
+                        Send message
+                        <Send size={13} />
+                      </>
+                    )}
                   </button>
                 </form>
               </>
@@ -212,6 +262,22 @@ export default function ContactModal({ isOpen, onClose }) {
           </div>
         </div>
       </div>
+
+      <style>{`
+        @keyframes scaleIn {
+          from {
+            opacity: 0;
+            transform: scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+        .animate-scaleIn {
+          animation: scaleIn 0.2s ease-out;
+        }
+      `}</style>
     </>
   )
 }
