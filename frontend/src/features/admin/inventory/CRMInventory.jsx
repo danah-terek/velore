@@ -41,19 +41,50 @@ export default function CRMInventory() {
               <img
                 src={resolveImageUrl(p.thumbnail) || ''}
                 alt=""
-                className="w-10 h-10 rounded-xl border border-[rgba(var(--velore-border-soft),0.95)] object-cover bg-[rgba(var(--velore-accent),0.05)] ring-1 ring-[rgba(var(--velore-border-soft),0.5)]"
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '4px',
+                  border: '1px solid rgba(118,205,214,0.25)',
+                  objectFit: 'cover',
+                  background: 'rgba(118,205,214,0.06)',
+                }}
                 onError={(e) => {
                   e.currentTarget.style.display = 'none'
                 }}
               />
             ) : (
-              <div className="w-10 h-10 rounded-xl bg-[rgb(var(--velore-fg))] text-white flex items-center justify-center text-xs font-semibold ring-1 ring-[rgba(var(--velore-border-soft),0.35)]">
+              <div
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '4px',
+                  background: '#76CDD6',
+                  color: '#ffffff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '13px',
+                  fontWeight: '700',
+                  flexShrink: 0,
+                }}
+              >
                 V
               </div>
             )}
             <div className="min-w-0">
-              <div className="font-semibold truncate">{p.name}</div>
-              <div className="text-xs text-[rgba(var(--velore-fg),0.52)] truncate">#{p.id}</div>
+              <div
+                className="font-semibold truncate text-sm"
+                style={{ color: '#1E1D22' }}
+              >
+                {p.name}
+              </div>
+              <div
+                className="text-[10px] truncate mt-0.5"
+                style={{ color: 'rgba(30,29,34,0.40)' }}
+              >
+                #{p.id}
+              </div>
             </div>
           </div>
         )
@@ -66,8 +97,24 @@ export default function CRMInventory() {
           const low = stock > 0 && stock <= 5
           return (
             <div className="flex items-center gap-2">
-              <span className="font-semibold tabular-nums">{stock}</span>
-              {low ? <CRMStatusBadge tone="warning">Low</CRMStatusBadge> : null}
+              <span
+                className="font-bold tabular-nums text-sm"
+                style={{ color: '#1E1D22' }}
+              >
+                {stock}
+              </span>
+              {low ? (
+                <span
+                  className="text-[9px] font-bold uppercase tracking-[0.08em] px-2 py-0.5"
+                  style={{
+                    background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                    color: '#ffffff',
+                    borderRadius: '4px',
+                  }}
+                >
+                  Low
+                </span>
+              ) : null}
             </div>
           )
         }
@@ -75,15 +122,54 @@ export default function CRMInventory() {
       {
         key: 'status',
         header: 'Status',
-        cell: (p) => (p.is_active ? <CRMStatusBadge tone="success">Active</CRMStatusBadge> : <CRMStatusBadge tone="danger">Inactive</CRMStatusBadge>)
+        cell: (p) => p.is_active ? (
+          <span
+            className="text-[9px] font-bold uppercase tracking-[0.08em] px-3 py-1.5"
+            style={{
+              background: 'linear-gradient(135deg, #22a55b, #1a8a4a)',
+              color: '#ffffff',
+              borderRadius: '4px',
+            }}
+          >
+            Active
+          </span>
+        ) : (
+          <span
+            className="text-[9px] font-bold uppercase tracking-[0.08em] px-3 py-1.5"
+            style={{
+              background: 'linear-gradient(135deg, #e05555, #c0392b)',
+              color: '#ffffff',
+              borderRadius: '4px',
+            }}
+          >
+            Inactive
+          </span>
+        )
       },
       {
         key: 'actions',
         header: 'Actions',
         cell: (p) => (
-          <CRMActionButton tone="secondary" onClick={() => navigate(`/admin/products/${p.id}/edit`)}>
+          <button
+            onClick={() => navigate(`/admin/products/${p.id}/edit`)}
+            className="text-[9px] font-bold uppercase tracking-[0.15em] px-4 py-2 transition-all duration-200"
+            style={{
+              background: 'transparent',
+              color: '#76CDD6',
+              border: '1.5px solid #76CDD6',
+              borderRadius: '4px',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = '#76CDD6'
+              e.currentTarget.style.color = '#ffffff'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = 'transparent'
+              e.currentTarget.style.color = '#76CDD6'
+            }}
+          >
             Manage variants
-          </CRMActionButton>
+          </button>
         )
       }
     ],
@@ -91,10 +177,46 @@ export default function CRMInventory() {
   )
 
   return (
-    <div className="space-y-6">
-      <CRMPageHeader title="Inventory" subtitle="Product-level stock summary from real admin product list. Detailed variant stock is managed per product." />
+    <div className="space-y-8 min-h-screen" style={{ background: '#EFF8FE' }}>
 
-      <CRMSectionCard title="Stock summary" subtitle="This view avoids heavy N+1 variant fetching. Open a product to manage per-variant stock.">
+      {/* Header */}
+      <div className="pb-8" style={{ borderBottom: '1px solid rgba(118,205,214,0.30)' }}>
+        <span
+          className="text-[10px] font-bold tracking-[0.3em] uppercase"
+          style={{ color: '#76CDD6' }}
+        >
+          Stock
+        </span>
+        <h1 className="text-4xl font-light mt-2" style={{ color: '#1E1D22' }}>Inventory</h1>
+        <p className="text-sm mt-1 font-light" style={{ color: 'rgba(30,29,34,0.50)' }}>
+          Product-level stock summary from real admin product list. Detailed variant stock is managed per product.
+        </p>
+      </div>
+
+      {/* Table Card */}
+      <div
+        className="p-6 sm:p-8"
+        style={{
+          background: '#ffffff',
+          border: '1px solid rgba(118,205,214,0.22)',
+          borderRadius: '4px',
+        }}
+      >
+        <div className="mb-6">
+          <h2
+            className="text-xs font-bold tracking-[0.2em] uppercase"
+            style={{ color: '#1E1D22' }}
+          >
+            Stock Summary
+          </h2>
+          <p
+            className="text-[10px] mt-1"
+            style={{ color: '#76CDD6' }}
+          >
+            This view avoids heavy N+1 variant fetching. Open a product to manage per-variant stock.
+          </p>
+        </div>
+
         {state.loading ? <CRMLoadingState label="Loading inventory summary…" /> : null}
         {!state.loading && state.error ? <CRMErrorState message={state.error} onRetry={load} /> : null}
         {!state.loading && !state.error && state.rows.length === 0 ? (
@@ -103,8 +225,8 @@ export default function CRMInventory() {
         {!state.loading && !state.error && state.rows.length > 0 ? (
           <CRMDataTable columns={columns} rows={state.rows} rowKey={(r) => r.id} />
         ) : null}
-      </CRMSectionCard>
+      </div>
+
     </div>
   )
 }
-

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { CheckCircle2, XCircle, Trash2 } from 'lucide-react'
+import { CheckCircle2, XCircle, Trash2, Star } from 'lucide-react'
 
 import { useAdminAuth } from '../auth/AdminAuthContext'
 import { adminReviewService } from '../services/adminReviewService'
@@ -23,6 +23,104 @@ function statusTone(status) {
   if (status === 'rejected') return 'danger'
   if (status === 'pending') return 'warning'
   return 'neutral'
+}
+
+// ── Inline styled action buttons (CRMActionButton not yet restyled) ──────────
+function ActionBtn({ children, tone = 'secondary', disabled, title, onClick }) {
+  const base = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '5px 12px',
+    fontSize: '12px',
+    fontWeight: 600,
+    borderRadius: '4px',
+    cursor: disabled ? 'not-allowed' : 'pointer',
+    opacity: disabled ? 0.45 : 1,
+    transition: 'background 0.15s ease, color 0.15s ease, border-color 0.15s ease',
+    whiteSpace: 'nowrap',
+    border: '1.5px solid transparent',
+  }
+  const themes = {
+    approve: {
+      background: 'transparent',
+      color: '#22a55b',
+      borderColor: '#22a55b',
+    },
+    approveHover: { background: '#22a55b', color: '#fff', borderColor: '#22a55b' },
+    reject: {
+      background: 'transparent',
+      color: '#e05555',
+      borderColor: '#e05555',
+    },
+    rejectHover: { background: '#e05555', color: '#fff', borderColor: '#e05555' },
+    danger: {
+      background: 'transparent',
+      color: '#e05555',
+      borderColor: 'rgba(224,85,85,0.45)',
+    },
+    dangerHover: { background: 'rgba(224,85,85,0.08)', color: '#c0392b', borderColor: '#e05555' },
+  }
+
+  const getStyle = () => {
+    if (tone === 'approve') return { ...base, ...themes.approve }
+    if (tone === 'reject')  return { ...base, ...themes.reject }
+    if (tone === 'danger')  return { ...base, ...themes.danger }
+    return { ...base, ...themes.approve }
+  }
+
+  const handleEnter = (e) => {
+    if (disabled) return
+    if (tone === 'approve') Object.assign(e.currentTarget.style, themes.approveHover)
+    if (tone === 'reject')  Object.assign(e.currentTarget.style, themes.rejectHover)
+    if (tone === 'danger')  Object.assign(e.currentTarget.style, themes.dangerHover)
+  }
+  const handleLeave = (e) => {
+    if (disabled) return
+    if (tone === 'approve') Object.assign(e.currentTarget.style, { ...base, ...themes.approve })
+    if (tone === 'reject')  Object.assign(e.currentTarget.style, { ...base, ...themes.reject })
+    if (tone === 'danger')  Object.assign(e.currentTarget.style, { ...base, ...themes.danger })
+  }
+
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      title={title}
+      style={getStyle()}
+      onMouseEnter={handleEnter}
+      onMouseLeave={handleLeave}
+      onClick={onClick}
+    >
+      {children}
+    </button>
+  )
+}
+
+// ── Star rating display ──────────────────────────────────────────────────────
+function StarRating({ value }) {
+  const num = Number(value)
+  if (!num) return <span style={{ color: 'rgba(30,29,34,0.35)' }}>—</span>
+  return (
+    <div className="flex items-center gap-1">
+      {[1, 2, 3, 4, 5].map((i) => (
+        <Star
+          key={i}
+          className="w-3.5 h-3.5"
+          style={{
+            fill: i <= num ? '#f59e0b' : 'none',
+            color: i <= num ? '#f59e0b' : 'rgba(30,29,34,0.18)',
+          }}
+        />
+      ))}
+      <span
+        className="ml-1 tabular-nums text-xs font-semibold"
+        style={{ color: '#1E1D22' }}
+      >
+        {num}
+      </span>
+    </div>
+  )
 }
 
 export default function CRMReviews() {
@@ -55,9 +153,19 @@ export default function CRMReviews() {
         key: 'customer',
         header: 'Customer',
         cell: (r) => (
-          <div className="min-w-[220px]">
-            <div className="font-semibold">{r.users?.name || '—'}</div>
-            <div className="text-xs text-slate-500">{r.users?.email || ''}</div>
+          <div className="min-w-[200px]">
+            <div
+              className="font-semibold text-sm leading-snug"
+              style={{ color: '#1E1D22' }}
+            >
+              {r.users?.name || '—'}
+            </div>
+            <div
+              className="text-[11px] mt-0.5"
+              style={{ color: 'rgba(30,29,34,0.50)' }}
+            >
+              {r.users?.email || ''}
+            </div>
           </div>
         ),
       },
@@ -65,30 +173,52 @@ export default function CRMReviews() {
         key: 'product',
         header: 'Product',
         cell: (r) => (
-          <div className="min-w-[180px] text-slate-700">
-            {r.products?.name || <span className="text-slate-400">—</span>}
+          <div className="min-w-[160px] text-sm">
+            {r.products?.name
+              ? <span style={{ color: '#1E1D22' }}>{r.products.name}</span>
+              : <span style={{ color: 'rgba(30,29,34,0.35)' }}>—</span>
+            }
           </div>
         ),
       },
       {
         key: 'rating',
         header: 'Rating',
-        cell: (r) => <span className="tabular-nums">{r.rating ?? '—'}</span>,
+        cell: (r) => <StarRating value={r.rating} />,
       },
       {
         key: 'comment',
         header: 'Comment',
-        cell: (r) => <div className="min-w-[320px] text-slate-700">{r.comment || '—'}</div>,
+        cell: (r) => (
+          <div
+            className="min-w-[260px] max-w-xs text-sm leading-relaxed line-clamp-2"
+            style={{ color: r.comment ? 'rgba(30,29,34,0.78)' : 'rgba(30,29,34,0.35)' }}
+            title={r.comment || undefined}
+          >
+            {r.comment || '—'}
+          </div>
+        ),
       },
       {
         key: 'status',
         header: 'Status',
-        cell: (r) => <CRMStatusBadge tone={statusTone(r.status)}>{r.status || '—'}</CRMStatusBadge>,
+        cell: (r) => (
+          <CRMStatusBadge tone={statusTone(r.status)}>
+            {r.status || '—'}
+          </CRMStatusBadge>
+        ),
       },
       {
         key: 'date',
         header: 'Date',
-        cell: (r) => <span className="text-slate-700">{r.created_at ? new Date(r.created_at).toLocaleDateString() : '—'}</span>,
+        cell: (r) => (
+          <span
+            className="text-sm tabular-nums"
+            style={{ color: 'rgba(30,29,34,0.60)' }}
+          >
+            {r.created_at ? new Date(r.created_at).toLocaleDateString() : '—'}
+          </span>
+        ),
       },
       {
         key: 'actions',
@@ -97,8 +227,8 @@ export default function CRMReviews() {
           <div className="flex items-center gap-2">
             {tab === 'pending' ? (
               <>
-                <CRMActionButton
-                  tone="secondary"
+                <ActionBtn
+                  tone="approve"
                   disabled={busyId === r.review_id}
                   onClick={async () => {
                     setBusyId(r.review_id)
@@ -110,11 +240,11 @@ export default function CRMReviews() {
                     }
                   }}
                 >
-                  <CheckCircle2 className="w-4 h-4 mr-2" />
+                  <CheckCircle2 className="w-3.5 h-3.5" />
                   Approve
-                </CRMActionButton>
-                <CRMActionButton
-                  tone="secondary"
+                </ActionBtn>
+                <ActionBtn
+                  tone="reject"
                   disabled={busyId === r.review_id}
                   onClick={async () => {
                     setBusyId(r.review_id)
@@ -126,13 +256,13 @@ export default function CRMReviews() {
                     }
                   }}
                 >
-                  <XCircle className="w-4 h-4 mr-2" />
+                  <XCircle className="w-3.5 h-3.5" />
                   Reject
-                </CRMActionButton>
+                </ActionBtn>
               </>
             ) : null}
 
-            <CRMActionButton
+            <ActionBtn
               tone="danger"
               disabled={!isSuper || busyId === r.review_id}
               title={!isSuper ? 'Super Admin only' : confirmDeleteId === r.review_id ? 'Click again to confirm' : 'Delete review'}
@@ -153,8 +283,11 @@ export default function CRMReviews() {
                 }
               }}
             >
-              {confirmDeleteId === r.review_id ? 'Confirm' : <Trash2 className="w-4 h-4" />}
-            </CRMActionButton>
+              {confirmDeleteId === r.review_id
+                ? 'Confirm'
+                : <Trash2 className="w-3.5 h-3.5" />
+              }
+            </ActionBtn>
           </div>
         ),
       },
@@ -163,35 +296,46 @@ export default function CRMReviews() {
 
   return (
     <div className="space-y-6">
-      <CRMPageHeader title="Reviews" subtitle="Moderate real pending reviews and view approved reviews." />
+      <CRMPageHeader
+        title="Reviews"
+        subtitle="Moderate real pending reviews and view approved reviews."
+      />
 
       <CRMSectionCard
         title="Review moderation"
         subtitle="Approve/reject pending reviews. Approved list is public data."
         right={
-          <div className="inline-flex rounded-[0.85rem] border border-[rgba(var(--velore-border-soft),0.95)] bg-[rgba(var(--velore-pearl),0.88)] p-1 shadow-sm">
-            <button
-              type="button"
-              onClick={() => setTab('pending')}
-              className={`px-3 py-2 text-sm rounded-[0.65rem] font-medium transition-colors duration-[180ms] ${
-                tab === 'pending'
-                  ? 'bg-[rgb(var(--velore-fg))] text-white shadow-sm'
-                  : 'text-[rgba(var(--velore-fg),0.72)] hover:bg-[rgba(var(--velore-accent),0.07)]'
-              }`}
-            >
-              Pending
-            </button>
-            <button
-              type="button"
-              onClick={() => setTab('approved')}
-              className={`px-3 py-2 text-sm rounded-[0.65rem] font-medium transition-colors duration-[180ms] ${
-                tab === 'approved'
-                  ? 'bg-[rgb(var(--velore-fg))] text-white shadow-sm'
-                  : 'text-[rgba(var(--velore-fg),0.72)] hover:bg-[rgba(var(--velore-accent),0.07)]'
-              }`}
-            >
-              Approved
-            </button>
+          /* ── Tab switcher ── */
+          <div
+            className="inline-flex p-1"
+            style={{
+              background: '#EFF8FE',
+              border: '1px solid rgba(118,205,214,0.28)',
+              borderRadius: '6px',
+            }}
+          >
+            {['pending', 'approved'].map((t) => {
+              const active = tab === t
+              return (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => setTab(t)}
+                  className="px-4 py-1.5 text-sm font-semibold capitalize"
+                  style={{
+                    borderRadius: '4px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease',
+                    background: active ? '#76CDD6' : 'transparent',
+                    color: active ? '#ffffff' : 'rgba(30,29,34,0.55)',
+                    boxShadow: active ? '0 1px 4px rgba(118,205,214,0.35)' : 'none',
+                  }}
+                >
+                  {t.charAt(0).toUpperCase() + t.slice(1)}
+                </button>
+              )
+            })}
           </div>
         }
       >
@@ -201,7 +345,17 @@ export default function CRMReviews() {
           <CRMEmptyState title="No reviews found" message="Try switching tabs." />
         ) : null}
         {!state.loading && !state.error && state.rows.length > 0 ? (
-          <CRMDataTable columns={columns} rows={state.rows} rowKey={(r) => r.review_id || r.feedback_id} />
+          <div
+            className="overflow-hidden"
+            style={{
+              border: '1px solid rgba(118,205,214,0.28)',
+              borderRadius: '6px',
+              background: '#ffffff',
+              boxShadow: '0 1px 6px rgba(118,205,214,0.10), 0 1px 2px rgba(30,29,34,0.04)',
+            }}
+          >
+            <CRMDataTable columns={columns} rows={state.rows} rowKey={(r) => r.review_id || r.feedback_id} />
+          </div>
         ) : null}
       </CRMSectionCard>
     </div>

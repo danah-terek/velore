@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { ArrowLeft, ArrowRight } from 'lucide-react'
 
 import { adminOrderService } from '../services/adminOrderService'
 import CRMPageHeader from '../shared/CRMPageHeader'
@@ -16,6 +17,36 @@ function statusTone(status) {
   if (status === 'pending' || status === 'processing') return 'warning'
   if (status === 'cancelled') return 'danger'
   return 'neutral'
+}
+
+function StatusPill({ status }) {
+  const styles = {
+    delivered:   { background: 'linear-gradient(135deg, #22a55b, #1a8a4a)', color: '#fff' },
+    pending:     { background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#fff' },
+    processing:  { background: 'linear-gradient(135deg, #76CDD6, #5bb8c2)', color: '#fff' },
+    shipped:     { background: 'linear-gradient(135deg, #3b82f6, #2563eb)', color: '#fff' },
+    cancelled:   { background: 'linear-gradient(135deg, #e05555, #c0392b)', color: '#fff' },
+  }
+  const s = styles[status] || { background: 'rgba(30,29,34,0.10)', color: '#1E1D22' }
+  return (
+    <span
+      className="text-[9px] font-bold uppercase tracking-[0.08em] px-3 py-1.5"
+      style={{ borderRadius: '4px', ...s }}
+    >
+      {status}
+    </span>
+  )
+}
+
+const selectStyle = {
+  border: '1px solid rgba(118,205,214,0.30)',
+  borderRadius: '4px',
+  background: '#EFF8FE',
+  color: '#1E1D22',
+  fontSize: '12px',
+  padding: '6px 10px',
+  outline: 'none',
+  cursor: 'pointer',
 }
 
 export default function CRMOrders() {
@@ -40,30 +71,58 @@ export default function CRMOrders() {
 
   const columns = useMemo(
     () => [
-      { key: 'id', header: 'Order', cell: (o) => <span className="font-mono text-[rgb(var(--velore-fg))]">#{o.id}</span> },
+      {
+        key: 'id',
+        header: 'Order',
+        cell: (o) => (
+          <span
+            className="font-mono font-bold text-sm px-2 py-1"
+            style={{
+              background: 'rgba(118,205,214,0.12)',
+              color: '#1E1D22',
+              border: '1px solid rgba(118,205,214,0.25)',
+              borderRadius: '4px',
+            }}
+          >
+            #{o.id}
+          </span>
+        ),
+      },
       {
         key: 'user',
         header: 'Customer',
         cell: (o) => (
           <div className="min-w-[220px]">
-            <div className="font-semibold">{o.user?.name || '—'}</div>
-            <div className="text-xs text-[rgba(var(--velore-fg),0.52)]">{o.user?.email || ''}</div>
+            <div className="font-semibold text-sm" style={{ color: '#1E1D22' }}>{o.user?.name || '—'}</div>
+            <div className="text-[10px] mt-0.5" style={{ color: 'rgba(30,29,34,0.45)' }}>{o.user?.email || ''}</div>
           </div>
         ),
       },
-      { key: 'items_count', header: 'Items', cell: (o) => <span className="tabular-nums">{o.items_count}</span> },
+      {
+        key: 'items_count',
+        header: 'Items',
+        cell: (o) => (
+          <span className="tabular-nums font-bold text-sm" style={{ color: '#1E1D22' }}>
+            {o.items_count}
+          </span>
+        ),
+      },
       {
         key: 'amount',
         header: 'Total',
-        cell: (o) => <span className="font-semibold tabular-nums">${Number(o.payment?.amount || 0).toFixed(2)}</span>,
+        cell: (o) => (
+          <span className="font-bold tabular-nums text-sm" style={{ color: '#1E1D22' }}>
+            ${Number(o.payment?.amount || 0).toFixed(2)}
+          </span>
+        ),
       },
       {
         key: 'payment',
         header: 'Payment',
         cell: (o) => (
           <div className="text-xs">
-            <div className="text-[rgba(var(--velore-fg),0.78)]">{o.payment?.payment_meth || '—'}</div>
-            <div className="text-[rgba(var(--velore-fg),0.52)]">{o.payment?.status || ''}</div>
+            <div className="font-medium" style={{ color: '#1E1D22' }}>{o.payment?.payment_meth || '—'}</div>
+            <div className="mt-0.5" style={{ color: 'rgba(30,29,34,0.45)' }}>{o.payment?.status || ''}</div>
           </div>
         ),
       },
@@ -71,7 +130,9 @@ export default function CRMOrders() {
         key: 'date',
         header: 'Date',
         cell: (o) => (
-          <span className="text-[rgba(var(--velore-fg),0.72)]">{o.date ? new Date(o.date).toLocaleDateString() : '—'}</span>
+          <span className="text-sm" style={{ color: 'rgba(30,29,34,0.55)' }}>
+            {o.date ? new Date(o.date).toLocaleDateString() : '—'}
+          </span>
         ),
       },
       {
@@ -79,7 +140,7 @@ export default function CRMOrders() {
         header: 'Status',
         cell: (o) => (
           <div className="flex items-center gap-3">
-            <CRMStatusBadge tone={statusTone(o.status)}>{o.status}</CRMStatusBadge>
+            <StatusPill status={o.status} />
             <select
               value={o.status || 'pending'}
               disabled={updatingId === o.id}
@@ -97,12 +158,10 @@ export default function CRMOrders() {
                   setUpdatingId(null)
                 }
               }}
-              className="crm-select crm-select-sm max-w-[10rem]"
+              style={{ ...selectStyle, maxWidth: '10rem', opacity: updatingId === o.id ? 0.5 : 1 }}
             >
               {ORDER_STATUSES.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
+                <option key={s} value={s}>{s}</option>
               ))}
             </select>
           </div>
@@ -113,58 +172,88 @@ export default function CRMOrders() {
   )
 
   const paginationUi = state.pagination ? (
-    <div className="flex items-center justify-between gap-3 text-xs text-[rgba(var(--velore-fg),0.58)]">
-      <div>
-        Page <span className="font-semibold">{state.pagination.page}</span> of{' '}
-        <span className="font-semibold">{state.pagination.pages}</span> ·{' '}
-        <span className="font-semibold">{state.pagination.total}</span> total
+    <div
+      className="flex items-center justify-between gap-3 pt-6"
+      style={{ borderTop: '1px solid rgba(118,205,214,0.18)' }}
+    >
+      <div className="text-[10px] font-medium" style={{ color: 'rgba(30,29,34,0.45)' }}>
+        Page <span className="font-bold" style={{ color: '#1E1D22' }}>{state.pagination.page}</span> of{' '}
+        <span className="font-bold" style={{ color: '#1E1D22' }}>{state.pagination.pages}</span> ·{' '}
+        <span className="font-bold" style={{ color: '#1E1D22' }}>{state.pagination.total}</span> total
       </div>
       <div className="flex items-center gap-2">
         <button
           type="button"
-          className="crm-btn-secondary px-3 py-2 disabled:opacity-45"
+          className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest transition-colors duration-150 disabled:opacity-40"
+          style={{ color: '#76CDD6' }}
           disabled={state.pagination.page <= 1}
           onClick={() => setPage((p) => Math.max(1, p - 1))}
         >
-          Prev
+          <ArrowLeft size={12} /> Prev
         </button>
         <button
           type="button"
-          className="crm-btn-secondary px-3 py-2 disabled:opacity-45"
+          className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest transition-colors duration-150 disabled:opacity-40"
+          style={{ color: '#76CDD6' }}
           disabled={state.pagination.page >= state.pagination.pages}
           onClick={() => setPage((p) => p + 1)}
         >
-          Next
+          Next <ArrowRight size={12} />
         </button>
       </div>
     </div>
   ) : null
 
   return (
-    <div className="space-y-6">
-      <CRMPageHeader title="Orders" subtitle="Admin order tracking with real payment + status data." />
+    <div className="space-y-8 min-h-screen" style={{ background: '#EFF8FE' }}>
 
-      <CRMSectionCard
-        title="Order list"
-        subtitle="Filter by status and update status when needed"
-        right={
+      {/* Header */}
+      <div className="pb-8" style={{ borderBottom: '1px solid rgba(118,205,214,0.30)' }}>
+        <span
+          className="text-[10px] font-bold tracking-[0.3em] uppercase"
+          style={{ color: '#76CDD6' }}
+        >
+          Tracking
+        </span>
+        <div className="flex items-center justify-between mt-2 flex-wrap gap-4">
+          <div>
+            <h1 className="text-4xl font-light" style={{ color: '#1E1D22' }}>Orders</h1>
+            <p className="text-sm mt-1 font-light" style={{ color: 'rgba(30,29,34,0.50)' }}>
+              Admin order tracking with real payment + status data.
+            </p>
+          </div>
+          {/* Status filter */}
           <select
             value={status}
-            onChange={(e) => {
-              setPage(1)
-              setStatus(e.target.value)
-            }}
-            className="crm-select min-w-[11rem]"
+            onChange={(e) => { setPage(1); setStatus(e.target.value) }}
+            style={{ ...selectStyle, minWidth: '11rem' }}
           >
             <option value="">All statuses</option>
             {ORDER_STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
+              <option key={s} value={s}>{s}</option>
             ))}
           </select>
-        }
+        </div>
+      </div>
+
+      {/* Table Card */}
+      <div
+        className="p-6 sm:p-8"
+        style={{
+          background: '#ffffff',
+          border: '1px solid rgba(118,205,214,0.22)',
+          borderRadius: '4px',
+        }}
       >
+        <div className="mb-6">
+          <h2 className="text-xs font-bold tracking-[0.2em] uppercase" style={{ color: '#1E1D22' }}>
+            Order List
+          </h2>
+          <p className="text-[10px] mt-1" style={{ color: '#76CDD6' }}>
+            Filter by status and update status when needed
+          </p>
+        </div>
+
         {state.loading ? <CRMLoadingState label="Loading orders…" /> : null}
         {!state.loading && state.error ? <CRMErrorState message={state.error} onRetry={load} /> : null}
         {!state.loading && !state.error && state.rows.length === 0 ? (
@@ -176,8 +265,8 @@ export default function CRMOrders() {
             {paginationUi}
           </div>
         ) : null}
-      </CRMSectionCard>
+      </div>
+
     </div>
   )
 }
-

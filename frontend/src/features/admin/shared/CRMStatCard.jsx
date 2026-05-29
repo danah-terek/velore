@@ -1,26 +1,81 @@
+const ACCENT = {
+  teal: {
+    wrap:  { background: 'rgba(118,205,214,0.10)', border: '1px solid rgba(118,205,214,0.28)' },
+    icon:  { color: '#76CDD6' },
+  },
+  sky: {
+    wrap:  { background: 'rgba(14,165,233,0.08)',  border: '1px solid rgba(14,165,233,0.22)' },
+    icon:  { color: '#0ea5e9' },
+  },
+  amber: {
+    wrap:  { background: 'rgba(245,158,11,0.09)',  border: '1px solid rgba(245,158,11,0.25)' },
+    icon:  { color: '#d97706' },
+  },
+  rose: {
+    wrap:  { background: 'rgba(244,63,94,0.07)',   border: '1px solid rgba(244,63,94,0.22)' },
+    icon:  { color: '#f43f5e' },
+  },
+}
+
+const CARD_BASE = {
+  background: '#ffffff',
+  border: '1px solid rgba(118,205,214,0.25)',
+  borderRadius: '6px',
+  boxShadow: '0 1px 6px rgba(118,205,214,0.10), 0 1px 2px rgba(30,29,34,0.04)',
+  transition: 'box-shadow 0.18s ease, transform 0.18s ease',
+}
+
+const CARD_HOVER = {
+  boxShadow: '0 4px 16px rgba(118,205,214,0.18), 0 2px 6px rgba(30,29,34,0.06)',
+  transform: 'translateY(-2px)',
+}
+
 export default function CRMStatCard({ label, value, hint, icon: Icon, accent = 'teal' }) {
-  const accentClass =
-    accent === 'sky'
-      ? 'bg-[rgba(14,165,233,0.08)] text-sky-800 border border-sky-200/60'
-      : accent === 'amber'
-        ? 'bg-[rgba(245,158,11,0.09)] text-amber-900 border border-amber-200/60'
-        : accent === 'rose'
-          ? 'bg-[rgba(244,63,94,0.07)] text-rose-900 border border-rose-200/60'
-          : 'bg-[rgba(var(--velore-accent),0.1)] text-[rgb(var(--velore-fg))] border border-[rgba(var(--velore-ring),0.22)]'
+  const theme = ACCENT[accent] ?? ACCENT.teal
 
   return (
-    <div className="crm-card-luxury p-5 sm:p-6 crm-hover-lift">
+    <div
+      className="p-5 sm:p-6"
+      style={CARD_BASE}
+      onMouseEnter={(e) => Object.assign(e.currentTarget.style, { ...CARD_BASE, ...CARD_HOVER })}
+      onMouseLeave={(e) => Object.assign(e.currentTarget.style, CARD_BASE)}
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="crm-eyebrow text-[10px] mb-2">{label}</div>
-          <div className="text-2xl sm:text-[1.65rem] font-semibold tracking-tight text-[rgb(var(--velore-fg))] tabular-nums">
+          {/* Eyebrow label */}
+          <div
+            className="text-[10px] font-bold tracking-[0.3em] uppercase mb-2"
+            style={{ color: '#76CDD6' }}
+          >
+            {label}
+          </div>
+
+          {/* Value */}
+          <div
+            className="text-2xl sm:text-[1.65rem] font-semibold tracking-tight tabular-nums"
+            style={{ color: '#1E1D22' }}
+          >
             {value}
           </div>
-          {hint ? <div className="mt-2 text-xs text-[rgba(var(--velore-fg),0.55)] leading-relaxed">{hint}</div> : null}
+
+          {/* Hint */}
+          {hint ? (
+            <div
+              className="mt-2 text-xs leading-relaxed font-light"
+              style={{ color: 'rgba(30,29,34,0.55)' }}
+            >
+              {hint}
+            </div>
+          ) : null}
         </div>
+
+        {/* Icon */}
         {Icon ? (
-          <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${accentClass}`}>
-            <Icon className="w-5 h-5" aria-hidden />
+          <div
+            className="w-11 h-11 rounded flex items-center justify-center shrink-0"
+            style={theme.wrap}
+          >
+            <Icon className="w-5 h-5" style={theme.icon} aria-hidden />
           </div>
         ) : null}
       </div>

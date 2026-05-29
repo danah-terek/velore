@@ -38,47 +38,111 @@ export default function CRMTopbar({ pathname, onOpenNav }) {
   )
 
   return (
-    <header className="crm-topbar sticky top-0 z-30">
+    <header
+      className="sticky top-0 z-30"
+      style={{
+        background: '#ffffff',
+        borderBottom: '1px solid rgba(118,205,214,0.20)',
+        boxShadow: '0 2px 16px rgba(118,205,214,0.08)',
+      }}
+    >
       <div className="px-4 sm:px-6 lg:px-8 py-3.5 sm:py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+
+        {/* Left — hamburger + title */}
         <div className="flex items-start sm:items-center gap-3 min-w-0">
           <button
             type="button"
             onClick={onOpenNav}
-            className="lg:hidden shrink-0 p-2.5 rounded-xl border border-[rgba(var(--velore-border-soft),0.95)] bg-[rgba(var(--velore-pearl),0.9)] text-[rgb(var(--velore-fg))] hover:bg-[rgba(var(--velore-accent),0.06)] transition-colors"
+            className="lg:hidden shrink-0 p-2.5 transition-colors"
+            style={{
+              border: '1px solid rgba(118,205,214,0.30)',
+              borderRadius: '4px',
+              background: '#EFF8FE',
+              color: '#1E1D22',
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(118,205,214,0.18)'}
+            onMouseLeave={e => e.currentTarget.style.background = '#EFF8FE'}
             aria-label="Open navigation"
           >
             <Menu className="w-5 h-5" aria-hidden />
           </button>
           <div className="min-w-0 flex-1">
-            <p className="crm-eyebrow text-[10px] mb-0.5">Velore CRM</p>
-            <h1 className="text-lg sm:text-xl font-semibold tracking-tight text-[rgb(var(--velore-fg))] truncate">
+            <p
+              className="text-[10px] font-bold tracking-[0.3em] uppercase mb-0.5"
+              style={{ color: '#76CDD6' }}
+            >
+              Velore CRM
+            </p>
+            <h1
+              className="text-lg sm:text-xl font-semibold tracking-tight truncate"
+              style={{ color: '#1E1D22' }}
+            >
               {title}
             </h1>
           </div>
         </div>
 
+        {/* Right — search, date, badges */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
+
+          {/* Search
           <div className="relative w-full sm:w-56 md:w-64 lg:w-72">
-            <Search className="w-4 h-4 text-[rgba(var(--velore-fg),0.38)] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden />
-            <input
+            <Search
+              className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+              style={{ color: 'rgba(118,205,214,0.60)' }}
+              aria-hidden
+            />
+            {/* <input
               readOnly
-              disabled
+              
               placeholder="Search CRM…"
               title="Global CRM search is not connected yet"
               aria-label="Search CRM (coming soon)"
-              className="crm-input pl-9 text-[rgba(var(--velore-fg),0.45)] cursor-not-allowed bg-[rgba(var(--velore-pearl),0.65)]"
-            />
-          </div>
+              className="w-full"
+              style={{
+                paddingLeft: '36px',
+                paddingRight: '12px',
+                paddingTop: '8px',
+                paddingBottom: '8px',
+                fontSize: '13px',
+                border: '1px solid rgba(118,205,214,0.25)',
+                borderRadius: '4px',
+                background: '#EFF8FE',
+                color: 'rgba(30,29,34,0.40)',
+                cursor: 'not-allowed',
+                outline: 'none',
+              }}
+          //   /> */}
 
-          <div className="hidden md:flex items-center gap-2 text-xs text-[rgba(var(--velore-fg),0.5)] tabular-nums whitespace-nowrap px-1">
+          {/* Date */}
+          <div
+            className="hidden md:flex items-center gap-2 text-xs tabular-nums whitespace-nowrap px-1"
+            style={{ color: 'rgba(30,29,34,0.40)' }}
+          >
             {dateLabel}
           </div>
 
+          {/* Role + email badges */}
           <div className="flex items-center gap-2 justify-end flex-wrap">
-            <span className="inline-flex items-center rounded-full px-3 py-1.5 text-[11px] font-semibold tracking-wide uppercase bg-[rgba(var(--velore-accent),0.12)] text-[rgb(var(--velore-fg))] border border-[rgba(var(--velore-ring),0.22)]">
+            <span
+              className="inline-flex items-center px-3 py-1.5 text-[11px] font-bold tracking-[0.12em] uppercase"
+              style={{
+                background: '#76CDD6',
+                color: '#ffffff',
+                borderRadius: '4px',
+              }}
+            >
               {roleLabel}
             </span>
-            <span className="hidden sm:inline-flex max-w-[200px] lg:max-w-[260px] truncate items-center rounded-full px-3 py-1.5 text-[11px] font-medium bg-[rgba(var(--velore-pearl),0.95)] text-[rgba(var(--velore-fg),0.78)] border border-[rgba(var(--velore-border-soft),0.95)]">
+            <span
+              className="hidden sm:inline-flex max-w-[200px] lg:max-w-[260px] truncate items-center px-3 py-1.5 text-[11px] font-medium"
+              style={{
+                background: '#EFF8FE',
+                color: 'rgba(30,29,34,0.60)',
+                border: '1px solid rgba(118,205,214,0.25)',
+                borderRadius: '4px',
+              }}
+            >
               {admin?.email}
             </span>
           </div>

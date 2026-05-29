@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Trash2, Search, ArrowRight, ArrowLeft } from 'lucide-react'
+import { Search, ArrowRight, ArrowLeft } from 'lucide-react'
 
 import { useAdminAuth } from '../auth/AdminAuthContext'
 import { adminCustomerService } from '../services/adminCustomerService'
@@ -20,12 +20,10 @@ function normalizeRole(role) {
 export default function CRMCustomers() {
   const { admin } = useAdminAuth()
   const role = normalizeRole(admin?.role)
-  const isSuper = role === 'super_admin'
 
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   const [busyId, setBusyId] = useState(null)
-  const [confirmDeleteId, setConfirmDeleteId] = useState(null)
   const [state, setState] = useState({ loading: true, error: null, rows: [], pagination: null })
 
   const load = useCallback(async () => {
@@ -90,50 +88,28 @@ export default function CRMCustomers() {
       key: 'actions',
       header: 'Actions',
       cell: (u) => (
-        <div className="flex items-center gap-4">
-          <button
-            className="text-[9px] font-bold uppercase tracking-[0.2em] transition-colors duration-150"
-            style={{ color: '#76CDD6' }}
-            disabled={busyId === u.id}
-            onMouseEnter={e => e.currentTarget.style.color = '#5bb8c2'}
-            onMouseLeave={e => e.currentTarget.style.color = '#76CDD6'}
-            onClick={async () => {
-              setBusyId(u.id)
-              try {
-                const res = await adminCustomerService.toggleStatus({ userId: u.id })
-                setState(s => ({
-                  ...s,
-                  rows: s.rows.map(x => x.id === u.id ? { ...x, is_active: res?.data?.is_active } : x),
-                }))
-              } finally { setBusyId(null) }
-            }}
-          >
-            {u.is_active ? 'Disable' : 'Enable'}
-          </button>
-          <button
-            className="text-[9px] font-bold uppercase tracking-[0.2em] transition-colors duration-150"
-            style={{ color: confirmDeleteId === u.id ? '#e05555' : 'rgba(30,29,34,0.35)' }}
-            disabled={!isSuper || busyId === u.id}
-            onClick={async () => {
-              if (!isSuper) return
-              if (confirmDeleteId !== u.id) {
-                setConfirmDeleteId(u.id)
-                setTimeout(() => setConfirmDeleteId(null), 4000)
-                return
-              }
-              setBusyId(u.id)
-              try {
-                await adminCustomerService.delete({ userId: u.id })
-                setState(s => ({ ...s, rows: s.rows.filter(x => x.id !== u.id) }))
-              } finally { setBusyId(null); setConfirmDeleteId(null) }
-            }}
-          >
-            {confirmDeleteId === u.id ? 'Confirm?' : <Trash2 size={14} />}
-          </button>
-        </div>
+        <button
+          className="text-xs transition-colors duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
+          style={{ color: u.is_active ? '#e05555' : '#22a55b', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+          disabled={busyId === u.id}
+          onMouseEnter={e => { e.currentTarget.style.opacity = '0.65' }}
+          onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
+          onClick={async () => {
+            setBusyId(u.id)
+            try {
+              const res = await adminCustomerService.toggleStatus({ userId: u.id })
+              setState(s => ({
+                ...s,
+                rows: s.rows.map(x => x.id === u.id ? { ...x, is_active: res?.data?.is_active } : x),
+              }))
+            } finally { setBusyId(null) }
+          }}
+        >
+          {u.is_active ? 'Disable' : 'Enable'}
+        </button>
       ),
     },
-  ], [busyId, confirmDeleteId, isSuper])
+  ], [busyId])
 
   return (
     <div className="space-y-10 min-h-screen" style={{ background: '#EFF8FE' }}>

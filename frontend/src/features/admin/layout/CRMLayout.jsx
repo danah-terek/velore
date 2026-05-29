@@ -9,12 +9,12 @@ export default function CRMLayout() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
 
   return (
-    <div className="crm-shell min-h-screen">
+    <div className="min-h-screen" style={{ background: '#EFF8FE' }}>
       <div className="flex">
         <CRMSidebar mobileOpen={mobileNavOpen} onClose={() => setMobileNavOpen(false)} />
-        <div className="flex-1 min-w-0 flex flex-col crm-main">
+        <div className="flex-1 min-w-0 flex flex-col">
           <CRMTopbar pathname={location.pathname} onOpenNav={() => setMobileNavOpen(true)} />
-          <main className="crm-page px-4 sm:px-6 lg:px-8 py-6 lg:py-8 flex-1">
+          <main className="px-4 sm:px-6 lg:px-8 py-6 lg:py-8 flex-1">
             <Suspense fallback={<CRMRouteFallback />}>
               <div key={location.pathname} className="crm-page-enter">
                 <Outlet />

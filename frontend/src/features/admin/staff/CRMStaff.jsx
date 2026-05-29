@@ -13,6 +13,52 @@ import CRMStatusBadge from '../shared/CRMStatusBadge'
 const EMPTY_FORM = { email: '', password: '', name: '', role: 'staff_admin' }
 const ROLES = ['staff_admin', 'admin', 'staff', 'super_admin']
 
+// ── Shared input/select style helpers ───────────────────────────────────────
+const INPUT_STYLE = {
+  width: '100%',
+  border: '1px solid rgba(118,205,214,0.30)',
+  borderRadius: '4px',
+  padding: '8px 12px',
+  fontSize: '14px',
+  background: '#ffffff',
+  color: '#1E1D22',
+  outline: 'none',
+  transition: 'border-color 0.15s ease',
+}
+const onFocus = (e) => (e.target.style.borderColor = '#76CDD6')
+const onBlur  = (e) => (e.target.style.borderColor = 'rgba(118,205,214,0.30)')
+
+// ── Icon button ──────────────────────────────────────────────────────────────
+function IconBtn({ onClick, title, danger, children }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={title}
+      className="p-2 rounded"
+      style={{
+        background: 'transparent',
+        border: 'none',
+        cursor: 'pointer',
+        color: danger ? '#e05555' : 'rgba(30,29,34,0.55)',
+        transition: 'background 0.13s ease, color 0.13s ease',
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = danger
+          ? 'rgba(224,85,85,0.08)'
+          : 'rgba(118,205,214,0.10)'
+        e.currentTarget.style.color = danger ? '#c0392b' : '#1E1D22'
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = 'transparent'
+        e.currentTarget.style.color = danger ? '#e05555' : 'rgba(30,29,34,0.55)'
+      }}
+    >
+      {children}
+    </button>
+  )
+}
+
 export default function CRMStaff() {
   const [state, setState] = useState({ loading: true, error: null, rows: [] })
   const [form, setForm] = useState(EMPTY_FORM)
@@ -85,8 +131,6 @@ export default function CRMStaff() {
     }
   }
 
-  const field = 'w-full border border-[rgba(var(--velore-border-soft),0.7)] rounded-lg px-3 py-2 text-sm bg-transparent focus:outline-none focus:ring-2 focus:ring-[rgba(var(--velore-accent),0.4)]'
-
   return (
     <div className="space-y-6">
       <CRMPageHeader title="Staff" subtitle="Manage staff accounts. Super Admin only." />
@@ -97,29 +141,104 @@ export default function CRMStaff() {
         subtitle={editingId ? 'Update staff details.' : 'Add a new staff account.'}
       >
         <div className="space-y-4 pt-2">
+
+          {/* Banners */}
           {formError && (
-            <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-2">{formError}</div>
+            <div
+              className="flex items-start gap-3 px-4 py-3 text-sm rounded"
+              style={{
+                background: 'rgba(224,85,85,0.05)',
+                border: '1px solid #e05555',
+              }}
+            >
+              <span
+                className="flex-shrink-0 w-1 self-stretch rounded-full"
+                style={{ background: '#e05555', minHeight: '16px' }}
+              />
+              <span style={{ color: '#b91c1c' }}>{formError}</span>
+            </div>
           )}
           {formSuccess && (
-            <div className="text-sm text-green-600 bg-green-50 border border-green-200 rounded-lg px-4 py-2">{formSuccess}</div>
+            <div
+              className="flex items-start gap-3 px-4 py-3 text-sm rounded"
+              style={{
+                background: 'rgba(118,205,214,0.06)',
+                border: '1px solid #76CDD6',
+              }}
+            >
+              <span
+                className="flex-shrink-0 w-1 self-stretch rounded-full"
+                style={{ background: '#76CDD6', minHeight: '16px' }}
+              />
+              <span style={{ color: '#076d60' }}>{formSuccess}</span>
+            </div>
           )}
 
+          {/* Fields */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Email *</label>
-              <input className={field} value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="staff@velore.com" />
+              <label
+                className="block text-xs font-bold tracking-[0.08em] uppercase mb-1.5"
+                style={{ color: 'rgba(30,29,34,0.55)' }}
+              >
+                Email *
+              </label>
+              <input
+                style={INPUT_STYLE}
+                value={form.email}
+                onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                placeholder="staff@velore.com"
+                onFocus={onFocus}
+                onBlur={onBlur}
+              />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Name</label>
-              <input className={field} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Full name" />
+              <label
+                className="block text-xs font-bold tracking-[0.08em] uppercase mb-1.5"
+                style={{ color: 'rgba(30,29,34,0.55)' }}
+              >
+                Name
+              </label>
+              <input
+                style={INPUT_STYLE}
+                value={form.name}
+                onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                placeholder="Full name"
+                onFocus={onFocus}
+                onBlur={onBlur}
+              />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">{editingId ? 'New Password (leave blank to keep)' : 'Password *'}</label>
-              <input className={field} type="password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} placeholder="••••••••" />
+              <label
+                className="block text-xs font-bold tracking-[0.08em] uppercase mb-1.5"
+                style={{ color: 'rgba(30,29,34,0.55)' }}
+              >
+                {editingId ? 'New Password (leave blank to keep)' : 'Password *'}
+              </label>
+              <input
+                style={INPUT_STYLE}
+                type="password"
+                value={form.password}
+                onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+                placeholder="••••••••"
+                onFocus={onFocus}
+                onBlur={onBlur}
+              />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Role</label>
-              <select className={field} value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))}>
+              <label
+                className="block text-xs font-bold tracking-[0.08em] uppercase mb-1.5"
+                style={{ color: 'rgba(30,29,34,0.55)' }}
+              >
+                Role
+              </label>
+              <select
+                style={INPUT_STYLE}
+                value={form.role}
+                onChange={e => setForm(f => ({ ...f, role: e.target.value }))}
+                onFocus={onFocus}
+                onBlur={onBlur}
+              >
                 {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
               </select>
             </div>
@@ -145,62 +264,119 @@ export default function CRMStaff() {
           <CRMEmptyState title="No staff accounts" message="Create a staff account above." />
         )}
         {!state.loading && !state.error && state.rows.length > 0 && (
-          <div className="divide-y divide-[rgba(var(--velore-border-soft),0.4)]">
-            {state.rows.map(staff => (
-              <div key={staff.id}>
-                <div className="flex items-center gap-4 py-3 px-1">
-                  <div className="flex-1 min-w-0">
-                    <div className="font-semibold truncate">{staff.email}</div>
-                    <div className="text-xs text-[rgba(var(--velore-fg),0.52)]">{staff.name || '—'}</div>
-                  </div>
-
-                  <CRMStatusBadge tone={staff.role === 'super_admin' ? 'warning' : 'neutral'}>
-                    {staff.role}
-                  </CRMStatusBadge>
-
-                  <div className="text-xs text-[rgba(var(--velore-fg),0.52)] shrink-0">
-                    {staff.created_at ? new Date(staff.created_at).toLocaleDateString() : '—'}
-                  </div>
-
-                  <div className="flex items-center gap-1 shrink-0">
-                    <button
-                      onClick={() => setExpandedId(expandedId === staff.id ? null : staff.id)}
-                      className="p-2 rounded-lg hover:bg-[rgba(var(--velore-fg),0.06)] transition"
-                      title="Details"
-                    >
-                      {expandedId === staff.id ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                    </button>
-                    <button
-                      onClick={() => handleEdit(staff)}
-                      className="p-2 rounded-lg hover:bg-[rgba(var(--velore-fg),0.06)] transition"
-                      title="Edit"
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                    {staff.role !== 'super_admin' && (
-                      <button
-                        onClick={() => handleDelete(staff)}
-                        className="p-2 rounded-lg hover:bg-red-50 text-red-500 transition"
-                        title="Delete"
+          <div
+            className="overflow-hidden"
+            style={{
+              border: '1px solid rgba(118,205,214,0.22)',
+              borderRadius: '6px',
+            }}
+          >
+            {state.rows.map((staff, i) => {
+              const isLast = i === state.rows.length - 1
+              return (
+                <div key={staff.id}>
+                  {/* Row */}
+                  <div
+                    className="flex items-center gap-4 py-3 px-4"
+                    style={{
+                      borderBottom: isLast && expandedId !== staff.id
+                        ? 'none'
+                        : '1px solid rgba(118,205,214,0.15)',
+                      background: '#ffffff',
+                      transition: 'background 0.13s ease',
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = '#EFF8FE')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = '#ffffff')}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div
+                        className="font-semibold text-sm truncate"
+                        style={{ color: '#1E1D22' }}
                       >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-                </div>
+                        {staff.email}
+                      </div>
+                      <div
+                        className="text-xs mt-0.5"
+                        style={{ color: 'rgba(30,29,34,0.50)' }}
+                      >
+                        {staff.name || '—'}
+                      </div>
+                    </div>
 
-                {/* Expanded details */}
-                {expandedId === staff.id && (
-                  <div className="px-2 pb-4 pt-1 text-sm space-y-1 text-[rgba(var(--velore-fg),0.72)] bg-[rgba(var(--velore-accent),0.02)] rounded-lg mx-1 mb-2">
-                    <div><span className="font-medium">ID:</span> {staff.id}</div>
-                    <div><span className="font-medium">Email:</span> {staff.email}</div>
-                    <div><span className="font-medium">Name:</span> {staff.name || '—'}</div>
-                    <div><span className="font-medium">Role:</span> {staff.role}</div>
-                    <div><span className="font-medium">Created:</span> {staff.created_at ? new Date(staff.created_at).toLocaleString() : '—'}</div>
+                    <CRMStatusBadge tone={staff.role === 'super_admin' ? 'warning' : 'neutral'}>
+                      {staff.role}
+                    </CRMStatusBadge>
+
+                    <div
+                      className="text-xs shrink-0 tabular-nums"
+                      style={{ color: 'rgba(30,29,34,0.45)' }}
+                    >
+                      {staff.created_at ? new Date(staff.created_at).toLocaleDateString() : '—'}
+                    </div>
+
+                    <div className="flex items-center gap-1 shrink-0">
+                      <IconBtn
+                        onClick={() => setExpandedId(expandedId === staff.id ? null : staff.id)}
+                        title="Details"
+                      >
+                        {expandedId === staff.id
+                          ? <ChevronUp className="w-4 h-4" />
+                          : <ChevronDown className="w-4 h-4" />
+                        }
+                      </IconBtn>
+                      <IconBtn onClick={() => handleEdit(staff)} title="Edit">
+                        <Pencil className="w-4 h-4" />
+                      </IconBtn>
+                      {staff.role !== 'super_admin' && (
+                        <IconBtn onClick={() => handleDelete(staff)} title="Delete" danger>
+                          <Trash2 className="w-4 h-4" />
+                        </IconBtn>
+                      )}
+                    </div>
                   </div>
-                )}
-              </div>
-            ))}
+
+                  {/* Expanded details */}
+                  {expandedId === staff.id && (
+                    <div
+                      className="px-4 py-4 text-sm space-y-2"
+                      style={{
+                        background: '#EFF8FE',
+                        borderBottom: isLast ? 'none' : '1px solid rgba(118,205,214,0.15)',
+                      }}
+                    >
+                      {[
+                        ['ID',      staff.id],
+                        ['Email',   staff.email],
+                        ['Name',    staff.name || '—'],
+                        ['Role',    staff.role],
+                        ['Created', staff.created_at ? new Date(staff.created_at).toLocaleString() : '—'],
+                      ].map(([k, v]) => (
+                        <div key={k} className="flex gap-2">
+                          <span
+                            className="text-xs font-bold tracking-[0.06em] uppercase w-16 shrink-0 pt-0.5"
+                            style={{ color: 'rgba(30,29,34,0.45)' }}
+                          >
+                            {k}
+                          </span>
+                          <span
+                            className="text-xs font-mono"
+                            style={{
+                              color: '#1E1D22',
+                              background: 'rgba(118,205,214,0.10)',
+                              border: '1px solid rgba(118,205,214,0.20)',
+                              borderRadius: '4px',
+                              padding: '1px 6px',
+                            }}
+                          >
+                            {v}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
           </div>
         )}
       </CRMSectionCard>
