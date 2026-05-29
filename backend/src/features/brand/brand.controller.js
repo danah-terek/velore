@@ -3,7 +3,9 @@ const brandService = require("./brand.service");
 // ─── GET ALL BRANDS ───────────────────────────────────────────────────────────
 const getAllBrands = async (req, res) => {
   try {
-    const brands = await brandService.getAllBrands();
+    const { category_id } = req.query;
+
+    const brands = await brandService.getAllBrands(category_id || null);
 
     const serialized = brands.map((b) => ({
       ...b,

@@ -141,15 +141,39 @@ export default function Shop() {
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
-  useEffect(() => {
-    shopService.getBrands()
-      .then(res => {
-        const list = res?.data ?? res ?? []
-        setBrands(Array.isArray(list) ? list : [])
-      })
-      .catch(err => console.error('Brands fetch error:', err))
-  }, [])
+useEffect(() => {
+    const fetchBrands = async () => {
+      try {
+        const params = {}
+        if (activeCategory !== 'all') {
+          const categoryMap = { sunglasses: 1, glasses: 2, lenses: 3 }
+          if (categoryMap[activeCategory]) params.category_id = categoryMap[activeCategory]
+        }
+        
+        const res = await shopService.getBrands(params)
+        let list = res?.data ?? res ?? []
+        list = Array.isArray(list) ? list : []
 
+        // If products are already loaded, filter brands client-side to only show
+        // brands that actually appear in the current product list
+        if (allProducts.length > 0 && activeCategory !== 'all') {
+          const brandIdsInProducts = new Set(
+            allProducts
+              .map(p => p.brands?.brand_id)
+              .filter(Boolean)
+          )
+          list = list.filter(b => brandIdsInProducts.has(b.brand_id))
+        }
+
+        setBrands(list)
+      } catch (err) {
+        console.error('Brands fetch error:', err)
+      }
+    }
+
+    fetchBrands()
+  }, [activeCategory, allProducts])
+  
   useEffect(() => { loadProducts() }, [activeCategory])
 
   const loadProducts = async () => {
