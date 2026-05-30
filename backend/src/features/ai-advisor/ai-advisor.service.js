@@ -30,6 +30,41 @@ const FACE_TO_FRAME_MAPPING = {
   },
 };
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function parseSpecs(raw) {
+  if (!raw) return {};
+  if (typeof raw === 'object') return raw;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return {};
+  }
+}
+
+/**
+ * Matches a product against recommended shapes.
+ * Handles:
+ *  - Case differences  ("Rectangle" vs "rectangle")
+ *  - Comma-separated values ("oval, round, heart")
+ * Reads frame_shape from specifications JSON (the dedicated column is NULL).
+ */
+function matchesShape(product, recommended) {
+  const specs = parseSpecs(product.specifications);
+  const raw = specs?.frame_shape;
+  if (!raw) return false;
+
+  const shapes = String(raw)
+    .toLowerCase()
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  return shapes.some((shape) => recommended.includes(shape));
+}
+
+// ─── Service ──────────────────────────────────────────────────────────────────
+
 const aiAdvisorService = {
   analyzeFaceShape: async (imageBuffer, fileName) => {
     const formData = new FormData();
@@ -71,10 +106,11 @@ const aiAdvisorService = {
     const mapping = FACE_TO_FRAME_MAPPING[faceShape];
     if (!mapping) return [];
 
-    const products = await prisma.products.findMany({
+    // Fetch all active optical glasses + sunglasses (no lenses)
+    const allProducts = await prisma.products.findMany({
       where: {
         is_active: true,
-        frame_shape: { in: mapping.recommended },
+        category_id: { in: [1, 2] },
       },
       include: {
         brands: { select: { name: true } },
@@ -84,10 +120,12 @@ const aiAdvisorService = {
           take: 5,
         },
       },
-      take: 12,
     });
 
-    return products;
+    // Filter by frame_shape inside specifications JSON
+    const matched = allProducts.filter((p) => matchesShape(p, mapping.recommended));
+
+    return matched.slice(0, 12);
   },
 
   saveRecommendations: async (userId, recommendations, faceShape, confidence) => {
