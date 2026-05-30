@@ -105,10 +105,22 @@ export default function CRMBlogs() {
     finally { setSaving(false) }
   }
 
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const file = e.target.files[0]
-    if (file) {
-      console.log('File selected:', file.name)
+    if (!file) return
+
+    try {
+      const formData = new FormData()
+      formData.append('files', file)
+      const res = await adminBlogService.uploadImage(formData)
+      const path = res?.data?.paths?.[0] || res?.data?.path || res?.data?.url
+      if (path) {
+        setForm(f => ({ ...f, image: path }))
+        setFormSuccess('Image uploaded!')
+      }
+    } catch (err) {
+      console.error('Upload error:', err)
+      setFormError('Failed to upload image')
     }
   }
 
@@ -199,11 +211,11 @@ export default function CRMBlogs() {
           >
             <Upload size={14} /> Select Max 1 Image
           </button>
-          {form.image && (
+          {form.image ? (
             <span className="text-[10px]" style={{ color: 'rgba(30,29,34,0.45)' }}>
-              {form.image.split('/').pop()}
+              {typeof form.image === 'string' ? form.image.split('/').pop() : ''}
             </span>
-          )}
+          ) : null}
         </div>
 
         <PaletteTextarea

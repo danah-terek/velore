@@ -16,4 +16,9 @@ export const adminBlogService = {
   async remove(id) {
     return adminApiClient.delete(`/blogs/${id}`)
   },
+  async uploadImage(formData) {
+    return adminApiClient.post('/admin/uploads/product-images', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+  },
 }

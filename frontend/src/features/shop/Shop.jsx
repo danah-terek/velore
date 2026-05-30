@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { EyewearCard } from '../../shared/components/eyewear'
 import shopService from './shopService'
@@ -37,7 +37,7 @@ function uniqSizes(products) {
   return [...new Set(all)].sort()
 }
 
-// ─── Dropdown Filter Pill ─────────────────────────────────────────────────────
+// ─── Smooth Filter Pill ─────────────────────────────────────────────────────
 function FilterPill({ label, activeCount = 0, children, onClear }) {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
@@ -54,33 +54,32 @@ function FilterPill({ label, activeCount = 0, children, onClear }) {
     <div className="relative flex-shrink-0" ref={ref}>
       <button
         onClick={() => setOpen(o => !o)}
-        className={`flex items-center gap-1.5 px-4 py-2 border text-sm transition-colors whitespace-nowrap
+        className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300
           ${isActive
-            ? 'border-gray-900 bg-gray-900 text-white'
-            : 'border-gray-300 bg-white text-gray-700 hover:border-gray-500'
+            ? 'bg-[#76CDD6] text-white shadow-sm'
+            : 'bg-[#EFF8FE] text-[#1E1D22] hover:bg-[#76CDD6]/10'
           }`}
       >
         {label}
         {isActive && activeCount > 1 && (
-          <span className="bg-white text-gray-900 text-xs font-semibold w-4 h-4 rounded-full flex items-center justify-center leading-none">
+          <span className="bg-white text-[#1E1D22] text-xs font-semibold w-5 h-5 rounded-full flex items-center justify-center">
             {activeCount}
           </span>
         )}
         <svg xmlns="http://www.w3.org/2000/svg"
-          className={`w-3 h-3 transition-transform ${open ? 'rotate-180' : ''} ${isActive ? 'text-white' : 'text-gray-400'}`}
-          fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+          className={`w-3 h-3 transition-transform duration-300 ${open ? 'rotate-180' : ''}`}
+          fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
         </svg>
       </button>
 
       {open && (
-        <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 shadow-xl p-4 min-w-[220px]"
-          style={{ zIndex: 99999 }}>
+        <div className="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-xl p-4 min-w-[240px] z-50 border border-gray-100">
           {children}
           {isActive && onClear && (
             <button
               onClick={() => { onClear(); setOpen(false) }}
-              className="mt-3 text-xs text-gray-400 hover:text-gray-700 underline"
+              className="mt-3 text-xs text-gray-400 hover:text-[#76CDD6] transition-colors"
             >
               Clear
             </button>
@@ -93,16 +92,16 @@ function FilterPill({ label, activeCount = 0, children, onClear }) {
 
 function Checkbox({ label, checked, onChange }) {
   return (
-    <label className="flex items-center gap-2.5 cursor-pointer group py-1" onClick={onChange}>
-      <div className={`w-4 h-4 border flex-shrink-0 flex items-center justify-center transition-colors
-        ${checked ? 'bg-gray-900 border-gray-900' : 'border-gray-300 group-hover:border-gray-500'}`}>
+    <label className="flex items-center gap-2.5 cursor-pointer group py-1.5" onClick={onChange}>
+      <div className={`w-4 h-4 rounded flex-shrink-0 flex items-center justify-center transition-all duration-200
+        ${checked ? 'bg-[#76CDD6]' : 'bg-gray-100 group-hover:bg-gray-200'}`}>
         {checked && (
-          <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+          <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         )}
       </div>
-      <span className="text-sm text-gray-600 capitalize group-hover:text-gray-900">{label}</span>
+      <span className="text-sm text-gray-600 capitalize group-hover:text-[#1E1D22] transition-colors">{label}</span>
     </label>
   )
 }
@@ -120,6 +119,11 @@ export default function Shop() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
+  // Refs for underline animation
+  const categoryBarRef = useRef(null)
+  const buttonRefs = useRef({})
+  const [underlineStyle, setUnderlineStyle] = useState({ width: 0, left: 0 })
+
   const activeCategory = searchParams.get('category') || 'all'
   const isLenses = activeCategory === 'lenses'
   const showFrameFilters = activeCategory === 'glasses' || activeCategory === 'sunglasses'
@@ -134,6 +138,28 @@ export default function Shop() {
     purposes:     uniqField(allProducts, 'purpose'),
     lensFeatures: uniqField(allProducts, 'lens_feature'),
   }), [allProducts])
+
+  // Update underline position when category changes or window resizes
+  const updateUnderlinePosition = useCallback(() => {
+    const activeButton = buttonRefs.current[activeCategory]
+    if (activeButton && categoryBarRef.current) {
+      const buttonRect = activeButton.getBoundingClientRect()
+      const containerRect = categoryBarRef.current.getBoundingClientRect()
+      setUnderlineStyle({
+        width: buttonRect.width,
+        left: buttonRect.left - containerRect.left,
+      })
+    }
+  }, [activeCategory])
+
+  useEffect(() => {
+    // Update position immediately
+    updateUnderlinePosition()
+    
+    // Update on window resize
+    window.addEventListener('resize', updateUnderlinePosition)
+    return () => window.removeEventListener('resize', updateUnderlinePosition)
+  }, [updateUnderlinePosition])
 
   useEffect(() => {
     const handler = (e) => { if (sortRef.current && !sortRef.current.contains(e.target)) setSortOpen(false) }
@@ -236,56 +262,65 @@ export default function Shop() {
     })
 
   return (
-    <div>
-      {/* ── Category Tab Bar ── */}
-      <div className="sticky top-[60px] z-40 bg-white border-b border-gray-200">
-        <div className="px-6 md:px-16 flex items-center gap-8 overflow-x-auto scrollbar-hide">
-          {categories.map(({ key, label }) => (
-            <button
-              key={key}
-              onClick={() => setCategory(key)}
-              className={`relative py-4 text-sm whitespace-nowrap transition-colors flex-shrink-0
-                ${activeCategory === key ? 'text-gray-900 font-semibold' : 'text-gray-400 hover:text-gray-700'}`}
-            >
-              {label}
-              {activeCategory === key && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900 rounded-full" />}
-            </button>
-          ))}
+    <div className="bg-white">
+      {/* ── Category Tab Bar with Smooth Sliding Underline ── */}
+      <div className="sticky top-[60px] z-40 bg-white border-b border-gray-100">
+        <div className="px-6 md:px-16 overflow-x-auto scrollbar-hide">
+          <div className="relative flex items-center gap-8 min-w-max" ref={categoryBarRef}>
+            {categories.map(({ key, label }) => (
+              <button
+                key={key}
+                ref={(el) => { buttonRefs.current[key] = el }}
+                onClick={() => setCategory(key)}
+                className={`relative py-4 text-sm whitespace-nowrap transition-colors duration-300 flex-shrink-0
+                  ${activeCategory === key ? 'text-[#1E1D22] font-medium' : 'text-gray-400 hover:text-gray-600'}`}
+              >
+                {label}
+              </button>
+            ))}
+            {/* Sliding underline */}
+            {underlineStyle.width > 0 && (
+              <span
+                className="absolute bottom-0 h-0.5 bg-[#76CDD6] rounded-full transition-all duration-300 ease-out"
+                style={{
+                  width: underlineStyle.width,
+                  transform: `translateX(${underlineStyle.left}px)`,
+                }}
+              />
+            )}
+          </div>
         </div>
       </div>
 
       {/* ── Filter Pills Bar + Sort ── */}
       <div
-        className={`sticky z-30 bg-white ${showFilters ? 'border-b border-gray-100' : ''}`}
-        style={{ top: 109, overflow: 'visible' }}
+        className={`sticky z-30 bg-[#EFF8FE] ${showFilters ? 'border-b border-[#76CDD6]/10' : ''}`}
+        style={{ top: 109 }}
       >
-        <div className="px-6 md:px-16 py-3 flex items-center justify-between gap-4" style={{ overflow: 'visible' }}>
+        <div className="px-6 md:px-16 py-4 flex items-center justify-between gap-4 flex-wrap">
 
           {/* Left: filter pills */}
-          <div
-            className={`flex items-center gap-2 flex-wrap ${!showFilters ? 'invisible pointer-events-none' : ''}`}
-            style={{ overflow: 'visible' }}
-          >
+          <div className={`flex items-center gap-2 flex-wrap ${!showFilters ? 'invisible pointer-events-none' : ''}`}>
             {/* Price */}
             <FilterPill
               label="Price"
               activeCount={(filters.priceMin > 0 || filters.priceMax < MAX_PRICE) ? 1 : 0}
               onClear={() => setFilters(prev => ({ ...prev, priceMin: 0, priceMax: MAX_PRICE }))}
             >
-              <p className="text-xs text-gray-400 mb-3">Up to ${MAX_PRICE}</p>
+              <p className="text-xs text-gray-500 mb-3">Up to ${MAX_PRICE}</p>
               <input
                 type="range" min={0} max={MAX_PRICE} value={filters.priceMax}
                 onChange={e => setFilters(prev => ({ ...prev, priceMax: Number(e.target.value) }))}
-                className="w-full accent-gray-900 mb-3"
+                className="w-full accent-[#76CDD6] mb-3"
               />
               <div className="flex gap-2">
                 {['priceMin', 'priceMax'].map(key => (
-                  <div key={key} className="flex items-center border border-gray-200 px-2 py-1.5 flex-1">
+                  <div key={key} className="flex items-center bg-gray-50 rounded-lg px-3 py-2 flex-1">
                     <span className="text-gray-400 text-sm mr-1">$</span>
                     <input
                       type="number" value={filters[key]}
                       onChange={e => setFilters(prev => ({ ...prev, [key]: Number(e.target.value) }))}
-                      className="w-full outline-none text-sm text-gray-700"
+                      className="w-full outline-none bg-transparent text-sm text-gray-700"
                     />
                   </div>
                 ))}
@@ -308,18 +343,20 @@ export default function Shop() {
             {/* Brand */}
             {brands.length > 0 && (
               <FilterPill label="Brand" activeCount={filters.brands.length} onClear={() => clearKey('brands')}>
-                {brands.map(b => {
-                  const id = b.brand_id ?? b.id
-                  const name = b.name ?? b.brand_name ?? String(b)
-                  return (
-                    <Checkbox
-                      key={id}
-                      label={name}
-                      checked={filters.brands.includes(id)}
-                      onChange={() => toggle('brands', id)}
-                    />
-                  )
-                })}
+                <div className="max-h-48 overflow-y-auto">
+                  {brands.map(b => {
+                    const id = b.brand_id ?? b.id
+                    const name = b.name ?? b.brand_name ?? String(b)
+                    return (
+                      <Checkbox
+                        key={id}
+                        label={name}
+                        checked={filters.brands.includes(id)}
+                        onChange={() => toggle('brands', id)}
+                      />
+                    )
+                  })}
+                </div>
               </FilterPill>
             )}
 
@@ -347,8 +384,10 @@ export default function Shop() {
                 <div className="flex gap-2 flex-wrap">
                   {options.sizes.map(s => (
                     <button key={s} onClick={() => toggle('sizes', s)}
-                      className={`px-3 py-1.5 text-xs border transition-colors
-                        ${filters.sizes.includes(s) ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-300 text-gray-600 hover:border-gray-500'}`}>
+                      className={`px-3 py-1.5 text-xs rounded-full transition-all duration-300
+                        ${filters.sizes.includes(s) 
+                          ? 'bg-[#76CDD6] text-white' 
+                          : 'bg-gray-100 text-gray-600 hover:bg-[#76CDD6]/20'}`}>
                       {s}
                     </button>
                   ))}
@@ -394,7 +433,7 @@ export default function Shop() {
 
             {/* Clear all */}
             {totalActiveFilters > 0 && (
-              <button onClick={resetFilters} className="text-xs text-gray-400 hover:text-gray-700 underline whitespace-nowrap flex-shrink-0 ml-1">
+              <button onClick={resetFilters} className="text-xs text-gray-400 hover:text-[#76CDD6] transition-colors underline-offset-2 hover:underline ml-1">
                 Clear all
               </button>
             )}
@@ -409,21 +448,23 @@ export default function Shop() {
             <div className="relative" ref={sortRef}>
               <button
                 onClick={() => setSortOpen(o => !o)}
-                className="flex items-center gap-2 text-sm border border-gray-300 px-4 py-2 bg-white hover:border-gray-500 transition-colors whitespace-nowrap"
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#EFF8FE] text-sm font-medium text-[#1E1D22] hover:bg-[#76CDD6]/10 transition-all duration-300"
               >
                 {sortOptions.find(o => o.key === sortBy)?.label}
                 <svg xmlns="http://www.w3.org/2000/svg"
-                  className={`w-3 h-3 text-gray-400 transition-transform ${sortOpen ? 'rotate-180' : ''}`}
-                  fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  className={`w-3 h-3 transition-transform duration-300 ${sortOpen ? 'rotate-180' : ''}`}
+                  fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
               {sortOpen && (
-                <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 shadow-lg z-50 min-w-[180px]">
+                <div className="absolute right-0 top-full mt-2 bg-white rounded-xl shadow-xl border border-gray-100 z-50 min-w-[180px] overflow-hidden">
                   {sortOptions.map(({ key, label }) => (
                     <button key={key} onClick={() => { setSortBy(key); setSortOpen(false) }}
-                      className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors
-                        ${sortBy === key ? 'text-gray-900 font-medium' : 'text-gray-500'}`}>
+                      className={`w-full text-left px-4 py-2.5 text-sm transition-all duration-200
+                        ${sortBy === key 
+                          ? 'bg-[#EFF8FE] text-[#76CDD6] font-medium' 
+                          : 'text-gray-500 hover:bg-gray-50'}`}>
                       {label}
                     </button>
                   ))}
@@ -437,16 +478,19 @@ export default function Shop() {
       {/* ── Product Grid ── */}
       <div className="px-6 md:px-16 py-8 pb-16">
         {loading ? (
-          <div className="text-center py-24 text-gray-400 text-sm">Loading products...</div>
+          <div className="text-center py-24">
+            <div className="inline-block w-8 h-8 border-2 border-[#76CDD6] border-t-transparent rounded-full animate-spin" />
+            <p className="text-gray-400 text-sm mt-3">Loading products...</p>
+          </div>
         ) : error ? (
-          <div className="text-center py-24 text-red-400 text-sm">
-            {error}
-            <button onClick={loadProducts} className="block mx-auto mt-3 text-gray-900 underline text-sm">Try again</button>
+          <div className="text-center py-24">
+            <p className="text-gray-400 text-sm">{error}</p>
+            <button onClick={loadProducts} className="mt-3 text-[#76CDD6] underline text-sm">Try again</button>
           </div>
         ) : sorted.length === 0 ? (
-          <div className="text-center py-24 text-gray-400 text-sm">
-            No products match your filters.
-            <button onClick={resetFilters} className="block mx-auto mt-3 text-gray-900 underline text-sm">Clear filters</button>
+          <div className="text-center py-24">
+            <p className="text-gray-400 text-sm">No products match your filters.</p>
+            <button onClick={resetFilters} className="mt-3 text-[#76CDD6] underline text-sm">Clear filters</button>
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">

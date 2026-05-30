@@ -10,6 +10,11 @@ import apiClient from '../../shared/services/apiClient'
 
 /* ─── AI Section — Diagonal Scan Morph Concept with Background Images ────── */
 
+import girlMirror from "../../assets/girlmirror.jpg"
+import girlSunglasses from "../../assets/girlsunglasses.jpg"
+import manLaptop from "../../assets/manlaptop.jpg"
+import manTryon from "../../assets/mantryon.jpg"
+
 const SCAN_STATES = [
   {
     id: 0,
@@ -21,8 +26,9 @@ const SCAN_STATES = [
     bgColor: "#FFFFFF",
     accentColor: "#76CDD6",
     textColor: "#1E1D22",
-    bgImage: heroImage,
-    bgOpacity: 0.05,
+    bgImage: girlMirror,
+    // light overlay so text stays readable on light bg
+    overlayColor: "rgba(255,255,255,0.55)",
   },
   {
     id: 1,
@@ -34,8 +40,8 @@ const SCAN_STATES = [
     bgColor: "#1E1D22",
     accentColor: "#76CDD6",
     textColor: "#FFFFFF",
-    bgImage: sketchImage,
-    bgOpacity: 0.15,
+    bgImage: girlSunglasses,
+    overlayColor: "rgba(30,29,34,0.52)",
   },
   {
     id: 2,
@@ -47,8 +53,8 @@ const SCAN_STATES = [
     bgColor: "#F5F5F5",
     accentColor: "#1E1D22",
     textColor: "#1E1D22",
-    bgImage: heroImage,
-    bgOpacity: 0.04,
+    bgImage: manLaptop,
+    overlayColor: "rgba(245,245,245,0.58)",
   },
   {
     id: 3,
@@ -60,22 +66,18 @@ const SCAN_STATES = [
     bgColor: "#1E1D22",
     accentColor: "#76CDD6",
     textColor: "#FFFFFF",
-    bgImage: sketchImage,
-    bgOpacity: 0.12,
+    bgImage: manTryon,
+    overlayColor: "rgba(30,29,34,0.52)",
   },
 ]
 
-// Easing: slow start, slight pause near middle (0.48-0.55), smooth finish
 function mindfulEase(t) {
   if (t < 0.42) {
-    // Ease in — cubic, slow ramp up
     return 0.5 * Math.pow(t / 0.42, 1.6) * 0.88
   } else if (t < 0.58) {
-    // Mid-pause — barely moves, feels like a breath
     const mid = (t - 0.42) / 0.16
     return 0.88 * 0.5 + mid * 0.5 * 0.04
   } else {
-    // Ease out — smooth arrival
     const tail = (t - 0.58) / 0.42
     return 0.46 + tail * 0.54
   }
@@ -88,17 +90,13 @@ function AiFeaturesSection() {
   const startTimeRef = useRef(null)
 
   useEffect(() => {
-    const ANIMATION_DURATION = 9000 // 9 seconds — slow and mindful
+    const ANIMATION_DURATION = 9000
 
     const animate = (timestamp) => {
-      if (startTimeRef.current === null) {
-        startTimeRef.current = timestamp
-      }
-
+      if (startTimeRef.current === null) startTimeRef.current = timestamp
       const elapsed = timestamp - startTimeRef.current
       const rawProgress = Math.min(elapsed / ANIMATION_DURATION, 1)
       const easedProgress = mindfulEase(rawProgress)
-
       setScanProgress(easedProgress)
 
       if (rawProgress < 1) {
@@ -112,111 +110,86 @@ function AiFeaturesSection() {
     }
 
     animationRef.current = requestAnimationFrame(animate)
-
-    return () => {
-      if (animationRef.current) cancelAnimationFrame(animationRef.current)
-    }
+    return () => { if (animationRef.current) cancelAnimationFrame(animationRef.current) }
   }, [])
 
   const state = SCAN_STATES[currentState]
   const nextState = SCAN_STATES[(currentState + 1) % SCAN_STATES.length]
+  const rev = Math.min(scanProgress, 1)
 
-  // Scan line goes left → right (0% → 100%)
-  const revealAmount = Math.min(scanProgress, 1)
+  // Each "panel" = full-bleed photo + color overlay + text, clipped to its half
+  const Panel = ({ s, side }) => {
+    const clipLeft  = `polygon(0% 0%, ${rev * 100}% 0%, ${rev * 100}% 100%, 0% 100%)`
+    const clipRight = `polygon(${rev * 100}% 0%, 100% 0%, 100% 100%, ${rev * 100}% 100%)`
+    const clip = side === "left" ? clipLeft : clipRight
 
-  const ContentBlock = ({ s }) => (
-    <div className="max-w-6xl mx-auto px-6 md:px-16 w-full">
-      <div className="max-w-3xl">
-        <div className="mb-6">
-          <div
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium tracking-wider uppercase"
-            style={{
-              backgroundColor: `${s.accentColor}18`,
-              color: s.accentColor,
-            }}
-          >
-            <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: s.accentColor }} />
-            {s.badge}
-          </div>
-        </div>
-
-        <div className="space-y-4 mb-6">
-          <h2 className="text-4xl md:text-6xl lg:text-7xl font-light tracking-tight leading-[1.1]">
-            <span style={{ color: s.textColor }}>{s.headline} </span>
-            <span style={{ color: s.accentColor, fontWeight: 500 }}>{s.accent}</span>
-          </h2>
-        </div>
-
-        <div className="mb-10">
-          <p
-            className="text-base md:text-lg leading-relaxed max-w-md"
-            style={{ color: `${s.textColor}99` }}
-          >
-            {s.subline}
-          </p>
-        </div>
-      </div>
-    </div>
-  )
-
-  return (
-    <section
-      className="relative w-full h-[60vh] md:h-[75vh] overflow-hidden"
-      style={{ backgroundColor: state.bgColor, transition: "background-color 0.8s ease" }}
-    >
-      {/* BG images */}
+    return (
       <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage: `url(${state.bgImage})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          opacity: state.bgOpacity,
-          transition: "opacity 0.8s ease",
-        }}
-      />
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage: `url(${nextState.bgImage})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          opacity: scanProgress > 0.55 ? nextState.bgOpacity * ((scanProgress - 0.55) / 0.45) : 0,
-        }}
-      />
-
-      {/* LEFT panel — current state, revealed from left, shrinks as scan moves right */}
-      <div
-        className="absolute top-0 left-0 w-full h-full flex items-center"
-        style={{
-          clipPath: `polygon(0% 0%, ${revealAmount * 100}% 0%, ${revealAmount * 100}% 100%, 0% 100%)`,
-        }}
+        className="absolute inset-0"
+        style={{ clipPath: clip }}
       >
-        <ContentBlock s={state} />
-      </div>
-
-      {/* RIGHT panel — next state, grows from right as scan passes */}
-      <div
-        className="absolute top-0 left-0 w-full h-full flex items-center"
-        style={{
-          clipPath: `polygon(${revealAmount * 100}% 0%, 100% 0%, 100% 100%, ${revealAmount * 100}% 100%)`,
-        }}
-      >
-        {/* Next state needs its own background color behind it */}
+        {/* Full-bleed photo — always 100% opacity, always visible */}
         <div
           className="absolute inset-0"
-          style={{ backgroundColor: nextState.bgColor }}
+          style={{
+            backgroundImage: `url(${s.bgImage})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
         />
-        <div className="relative w-full">
-          <ContentBlock s={nextState} />
+        {/* Colour tint overlay so text is always legible */}
+        <div
+          className="absolute inset-0"
+          style={{ backgroundColor: s.overlayColor }}
+        />
+        {/* Content */}
+        <div className="absolute inset-0 flex items-center">
+          <div className="max-w-6xl mx-auto px-6 md:px-16 w-full">
+            <div className="max-w-3xl">
+              <div className="mb-6">
+                <div
+                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium tracking-wider uppercase"
+                  style={{ backgroundColor: `${s.accentColor}22`, color: s.accentColor }}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: s.accentColor }} />
+                  {s.badge}
+                </div>
+              </div>
+              <div className="mb-6">
+                <h2 className="text-4xl md:text-6xl lg:text-7xl font-light tracking-tight leading-[1.1]">
+                  <span style={{ color: s.textColor }}>{s.headline} </span>
+                  <span style={{ color: s.accentColor, fontWeight: 500 }}>{s.accent}</span>
+                </h2>
+              </div>
+              <div className="mb-10">
+                <p
+                  className="text-base md:text-lg leading-relaxed max-w-md"
+                  style={{ color: `${s.textColor}BB` }}
+                >
+                  {s.subline}
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
+    )
+  }
 
-      {/* Scan line — glowing vertical bar moving left → right */}
+  return (
+    <section className="relative w-full h-[60vh] md:h-[75vh] overflow-hidden">
+
+      {/* LEFT panel — current slide */}
+      <Panel s={state} side="left" />
+
+      {/* RIGHT panel — next slide */}
+      <Panel s={nextState} side="right" />
+
+      {/* Scan line */}
       <div
         className="absolute top-0 bottom-0 pointer-events-none z-30"
         style={{
-          left: `calc(${revealAmount * 100}% - 1.5px)`,
+          left: `calc(${rev * 100}% - 1.5px)`,
           width: "3px",
           background: `linear-gradient(to bottom,
             transparent 0%,
@@ -226,27 +199,27 @@ function AiFeaturesSection() {
             ${state.accentColor}80 85%,
             transparent 100%
           )`,
-          boxShadow: `0 0 20px ${state.accentColor}CC, 0 0 6px ${state.accentColor}`,
+          boxShadow: `0 0 24px ${state.accentColor}DD, 0 0 8px ${state.accentColor}`,
         }}
       />
 
-      {/* Soft bloom halo around scan line */}
+      {/* Bloom halo */}
       <div
         className="absolute top-0 bottom-0 pointer-events-none z-20"
         style={{
-          left: `calc(${revealAmount * 100}% - 60px)`,
-          width: "120px",
+          left: `calc(${rev * 100}% - 70px)`,
+          width: "140px",
           background: `linear-gradient(to right,
             transparent,
-            ${state.accentColor}08,
-            ${state.accentColor}20,
-            ${state.accentColor}08,
+            ${state.accentColor}0A,
+            ${state.accentColor}25,
+            ${state.accentColor}0A,
             transparent
           )`,
         }}
       />
 
-      {/* CTA button */}
+      {/* CTA */}
       <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-40">
         <Link
           to="/try-on"
@@ -254,7 +227,7 @@ function AiFeaturesSection() {
           style={{
             backgroundColor: state.accentColor,
             color: "#FFFFFF",
-            boxShadow: `0 4px 24px ${state.accentColor}60`,
+            boxShadow: `0 4px 28px ${state.accentColor}70`,
           }}
         >
           {state.cta}
@@ -278,7 +251,7 @@ function AiFeaturesSection() {
             style={{
               width: currentState === idx ? "32px" : "6px",
               height: "3px",
-              backgroundColor: currentState === idx ? state.accentColor : `${state.textColor}30`,
+              backgroundColor: currentState === idx ? state.accentColor : "rgba(255,255,255,0.4)",
             }}
           />
         ))}
