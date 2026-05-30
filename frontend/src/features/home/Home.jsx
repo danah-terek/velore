@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, useCallback } from "react"
 import { Link } from 'react-router-dom'
 import Testimonials from '../../shared/components/eyewear/Testimonials'
 import { EyewearCard } from '../../shared/components/eyewear'
-import sketchImage from '../../assets/Veloresketch.jpeg'
 import heroVideo from '../../assets/herovideo.mp4'
 import { resolveImageUrl } from '../../shared/utils/imageUrl'
 import shopService from '../shop/shopService'
