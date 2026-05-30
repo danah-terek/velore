@@ -1,8 +1,20 @@
 const prisma = require("../../shared/utils/database");
 
-// ─── GET ALL BRANDS ───────────────────────────────────────────────────────────
-const getAllBrands = async () => {
+// ─── GET ALL BRANDS (optional category_id filter) ─────────────────────────────
+const getAllBrands = async (category_id = null) => {
+  const where = {};
+
+  if (category_id) {
+    where.products = {
+      some: {
+        category_id: Number(category_id),
+        is_active: true,
+      },
+    };
+  }
+
   return await prisma.brands.findMany({
+    where,
     orderBy: { created_at: "asc" },
     select: {
       brand_id: true,
