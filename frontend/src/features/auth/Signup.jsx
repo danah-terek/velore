@@ -18,28 +18,24 @@ export default function Signup() {
     const errors = {};
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    // First name
     if (!firstName.trim()) {
       errors.firstName = "First name is required";
     } else if (firstName.trim().length < 2) {
       errors.firstName = "First name must be at least 2 characters";
     }
 
-    // Last name
     if (!lastName.trim()) {
       errors.lastName = "Last name is required";
     } else if (lastName.trim().length < 2) {
       errors.lastName = "Last name must be at least 2 characters";
     }
 
-    // Email
     if (!email.trim()) {
       errors.email = "Email is required";
     } else if (!emailRegex.test(email)) {
       errors.email = "Please enter a valid email (e.g., user@gmail.com)";
     }
 
-    // Password
     if (!password) {
       errors.password = "Password is required";
     } else if (password.length < 8) {
@@ -64,7 +60,6 @@ export default function Signup() {
       return;
     }
 
-    // ✅ Validate before submitting
     if (!validateForm()) return;
 
     setLoading(true);
@@ -86,161 +81,201 @@ export default function Signup() {
   };
 
   return (
-    <div className="flex flex-col md:flex-row w-screen h-screen bg-white overflow-hidden font-sans">
-      {/* LEFT IMAGE */}
-      <div className="relative w-full h-64 md:h-full md:w-[45%] overflow-hidden">
-        <img
-          src={signupPhoto}
-          alt="Fashion model"
-          className="w-full h-full object-cover object-center"
-        />
-        <div className="absolute inset-0 bg-white/30" />
-        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent to-white md:hidden" />
-        <div className="hidden md:block absolute inset-y-0 right-0 w-40 bg-gradient-to-r from-transparent to-white" />
+    <div className="bg-white min-h-screen text-gray-900 antialiased selection:bg-black selection:text-white flex flex-col md:flex-row relative overflow-x-hidden">
+
+      {/* LEFT SIDE */}
+      <div className="w-full md:w-[50%] lg:w-[48%] xl:w-[45%] bg-gray-50 relative min-h-[40vh] sm:min-h-[45vh] md:min-h-screen overflow-hidden flex items-center justify-center border-b md:border-b-0 md:border-r border-gray-100">
+        <div className="absolute top-1/2 left-1/2 w-80 h-80 bg-neutral-100 rounded-full blur-3xl opacity-60 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
+
+        <div className="w-full h-full absolute inset-0">
+          <img
+            src={signupPhoto}
+            alt="Fashion model"
+            className="w-full h-full object-cover object-[center_top]"
+            loading="eager"
+          />
+        </div>
+
+        <div className="hidden sm:block absolute bottom-6 left-6 bg-black text-white px-4 py-2.5 rounded-sm shadow-xl">
+          <p className="text-[9px] font-bold tracking-[0.2em] text-gray-400 uppercase mb-0.5">New Member</p>
+          <p className="text-xs font-serif italic">Velore Collection</p>
+        </div>
       </div>
 
-      {/* RIGHT FORM */}
-      <div className="flex-1 flex items-center justify-center px-6 py-6 md:px-12 bg-white overflow-y-auto">
-        <form onSubmit={handleCreate} className="w-full max-w-sm">
-          <h1 className="text-4xl md:text-5xl font-black tracking-wide uppercase text-black mb-7">
-            CREATE ACCOUNT
-          </h1>
+      {/* RIGHT SIDE */}
+      <div className="w-full md:w-[50%] lg:w-[52%] xl:w-[55%] flex flex-col justify-center px-6 py-10 sm:py-14 md:py-16 bg-white relative">
+
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-neutral-100 rounded-full blur-3xl opacity-40 -mr-40 -mt-40 pointer-events-none" />
+
+        <div className="w-full max-w-sm mx-auto relative z-10">
+
+          {/* Header */}
+          <div className="mb-8">
+            <span className="inline-block text-[10px] font-extrabold tracking-[0.3em] text-black bg-gray-100 px-3 py-1 rounded-full uppercase mb-6">
+              Join Velore
+            </span>
+            <h1 className="text-4xl font-light tracking-tight text-gray-900 mb-2">
+              Create <span className="font-serif italic font-normal text-black block md:inline">account.</span>
+            </h1>
+            <p className="text-base font-light text-gray-500 max-w-2xl leading-relaxed">
+              Become part of the Velore experience.
+            </p>
+          </div>
 
           {/* General Error */}
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded">
+            <div className="mb-4 px-4 py-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded-sm">
               {error}
             </div>
           )}
 
-          {/* FIRST + LAST NAME */}
-          <div className="flex gap-4 mb-5">
-            <div className="w-1/2">
-              <label className="block text-sm font-medium mb-1.5">
-                First Name <span className="text-red-600">*</span>
+          <form onSubmit={handleCreate} className="space-y-4">
+
+            {/* FIRST + LAST NAME */}
+            <div className="flex gap-4">
+              <div className="w-1/2">
+                <label className="block text-xs font-bold tracking-widest text-gray-400 uppercase mb-2">
+                  First Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => {
+                    setFirstName(e.target.value);
+                    setFieldErrors({ ...fieldErrors, firstName: '' });
+                  }}
+                  className={`w-full border px-3 py-2.5 text-sm font-light text-gray-900 outline-none transition-colors bg-white rounded-sm ${
+                    fieldErrors.firstName ? 'border-red-400' : 'border-gray-300 focus:border-gray-900'
+                  }`}
+                  placeholder="John"
+                />
+                {fieldErrors.firstName && (
+                  <p className="text-red-500 text-xs mt-1">{fieldErrors.firstName}</p>
+                )}
+              </div>
+              <div className="w-1/2">
+                <label className="block text-xs font-bold tracking-widest text-gray-400 uppercase mb-2">
+                  Last Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => {
+                    setLastName(e.target.value);
+                    setFieldErrors({ ...fieldErrors, lastName: '' });
+                  }}
+                  className={`w-full border px-3 py-2.5 text-sm font-light text-gray-900 outline-none transition-colors bg-white rounded-sm ${
+                    fieldErrors.lastName ? 'border-red-400' : 'border-gray-300 focus:border-gray-900'
+                  }`}
+                  placeholder="Doe"
+                />
+                {fieldErrors.lastName && (
+                  <p className="text-red-500 text-xs mt-1">{fieldErrors.lastName}</p>
+                )}
+              </div>
+            </div>
+
+            {/* EMAIL */}
+            <div>
+              <label className="block text-xs font-bold tracking-widest text-gray-400 uppercase mb-2">
+                Email <span className="text-red-500">*</span>
               </label>
               <input
-                type="text"
-                value={firstName}
+                type="email"
+                value={email}
                 onChange={(e) => {
-                  setFirstName(e.target.value);
-                  setFieldErrors({ ...fieldErrors, firstName: '' });
+                  setEmail(e.target.value);
+                  setFieldErrors({ ...fieldErrors, email: '' });
                 }}
-                className={`w-full border px-3 py-2.5 text-sm outline-none transition ${
-                  fieldErrors.firstName ? 'border-red-500' : 'border-gray-300 focus:border-black'
+                className={`w-full border px-3 py-2.5 text-sm font-light text-gray-900 outline-none transition-colors bg-white rounded-sm ${
+                  fieldErrors.email ? 'border-red-400' : 'border-gray-300 focus:border-gray-900'
                 }`}
-                placeholder="John"
+                placeholder="you@example.com"
               />
-              {fieldErrors.firstName && (
-                <p className="text-red-500 text-xs mt-1">{fieldErrors.firstName}</p>
+              {fieldErrors.email && (
+                <p className="text-red-500 text-xs mt-1">{fieldErrors.email}</p>
               )}
             </div>
-            <div className="w-1/2">
-              <label className="block text-sm font-medium mb-1.5">
-                Last Name <span className="text-red-600">*</span>
+
+            {/* PASSWORD */}
+            <div>
+              <label className="block text-xs font-bold tracking-widest text-gray-400 uppercase mb-2">
+                Password <span className="text-red-500">*</span>
               </label>
               <input
-                type="text"
-                value={lastName}
+                type="password"
+                value={password}
                 onChange={(e) => {
-                  setLastName(e.target.value);
-                  setFieldErrors({ ...fieldErrors, lastName: '' });
+                  setPassword(e.target.value);
+                  setFieldErrors({ ...fieldErrors, password: '' });
                 }}
-                className={`w-full border px-3 py-2.5 text-sm outline-none transition ${
-                  fieldErrors.lastName ? 'border-red-500' : 'border-gray-300 focus:border-black'
+                className={`w-full border px-3 py-2.5 text-sm font-light text-gray-900 outline-none transition-colors bg-white rounded-sm ${
+                  fieldErrors.password ? 'border-red-400' : 'border-gray-300 focus:border-gray-900'
                 }`}
-                placeholder="Doe"
+                placeholder="••••••••"
               />
-              {fieldErrors.lastName && (
-                <p className="text-red-500 text-xs mt-1">{fieldErrors.lastName}</p>
+              {fieldErrors.password && (
+                <p className="text-red-500 text-xs mt-1">{fieldErrors.password}</p>
               )}
+              <p className="text-xs font-mono text-gray-400 mt-1">
+                Min 8 characters, uppercase, lowercase, and a number
+              </p>
             </div>
-          </div>
 
-          {/* EMAIL */}
-          <div className="mb-5">
-            <label className="block text-sm font-medium mb-1.5">
-              Email <span className="text-red-600">*</span>
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                setFieldErrors({ ...fieldErrors, email: '' });
-              }}
-              className={`w-full border px-3 py-2.5 text-sm outline-none transition ${
-                fieldErrors.email ? 'border-red-500' : 'border-gray-300 focus:border-black'
-              }`}
-              placeholder="you@example.com"
-            />
-            {fieldErrors.email && (
-              <p className="text-red-500 text-xs mt-1">{fieldErrors.email}</p>
-            )}
-          </div>
+            {/* CHECKBOX */}
+            <div className="flex items-start gap-3 pt-1">
+              <input
+                type="checkbox"
+                checked={agreed}
+                onChange={(e) => setAgreed(e.target.checked)}
+                className="mt-0.5 accent-black"
+              />
+              <p className="text-xs font-light text-gray-500 leading-relaxed">
+                I have read and agree to the{" "}
+                <span className="text-gray-900 font-medium underline underline-offset-2 cursor-pointer hover:text-gray-500 transition-colors">
+                  Terms of Use
+                </span>
+              </p>
+            </div>
 
-          {/* PASSWORD */}
-          <div className="mb-5">
-            <label className="block text-sm font-medium mb-1.5">
-              Password <span className="text-red-600">*</span>
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                setFieldErrors({ ...fieldErrors, password: '' });
-              }}
-              className={`w-full border px-3 py-2.5 text-sm outline-none transition ${
-                fieldErrors.password ? 'border-red-500' : 'border-gray-300 focus:border-black'
-              }`}
-              placeholder="••••••••"
-            />
-            {fieldErrors.password && (
-              <p className="text-red-500 text-xs mt-1">{fieldErrors.password}</p>
-            )}
-            <p className="text-xs text-gray-400 mt-1">
-              Min 8 characters, uppercase, lowercase, and a number
-            </p>
-          </div>
-
-          {/* CHECKBOX */}
-          <div className="flex items-start gap-2 mb-6">
-            <input
-              type="checkbox"
-              checked={agreed}
-              onChange={(e) => setAgreed(e.target.checked)}
-              className="mt-1 accent-black"
-            />
-            <p className="text-xs text-gray-600">
-              I have read and agree to the{" "}
-              <span className="underline cursor-pointer hover:text-black">
-                Terms of Use
-              </span>
-            </p>
-          </div>
-
-          {/* BUTTON */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-black text-white py-3.5 text-sm font-bold tracking-widest uppercase hover:bg-gray-800 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
-          >
-            {loading ? "CREATING..." : "CREATE"}
-          </button>
-
-          {/* SIGN IN LINK */}
-          <p className="mt-5 text-center text-sm text-gray-600">
-            Already have an account?{" "}
-            <Link
-              to="/login"
-              className="text-black font-medium underline hover:text-gray-700"
+            {/* SUBMIT */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-gray-900 text-white hover:bg-gray-700 px-6 py-3 text-sm font-medium transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2 rounded-sm cursor-pointer"
             >
-              Sign in
-            </Link>
-          </p>
-        </form>
+              {loading ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span>Creating…</span>
+                </>
+              ) : (
+                'Create Account'
+              )}
+            </button>
+
+          </form>
+
+          {/* Footer */}
+          <div className="mt-8 pt-6 border-t border-gray-100 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <span className="text-xs font-mono text-gray-300">01</span>
+              <span className="text-xs font-bold tracking-widest text-gray-400 uppercase">Have an account?</span>
+              <Link
+                to="/login"
+                className="text-xs font-bold tracking-widests text-gray-900 uppercase underline underline-offset-2 hover:text-gray-500 transition-colors"
+              >
+                Sign in
+              </Link>
+            </div>
+            <div className="text-sm text-gray-500 font-light">
+              Velore · 2026
+            </div>
+          </div>
+
+        </div>
       </div>
+
     </div>
   );
 }
