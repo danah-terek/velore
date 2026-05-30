@@ -8,8 +8,6 @@ import { resolveImageUrl } from '../../shared/utils/imageUrl'
 import shopService from '../shop/shopService'
 import apiClient from '../../shared/services/apiClient'
 
-/* ─── AI Section — Diagonal Scan Morph Concept with Background Images ────── */
-
 import girlMirror from "../../assets/girlmirror.jpg"
 import girlSunglasses from "../../assets/girlsunglasses.jpg"
 import manLaptop from "../../assets/manlaptop.jpg"
@@ -26,10 +24,7 @@ const SCAN_STATES = [
     bgColor: "#FFFFFF",
     accentColor: "#76CDD6",
     textColor: "#1E1D22",
-    bgImage: sketchImage,
-    bgOpacity: 0.05,
     bgImage: girlMirror,
-    // light overlay so text stays readable on light bg
     overlayColor: "rgba(255,255,255,0.55)",
   },
   {
@@ -55,8 +50,6 @@ const SCAN_STATES = [
     bgColor: "#F5F5F5",
     accentColor: "#1E1D22",
     textColor: "#1E1D22",
-    bgImage: sketchImage,
-    bgOpacity: 0.04,
     bgImage: manLaptop,
     overlayColor: "rgba(245,245,245,0.58)",
   },
@@ -121,18 +114,13 @@ function AiFeaturesSection() {
   const nextState = SCAN_STATES[(currentState + 1) % SCAN_STATES.length]
   const rev = Math.min(scanProgress, 1)
 
-  // Each "panel" = full-bleed photo + color overlay + text, clipped to its half
   const Panel = ({ s, side }) => {
     const clipLeft  = `polygon(0% 0%, ${rev * 100}% 0%, ${rev * 100}% 100%, 0% 100%)`
     const clipRight = `polygon(${rev * 100}% 0%, 100% 0%, 100% 100%, ${rev * 100}% 100%)`
     const clip = side === "left" ? clipLeft : clipRight
 
     return (
-      <div
-        className="absolute inset-0"
-        style={{ clipPath: clip }}
-      >
-        {/* Full-bleed photo — always 100% opacity, always visible */}
+      <div className="absolute inset-0" style={{ clipPath: clip }}>
         <div
           className="absolute inset-0"
           style={{
@@ -141,12 +129,7 @@ function AiFeaturesSection() {
             backgroundPosition: "center",
           }}
         />
-        {/* Colour tint overlay so text is always legible */}
-        <div
-          className="absolute inset-0"
-          style={{ backgroundColor: s.overlayColor }}
-        />
-        {/* Content */}
+        <div className="absolute inset-0" style={{ backgroundColor: s.overlayColor }} />
         <div className="absolute inset-0 flex items-center">
           <div className="max-w-6xl mx-auto px-6 md:px-16 w-full">
             <div className="max-w-3xl">
@@ -166,10 +149,7 @@ function AiFeaturesSection() {
                 </h2>
               </div>
               <div className="mb-10">
-                <p
-                  className="text-base md:text-lg leading-relaxed max-w-md"
-                  style={{ color: `${s.textColor}BB` }}
-                >
+                <p className="text-base md:text-lg leading-relaxed max-w-md" style={{ color: `${s.textColor}BB` }}>
                   {s.subline}
                 </p>
               </div>
@@ -182,14 +162,9 @@ function AiFeaturesSection() {
 
   return (
     <section className="relative w-full h-[60vh] md:h-[75vh] overflow-hidden">
-
-      {/* LEFT panel — current slide */}
       <Panel s={state} side="left" />
-
-      {/* RIGHT panel — next slide */}
       <Panel s={nextState} side="right" />
 
-      {/* Scan line */}
       <div
         className="absolute top-0 bottom-0 pointer-events-none z-30"
         style={{
@@ -207,7 +182,6 @@ function AiFeaturesSection() {
         }}
       />
 
-      {/* Bloom halo */}
       <div
         className="absolute top-0 bottom-0 pointer-events-none z-20"
         style={{
@@ -223,7 +197,6 @@ function AiFeaturesSection() {
         }}
       />
 
-      {/* CTA */}
       <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-40">
         <Link
           to="/try-on"
@@ -241,7 +214,6 @@ function AiFeaturesSection() {
         </Link>
       </div>
 
-      {/* Dot indicators */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-40">
         {SCAN_STATES.map((_, idx) => (
           <button
@@ -294,12 +266,9 @@ export default function Home() {
     try {
       const result = await shopService.getProducts({ limit: 50 })
       const allProducts = result?.data || []
-
-      // Filter to only Optical Glasses (frames)
       const frames = allProducts.filter(product =>
         product.categories?.name === 'Optical Glasses'
       )
-
       setFrameProducts(frames.slice(0, 4))
     } catch (error) {
       console.error('Failed to load frames:', error)
@@ -315,10 +284,10 @@ export default function Home() {
       const data = result?.data || []
       const mapped = Array.isArray(data)
         ? data.map((item) => ({
-          name: item.users?.name || 'Velore Customer',
-          rating: item.rating || 0,
-          review: item.comment || '',
-        }))
+            name: item.users?.name || 'Velore Customer',
+            rating: item.rating || 0,
+            review: item.comment || '',
+          }))
         : []
       setApprovedReviews(mapped)
     } catch (error) {
@@ -333,13 +302,15 @@ export default function Home() {
       const data = result?.data || []
       const mapped = Array.isArray(data)
         ? data
-          .filter((blog) => blog.is_published === true)
-          .map((blog) => ({
-            id: blog.post_id,
-            image: blog.image || null,
-            title: blog.title,
-            date: blog.created_at ? new Date(blog.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''
-          }))
+            .filter((blog) => blog.is_published === true)
+            .map((blog) => ({
+              id: blog.post_id,
+              image: blog.image || null,
+              title: blog.title,
+              date: blog.created_at
+                ? new Date(blog.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                : ''
+            }))
         : []
       setBlogs(mapped)
     } catch (error) {
@@ -354,13 +325,13 @@ export default function Home() {
       <section className="relative w-full h-[65vh] md:h-[85vh] overflow-hidden -mt-20">
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent z-10" />
         <video
-  src={heroVideo}
-  autoPlay
-  loop
-  muted
-  playsInline
-  className="w-full h-full object-cover object-[center_25%]"
-/>
+          src={heroVideo}
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="w-full h-full object-cover object-[center_25%]"
+        />
         <div className="absolute inset-0 z-20 flex flex-col justify-center px-6 md:px-16 pb-0">
           <h1 className="text-3xl md:text-6xl font-bold text-white leading-tight mb-4 max-w-md">
             Eyewear that fits you before you buy
@@ -380,59 +351,57 @@ export default function Home() {
       </section>
 
       {/* SUNGLASSES SECTION */}
-<section className="px-6 md:px-16 py-20 bg-white">
-  <div className="max-w-7xl mx-auto">
-    <div className="mb-10">
-      <div className="flex items-center gap-3 mb-2">
-        <span className="inline-block w-8 h-px bg-[#76CDD6]" />
-        <span className="text-[11px] font-medium text-gray-400 uppercase tracking-[0.2em]">Featured</span>
-      </div>
-      <div className="flex justify-between items-end">
-        <h2 className="text-3xl md:text-4xl font-light tracking-tight text-[#1E1D22]">Sunglasses</h2>
-        <Link to="/shop?category=Sunglasses" className="group hidden md:flex items-center gap-2 text-xs font-medium text-gray-400 hover:text-[#1E1D22] transition-all">
-          Shop all <span className="group-hover:translate-x-1 transition-transform duration-200">→</span>
-        </Link>
-      </div>
-    </div>
+      <section className="px-6 md:px-16 py-20 bg-white">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-10">
+            <div className="flex items-center gap-3 mb-2">
+              <span className="inline-block w-8 h-px bg-[#76CDD6]" />
+              <span className="text-[11px] font-medium text-gray-400 uppercase tracking-[0.2em]">Featured</span>
+            </div>
+            <div className="flex justify-between items-end">
+              <h2 className="text-3xl md:text-4xl font-light tracking-tight text-[#1E1D22]">Sunglasses</h2>
+              <Link to="/shop?category=Sunglasses" className="group hidden md:flex items-center gap-2 text-xs font-medium text-gray-400 hover:text-[#1E1D22] transition-all">
+                Shop all <span className="group-hover:translate-x-1 transition-transform duration-200">→</span>
+              </Link>
+            </div>
+          </div>
 
-    {loading ? (
-      <div className="text-center py-16 text-gray-400">Loading...</div>
-    ) : (
-      <div className="relative">
-        <div className="grid grid-cols-2 gap-4 md:hidden">
-          {newProducts.filter(p => p.categories?.name === 'Sunglasses').slice(0, 4).map((product) => (
-            <div key={product.product_id}>
-              <EyewearCard {...product} />
-            </div>
-          ))}
-        </div>
-        <div className="hidden md:flex gap-5 overflow-x-auto pb-2 scroll-smooth hide-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-          {newProducts.filter(p => p.categories?.name === 'Sunglasses').slice(0, 4).map((product) => (
-            <div key={product.product_id} className="w-[80vw] sm:w-[45vw] md:w-[30vw] lg:w-[21vw] flex-shrink-0">
-              <EyewearCard {...product} />
-            </div>
-          ))}
-          <Link to="/shop?category=Sunglasses" className="group w-[80vw] sm:w-[45vw] md:w-[30vw] lg:w-[21vw] flex-shrink-0">
-            <div className="h-full aspect-[3/4] bg-gray-50 rounded-xl flex flex-col items-center justify-center gap-2 border border-gray-100 hover:border-[#76CDD6] transition-all duration-300 hover:shadow-lg group-hover:scale-[0.98]">
-              <div className="w-12 h-12 rounded-full bg-white shadow-sm group-hover:bg-[#76CDD6]/10 flex items-center justify-center transition-all duration-300">
-                <svg className="w-5 h-5 text-gray-400 group-hover:text-[#76CDD6] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
+          {loading ? (
+            <div className="text-center py-16 text-gray-400">Loading...</div>
+          ) : (
+            <div className="relative">
+              <div className="grid grid-cols-2 gap-4 md:hidden">
+                {newProducts.filter(p => p.categories?.name === 'Sunglasses').slice(0, 4).map((product) => (
+                  <div key={product.product_id}><EyewearCard {...product} /></div>
+                ))}
               </div>
-              <p className="text-sm font-medium text-gray-500 group-hover:text-[#1E1D22] transition-colors">View all</p>
-              <p className="text-xs text-gray-400">Sunglasses</p>
+              <div className="hidden md:flex gap-5 overflow-x-auto pb-2 scroll-smooth hide-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                {newProducts.filter(p => p.categories?.name === 'Sunglasses').slice(0, 4).map((product) => (
+                  <div key={product.product_id} className="w-[80vw] sm:w-[45vw] md:w-[30vw] lg:w-[21vw] flex-shrink-0">
+                    <EyewearCard {...product} />
+                  </div>
+                ))}
+                <Link to="/shop?category=Sunglasses" className="group w-[80vw] sm:w-[45vw] md:w-[30vw] lg:w-[21vw] flex-shrink-0">
+                  <div className="h-full aspect-[3/4] bg-gray-50 rounded-xl flex flex-col items-center justify-center gap-2 border border-gray-100 hover:border-[#76CDD6] transition-all duration-300 hover:shadow-lg group-hover:scale-[0.98]">
+                    <div className="w-12 h-12 rounded-full bg-white shadow-sm group-hover:bg-[#76CDD6]/10 flex items-center justify-center transition-all duration-300">
+                      <svg className="w-5 h-5 text-gray-400 group-hover:text-[#76CDD6] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                      </svg>
+                    </div>
+                    <p className="text-sm font-medium text-gray-500 group-hover:text-[#1E1D22] transition-colors">View all</p>
+                    <p className="text-xs text-gray-400">Sunglasses</p>
+                  </div>
+                </Link>
+              </div>
             </div>
-          </Link>
+          )}
+          <div className="text-center mt-8 md:hidden">
+            <Link to="/shop?category=Sunglasses" className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 hover:text-[#1E1D22] transition-colors">
+              Shop all sunglasses <span className="text-base">→</span>
+            </Link>
+          </div>
         </div>
-      </div>
-    )}
-    <div className="text-center mt-8 md:hidden">
-      <Link to="/shop?category=Sunglasses" className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 hover:text-[#1E1D22] transition-colors">
-        Shop all sunglasses <span className="text-base">→</span>
-      </Link>
-    </div>
-  </div>
-</section>
+      </section>
 
       {/* AI FEATURES SECTION */}
       <AiFeaturesSection />
@@ -461,16 +430,15 @@ export default function Home() {
             <div className="relative">
               <div className="grid grid-cols-2 gap-4 md:hidden">
                 {frameProducts.slice(0, 4).map((product) => (
-                  <div key={product.product_id}>
+                  <div key={product.product_id}><EyewearCard {...product} /></div>
+                ))}
+              </div>
+              <div className="hidden md:flex gap-5 overflow-x-auto pb-2 scroll-smooth hide-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                {frameProducts.map((product) => (
+                  <div key={product.product_id} className="w-[80vw] sm:w-[45vw] md:w-[30vw] lg:w-[21vw] flex-shrink-0">
                     <EyewearCard {...product} />
                   </div>
                 ))}
-              </div>
-              <div className="hidden md:flex gap-5 overflow-x-auto pb-2 scroll-smooth hide-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>                {frameProducts.map((product) => (
-                <div key={product.product_id} className="w-[80vw] sm:w-[45vw] md:w-[30vw] lg:w-[21vw] flex-shrink-0">
-                  <EyewearCard {...product} />
-                </div>
-              ))}
                 <Link to="/shop?category=Optical%20Glasses" className="group w-[80vw] sm:w-[45vw] md:w-[30vw] lg:w-[21vw] flex-shrink-0">
                   <div className="h-full aspect-[3/4] bg-white rounded-xl flex flex-col items-center justify-center gap-2 border border-gray-200 hover:border-[#76CDD6] transition-all duration-300 hover:shadow-lg group-hover:scale-[0.98]">
                     <div className="w-12 h-12 rounded-full bg-gray-100 shadow-sm group-hover:bg-[#76CDD6]/10 flex items-center justify-center transition-all duration-300">
@@ -524,59 +492,57 @@ export default function Home() {
       )}
 
       {/* CONTACT LENSES SECTION */}
-<section className="px-6 md:px-16 py-20 bg-gray-50">
-  <div className="max-w-7xl mx-auto">
-    <div className="mb-10">
-      <div className="flex items-center gap-3 mb-2">
-        <span className="inline-block w-8 h-px bg-[#76CDD6]" />
-        <span className="text-[11px] font-medium text-gray-400 uppercase tracking-[0.2em]">Essentials</span>
-      </div>
-      <div className="flex justify-between items-end">
-        <h2 className="text-3xl md:text-4xl font-light tracking-tight text-[#1E1D22]">Contact Lenses</h2>
-        <Link to="/shop?category=Lenses" className="group hidden md:flex items-center gap-2 text-xs font-medium text-gray-400 hover:text-[#1E1D22] transition-all">
-          Shop all <span className="group-hover:translate-x-1 transition-transform duration-200">→</span>
-        </Link>
-      </div>
-    </div>
+      <section className="px-6 md:px-16 py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-10">
+            <div className="flex items-center gap-3 mb-2">
+              <span className="inline-block w-8 h-px bg-[#76CDD6]" />
+              <span className="text-[11px] font-medium text-gray-400 uppercase tracking-[0.2em]">Essentials</span>
+            </div>
+            <div className="flex justify-between items-end">
+              <h2 className="text-3xl md:text-4xl font-light tracking-tight text-[#1E1D22]">Contact Lenses</h2>
+              <Link to="/shop?category=Lenses" className="group hidden md:flex items-center gap-2 text-xs font-medium text-gray-400 hover:text-[#1E1D22] transition-all">
+                Shop all <span className="group-hover:translate-x-1 transition-transform duration-200">→</span>
+              </Link>
+            </div>
+          </div>
 
-    {loading ? (
-      <div className="text-center py-16 text-gray-400">Loading...</div>
-    ) : (
-      <div className="relative">
-        <div className="grid grid-cols-2 gap-4 md:hidden">
-          {newProducts.filter(p => p.categories?.name === 'Lenses').slice(0, 4).map((product) => (
-            <div key={product.product_id}>
-              <EyewearCard {...product} />
-            </div>
-          ))}
-        </div>
-        <div className="hidden md:flex gap-5 overflow-x-auto pb-2 scroll-smooth hide-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-          {newProducts.filter(p => p.categories?.name === 'Lenses').slice(0, 4).map((product) => (
-            <div key={product.product_id} className="w-[80vw] sm:w-[45vw] md:w-[30vw] lg:w-[21vw] flex-shrink-0">
-              <EyewearCard {...product} />
-            </div>
-          ))}
-          <Link to="/shop?category=Lenses" className="group w-[80vw] sm:w-[45vw] md:w-[30vw] lg:w-[21vw] flex-shrink-0">
-            <div className="h-full aspect-[3/4] bg-white rounded-xl flex flex-col items-center justify-center gap-2 border border-gray-200 hover:border-[#76CDD6] transition-all duration-300 hover:shadow-lg group-hover:scale-[0.98]">
-              <div className="w-12 h-12 rounded-full bg-gray-100 shadow-sm group-hover:bg-[#76CDD6]/10 flex items-center justify-center transition-all duration-300">
-                <svg className="w-5 h-5 text-gray-400 group-hover:text-[#76CDD6] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
+          {loading ? (
+            <div className="text-center py-16 text-gray-400">Loading...</div>
+          ) : (
+            <div className="relative">
+              <div className="grid grid-cols-2 gap-4 md:hidden">
+                {newProducts.filter(p => p.categories?.name === 'Lenses').slice(0, 4).map((product) => (
+                  <div key={product.product_id}><EyewearCard {...product} /></div>
+                ))}
               </div>
-              <p className="text-sm font-medium text-gray-500 group-hover:text-[#1E1D22] transition-colors">View all</p>
-              <p className="text-xs text-gray-400">Contact Lenses</p>
+              <div className="hidden md:flex gap-5 overflow-x-auto pb-2 scroll-smooth hide-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                {newProducts.filter(p => p.categories?.name === 'Lenses').slice(0, 4).map((product) => (
+                  <div key={product.product_id} className="w-[80vw] sm:w-[45vw] md:w-[30vw] lg:w-[21vw] flex-shrink-0">
+                    <EyewearCard {...product} />
+                  </div>
+                ))}
+                <Link to="/shop?category=Lenses" className="group w-[80vw] sm:w-[45vw] md:w-[30vw] lg:w-[21vw] flex-shrink-0">
+                  <div className="h-full aspect-[3/4] bg-white rounded-xl flex flex-col items-center justify-center gap-2 border border-gray-200 hover:border-[#76CDD6] transition-all duration-300 hover:shadow-lg group-hover:scale-[0.98]">
+                    <div className="w-12 h-12 rounded-full bg-gray-100 shadow-sm group-hover:bg-[#76CDD6]/10 flex items-center justify-center transition-all duration-300">
+                      <svg className="w-5 h-5 text-gray-400 group-hover:text-[#76CDD6] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                      </svg>
+                    </div>
+                    <p className="text-sm font-medium text-gray-500 group-hover:text-[#1E1D22] transition-colors">View all</p>
+                    <p className="text-xs text-gray-400">Contact Lenses</p>
+                  </div>
+                </Link>
+              </div>
             </div>
-          </Link>
+          )}
+          <div className="text-center mt-8 md:hidden">
+            <Link to="/shop?category=Lenses" className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 hover:text-[#1E1D22] transition-colors">
+              Shop all contact lenses <span className="text-base">→</span>
+            </Link>
+          </div>
         </div>
-      </div>
-    )}
-    <div className="text-center mt-8 md:hidden">
-      <Link to="/shop?category=Lenses" className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 hover:text-[#1E1D22] transition-colors">
-        Shop all contact lenses <span className="text-base">→</span>
-      </Link>
-    </div>
-  </div>
-</section>
+      </section>
 
       {/* ABOUT US SECTION */}
       <section id="about-us" className="scroll-mt-20 py-20 overflow-hidden bg-gray-50" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -654,7 +620,7 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
-            {blogs.slice(0, 3).map((blog, index) => (
+            {blogs.slice(0, 3).map((blog) => (
               <Link key={blog.id} to={`/blogs/${blog.id}`} className="group relative bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-1">
                 <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
                   <img src={resolveImageUrl(blog.image) || ''} alt={blog.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" loading="lazy" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '' }} />
