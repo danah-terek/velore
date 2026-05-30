@@ -161,13 +161,24 @@ const createProduct = async (data) => {
 
 // ─── UPDATE PRODUCT ───────────────────────────────────────────────────────────
 const updateProduct = async (product_id, data) => {
+  // Remove relation IDs and unknown fields so they don't cause Prisma errors
+  const { category_id, brand_id, thumbnail, ...rest } = data;
+
+  const updateData = { ...rest };
+
+  // Use relation connect for category
+  if (category_id) {
+    updateData.categories = { connect: { category_id: Number(category_id) } };
+  }
+
+  // Use relation connect for brand
+  if (brand_id) {
+    updateData.brands = { connect: { brand_id: Number(brand_id) } };
+  }
+
   return await prisma.products.update({
     where: { product_id: Number(product_id) },
-    data: {
-      ...data,
-      ...(data.category_id && { category_id: Number(data.category_id) }),
-      ...(data.brand_id && { brand_id: Number(data.brand_id) }),
-    },
+    data: updateData,
     select: productSelect,
   });
 };

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import Testimonials from '../../shared/components/eyewear/Testimonials'
 import { EyewearCard } from '../../shared/components/eyewear'
 import sketchImage from '../../assets/Veloresketch.jpeg'
-import heroImage from '../../assets/heropic.jpg'
+import heroVideo from '../../assets/herovideo.mp4'
 import { resolveImageUrl } from '../../shared/utils/imageUrl'
 import shopService from '../shop/shopService'
 import apiClient from '../../shared/services/apiClient'
@@ -21,7 +21,7 @@ const SCAN_STATES = [
     bgColor: "#FFFFFF",
     accentColor: "#76CDD6",
     textColor: "#1E1D22",
-    bgImage: heroImage,
+    bgImage: sketchImage,
     bgOpacity: 0.05,
   },
   {
@@ -47,7 +47,7 @@ const SCAN_STATES = [
     bgColor: "#F5F5F5",
     accentColor: "#1E1D22",
     textColor: "#1E1D22",
-    bgImage: heroImage,
+    bgImage: sketchImage,
     bgOpacity: 0.04,
   },
   {
@@ -376,13 +376,14 @@ export default function Home() {
       {/* HERO SECTION */}
       <section className="relative w-full h-[65vh] md:h-[85vh] overflow-hidden -mt-20">
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent z-10" />
-        <img
-          src={heroImage}
-          alt="Eyewear"
-          className="w-full h-full object-cover object-[center_25%]"
-          fetchPriority="high"
-          decoding="async"
-        />
+        <video
+  src={heroVideo}
+  autoPlay
+  loop
+  muted
+  playsInline
+  className="w-full h-full object-cover object-[center_25%]"
+/>
         <div className="absolute inset-0 z-20 flex flex-col justify-center px-6 md:px-16 pb-0">
           <h1 className="text-3xl md:text-6xl font-bold text-white leading-tight mb-4 max-w-md">
             Eyewear that fits you before you buy
