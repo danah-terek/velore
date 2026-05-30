@@ -57,6 +57,10 @@ const authService = {
       throw new Error('Invalid credentials')
     }
 
+    if (user.is_active === false) {
+      throw new Error('Your account has been disabled. Please contact support.')
+    }
+
     const isValid = await bcrypt.compare(password, user.password)
 
     if (!isValid) {

@@ -14,6 +14,11 @@ const adminService = {
 
     if (!admin) throw new Error('Invalid credentials')
 
+    if (admin.is_active === false) {
+      throw new Error('Your admin account has been disabled. Contact super admin.')
+    }
+
+
     const isValid = await bcrypt.compare(password, admin.password_hash)
     if (!isValid) throw new Error('Invalid credentials')
 

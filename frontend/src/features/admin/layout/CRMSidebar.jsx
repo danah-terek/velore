@@ -139,7 +139,6 @@ export default function CRMSidebar({ mobileOpen, onClose }) {
     { to: '/admin/dashboard',  label: 'Dashboard',   icon: LayoutDashboard, show: true },
     { to: '/admin/analytics',  label: 'Analytics',   icon: BarChart3,       show: isSuper },
     { to: '/admin/products',   label: 'Products',    icon: Package,         show: true },
-    { to: '/admin/inventory',  label: 'Inventory',   icon: Boxes,           show: true },
     { to: '/admin/orders',     label: 'Orders',      icon: ShoppingCart,    show: true },
     { to: '/admin/customers',  label: 'Customers',   icon: Users,           show: true },
     { to: '/admin/reviews',    label: 'Reviews',     icon: Star,            show: true },
@@ -148,7 +147,6 @@ export default function CRMSidebar({ mobileOpen, onClose }) {
     { to: '/admin/discounts',  label: 'Discounts',   icon: Tag,             show: true },
     { to: '/admin/staff',      label: 'Staff',       icon: ShieldCheck,     show: isSuper },
     { to: '/admin/legal',      label: 'Legal Pages', icon: ScrollText,      show: isSuper },
-    { to: '/admin/settings',   label: 'Settings',    icon: Settings,        show: isSuper },
   ].filter((x) => x.show)
 
   const inner = (
