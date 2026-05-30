@@ -35,10 +35,52 @@ export default function Navbar({ onCartOpen, onContactOpen }) {
   // Transparent only on homepage when not scrolled
   const isTransparent = isHome && !scrolled
 
+  // Handle About click - scroll to section on homepage or navigate to homepage first
+  const handleAboutClick = (e) => {
+    e.preventDefault()
+    
+    if (location.pathname === '/') {
+      // Already on homepage, just scroll to about-us section
+      const aboutSection = document.getElementById('about-us')
+      if (aboutSection) {
+        const offset = 80 // Account for sticky navbar height
+        const elementPosition = aboutSection.getBoundingClientRect().top
+        const offsetPosition = elementPosition + window.scrollY - offset
+        
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth'
+        })
+      }
+      setMenuOpen(false)
+    } else {
+      // Navigate to homepage with hash
+      navigate('/#about-us')
+      setMenuOpen(false)
+    }
+  }
+
   useEffect(() => {
     const token = localStorage.getItem('token') || sessionStorage.getItem('token')
     setIsLoggedIn(!!token)
   }, [location.pathname])
+
+  // Handle hash navigation after route change
+  useEffect(() => {
+    if (location.hash === '#about-us') {
+      setTimeout(() => {
+        const aboutSection = document.getElementById('about-us')
+        if (aboutSection) {
+          const offset = 80
+          const elementPosition = aboutSection.getBoundingClientRect().top
+          const offsetPosition = elementPosition + window.scrollY - offset
+          window.scrollTo({ top: offsetPosition, behavior: 'smooth' })
+        }
+        // Clean up hash without refreshing
+        window.history.replaceState({}, '', location.pathname)
+      }, 100)
+    }
+  }, [location])
 
   useEffect(() => {
     if (!isLoggedIn) return
@@ -153,10 +195,19 @@ export default function Navbar({ onCartOpen, onContactOpen }) {
               <Glasses size={16} aria-hidden="true" />
               <span>Shop</span>
             </NavLink>
-            <NavLink to="/about" className={navItemClass}>
+            <button
+              type="button"
+              onClick={handleAboutClick}
+              className={[
+                'inline-flex items-center gap-2 text-sm font-medium rounded-xl px-2.5 py-1.5 bg-transparent border-none cursor-pointer transition-colors duration-200',
+                isTransparent
+                  ? 'text-white/90 hover:text-white hover:bg-white/10'
+                  : 'text-gray-700 hover:text-gray-900 hover:bg-black/5',
+              ].join(' ')}
+            >
               <BadgeInfo size={16} aria-hidden="true" />
               <span>About</span>
-            </NavLink>
+            </button>
             <NavLink to="/blogs" className={navItemClass}>
               <BookOpen size={16} aria-hidden="true" />
               <span>Journal</span>
@@ -275,10 +326,14 @@ export default function Navbar({ onCartOpen, onContactOpen }) {
               <Glasses size={16} aria-hidden="true" />
               <span>Shop</span>
             </NavLink>
-            <NavLink to="/about" onClick={() => setMenuOpen(false)} className={navItemClass}>
+            <button
+              type="button"
+              onClick={handleAboutClick}
+              className={navItemClass({ isActive: false })}
+            >
               <BadgeInfo size={16} aria-hidden="true" />
               <span>About</span>
-            </NavLink>
+            </button>
             <NavLink to="/blogs" onClick={() => setMenuOpen(false)} className={navItemClass}>
               <BookOpen size={16} aria-hidden="true" />
               <span>Journal</span>

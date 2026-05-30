@@ -1,99 +1,92 @@
-import { useEffect, useState, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from "react"
 import { Link } from 'react-router-dom'
 import Testimonials from '../../shared/components/eyewear/Testimonials'
 import { EyewearCard } from '../../shared/components/eyewear'
-import sketchImage from '../../assets/Veloresketch.jpeg'
 import heroVideo from '../../assets/herovideo.mp4'
 import { resolveImageUrl } from '../../shared/utils/imageUrl'
 import shopService from '../shop/shopService'
 import apiClient from '../../shared/services/apiClient'
 
-import girlMirror from "../../assets/girlmirror.jpg"
-import girlSunglasses from "../../assets/girlsunglasses.jpg"
-import manLaptop from "../../assets/manlaptop.jpg"
-import manTryon from "../../assets/mantryon.jpg"
+/* ─── Image Imports for About Us Section ─────────────────────────────────── */
+import d1 from '../../assets/d1.jpg'
+import d2 from '../../assets/d2.jpg'
+import d3 from '../../assets/d3.jpg'
+import d4 from '../../assets/d4.jpg'
+import d5 from '../../assets/d5.jpg'
+import d6 from '../../assets/d6.jpg'
+import d7 from '../../assets/d7.jpg'
+import d8 from '../../assets/d8.jpg'
+import pic2 from '../../assets/pic2.jpg'
+import spimage from '../../assets/spimage.png'
+import loginphoto from '../../assets/loginphoto.jpg'
+import loginA from '../../assets/loginA.png'
+import nigImage from '../../assets/nig.jpg'
+
+/* ─── AI Section — Diagonal Scan Morph Concept with Background Images ────── */
 
 const SCAN_STATES = [
   {
     id: 0,
-    badge: "AI-Powered",
     headline: "Frames that fit",
     accent: "your face",
     subline: "Upload a selfie. Our AI analyzes your facial geometry in seconds.",
-    cta: "Try Virtual Try-On",
-    bgColor: "#FFFFFF",
     accentColor: "#76CDD6",
     textColor: "#1E1D22",
-    bgImage: girlMirror,
-    overlayColor: "rgba(255,255,255,0.55)",
+    gradient: "linear-gradient(135deg, #EAF9FB 0%, #C8EEF3 50%, #A8E4EC 100%)",
   },
   {
     id: 1,
-    badge: "Real-time AR",
     headline: "See them on",
     accent: "you instantly",
     subline: "No app, no download. Just turn on your camera and try dozens of frames.",
-    cta: "Try Virtual Try-On",
-    bgColor: "#1E1D22",
     accentColor: "#76CDD6",
     textColor: "#FFFFFF",
-    bgImage: girlSunglasses,
-    overlayColor: "rgba(30,29,34,0.52)",
+    gradient: "linear-gradient(135deg, #1E1D22 0%, #2A3A3D 50%, #1a3038 100%)",
   },
   {
     id: 2,
-    badge: "No Guesswork",
     headline: "Order with",
     accent: "confidence",
     subline: "You already saw how they look. No returns, no surprises.",
-    cta: "Try Virtual Try-On",
-    bgColor: "#F5F5F5",
     accentColor: "#1E1D22",
     textColor: "#1E1D22",
-    bgImage: manLaptop,
-    overlayColor: "rgba(245,245,245,0.58)",
+    gradient: "linear-gradient(135deg, #F7F7F5 0%, #ECECEA 50%, #E0E0DC 100%)",
   },
   {
     id: 3,
-    badge: "Your Privacy",
     headline: "Your data,",
     accent: "your rules",
     subline: "We never store your images. What happens on your camera, stays with you.",
-    cta: "Try Virtual Try-On",
-    bgColor: "#1E1D22",
     accentColor: "#76CDD6",
     textColor: "#FFFFFF",
-    bgImage: manTryon,
-    overlayColor: "rgba(30,29,34,0.52)",
+    gradient: "linear-gradient(135deg, #141318 0%, #1E2A2C 50%, #0f1f24 100%)",
   },
 ]
 
-function mindfulEase(t) {
-  if (t < 0.42) {
-    return 0.5 * Math.pow(t / 0.42, 1.6) * 0.88
-  } else if (t < 0.58) {
-    const mid = (t - 0.42) / 0.16
-    return 0.88 * 0.5 + mid * 0.5 * 0.04
+function scanEase(t) {
+  if (t < 0.25) {
+    return Math.pow(t / 0.25, 0.45) * 0.55
   } else {
-    const tail = (t - 0.58) / 0.42
-    return 0.46 + tail * 0.54
+    const tail = (t - 0.25) / 0.75
+    return 0.55 + (1 - Math.pow(1 - tail, 1.6)) * 0.45
   }
 }
 
 function AiFeaturesSection() {
   const [currentState, setCurrentState] = useState(0)
   const [scanProgress, setScanProgress] = useState(0)
+  const [textKey, setTextKey] = useState(0)
   const animationRef = useRef(null)
   const startTimeRef = useRef(null)
 
   useEffect(() => {
-    const ANIMATION_DURATION = 9000
+    const ANIMATION_DURATION = 7000
 
     const animate = (timestamp) => {
       if (startTimeRef.current === null) startTimeRef.current = timestamp
       const elapsed = timestamp - startTimeRef.current
       const rawProgress = Math.min(elapsed / ANIMATION_DURATION, 1)
-      const easedProgress = mindfulEase(rawProgress)
+      const easedProgress = scanEase(rawProgress)
       setScanProgress(easedProgress)
 
       if (rawProgress < 1) {
@@ -102,6 +95,7 @@ function AiFeaturesSection() {
         startTimeRef.current = null
         setScanProgress(0)
         setCurrentState(prev => (prev + 1) % SCAN_STATES.length)
+        setTextKey(prev => prev + 1)
         animationRef.current = requestAnimationFrame(animate)
       }
     }
@@ -114,123 +108,369 @@ function AiFeaturesSection() {
   const nextState = SCAN_STATES[(currentState + 1) % SCAN_STATES.length]
   const rev = Math.min(scanProgress, 1)
 
-  const Panel = ({ s, side }) => {
-    const clipLeft  = `polygon(0% 0%, ${rev * 100}% 0%, ${rev * 100}% 100%, 0% 100%)`
-    const clipRight = `polygon(${rev * 100}% 0%, 100% 0%, 100% 100%, ${rev * 100}% 100%)`
-    const clip = side === "left" ? clipLeft : clipRight
+  return (
+    <>
+      <style>{`
+        @keyframes heroTextIn {
+          0%   { opacity: 0; transform: translateY(10px); }
+          100% { opacity: 1; transform: translateY(0px); }
+        }
+      `}</style>
 
-    return (
-      <div className="absolute inset-0" style={{ clipPath: clip }}>
+      <section
+        className="relative w-full overflow-hidden"
+        style={{ height: "52vh", minHeight: "320px", maxHeight: "480px" }}
+      >
+        {/* Current slide bg */}
         <div
           className="absolute inset-0"
           style={{
-            backgroundImage: `url(${s.bgImage})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
+            background: state.gradient,
+            clipPath: `polygon(0% 0%, ${rev * 100}% 0%, ${rev * 100}% 100%, 0% 100%)`,
+            zIndex: 0,
           }}
         />
-        <div className="absolute inset-0" style={{ backgroundColor: s.overlayColor }} />
-        <div className="absolute inset-0 flex items-center">
-          <div className="max-w-6xl mx-auto px-6 md:px-16 w-full">
-            <div className="max-w-3xl">
-              <div className="mb-6">
-                <div
-                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium tracking-wider uppercase"
-                  style={{ backgroundColor: `${s.accentColor}22`, color: s.accentColor }}
-                >
-                  <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: s.accentColor }} />
-                  {s.badge}
-                </div>
-              </div>
-              <div className="mb-6">
-                <h2 className="text-4xl md:text-6xl lg:text-7xl font-light tracking-tight leading-[1.1]">
-                  <span style={{ color: s.textColor }}>{s.headline} </span>
-                  <span style={{ color: s.accentColor, fontWeight: 500 }}>{s.accent}</span>
-                </h2>
-              </div>
-              <div className="mb-10">
-                <p className="text-base md:text-lg leading-relaxed max-w-md" style={{ color: `${s.textColor}BB` }}>
-                  {s.subline}
-                </p>
-              </div>
-            </div>
+
+        {/* Next slide bg */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background: nextState.gradient,
+            clipPath: `polygon(${rev * 100}% 0%, 100% 0%, 100% 100%, ${rev * 100}% 100%)`,
+            zIndex: 0,
+          }}
+        />
+
+        {/* Text — never clipped, centered */}
+        <div
+          className="absolute inset-0 flex items-center justify-center"
+          style={{ zIndex: 10 }}
+        >
+          <div
+            key={textKey}
+            style={{
+              animation: "heroTextIn 0.65s cubic-bezier(0.22,1,0.36,1) both",
+              textAlign: "center",
+            }}
+          >
+            {/* Headline + accent on one line */}
+            <p style={{
+              fontFamily: "'Lato', 'Helvetica Neue', sans-serif",
+              fontSize: "clamp(32px, 4.5vw, 58px)",
+              fontWeight: 300,
+              letterSpacing: "-0.015em",
+              lineHeight: 1.1,
+              margin: "0 0 14px 0",
+              whiteSpace: "nowrap",
+            }}>
+              <span style={{ color: state.textColor }}>{state.headline} </span>
+              <span style={{ color: state.accentColor, fontWeight: 600 }}>{state.accent}</span>
+            </p>
+
+            {/* Subline — single line below */}
+            <p style={{
+              fontFamily: "'Lato', sans-serif",
+              fontSize: "clamp(13px, 1.2vw, 15px)",
+              fontWeight: 300,
+              lineHeight: 1,
+              color: `${state.textColor}99`,
+              margin: 0,
+              whiteSpace: "nowrap",
+            }}>
+              {state.subline}
+            </p>
+          </div>
+        </div>
+
+        {/* Scan line */}
+        <div
+          className="absolute top-0 bottom-0 pointer-events-none"
+          style={{
+            left: `calc(${rev * 100}% - 1.5px)`,
+            width: "3px",
+            zIndex: 20,
+            background: `linear-gradient(to bottom,
+              transparent 0%,
+              ${state.accentColor}70 12%,
+              ${state.accentColor} 35%,
+              ${state.accentColor} 65%,
+              ${state.accentColor}70 88%,
+              transparent 100%
+            )`,
+            boxShadow: `0 0 22px ${state.accentColor}CC, 0 0 6px ${state.accentColor}`,
+          }}
+        />
+
+        {/* Bloom halo */}
+        <div
+          className="absolute top-0 bottom-0 pointer-events-none"
+          style={{
+            left: `calc(${rev * 100}% - 70px)`,
+            width: "140px",
+            zIndex: 19,
+            background: `linear-gradient(to right,
+              transparent,
+              ${state.accentColor}08,
+              ${state.accentColor}22,
+              ${state.accentColor}08,
+              transparent
+            )`,
+          }}
+        />
+
+        {/* Dots */}
+        <div style={{
+          position: "absolute", bottom: "16px", left: "50%",
+          transform: "translateX(-50%)", display: "flex", gap: "6px", zIndex: 30,
+        }}>
+          {SCAN_STATES.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => {
+                setCurrentState(idx)
+                setScanProgress(0)
+                setTextKey(prev => prev + 1)
+                startTimeRef.current = null
+              }}
+              style={{
+                width: currentState === idx ? "28px" : "5px",
+                height: "2.5px",
+                borderRadius: "999px",
+                backgroundColor: currentState === idx ? state.accentColor : "rgba(150,150,150,0.35)",
+                border: "none", cursor: "pointer", padding: 0,
+                transition: "all 0.5s ease",
+              }}
+            />
+          ))}
+        </div>
+      </section>
+    </>
+  )
+}
+
+//---------------------------hero------------------
+
+const HERO_STATES = [
+  {
+    id: "video",
+    headline: "Eyewear that fits you",
+    accent: "before you buy",
+    sub: "Discover frames crafted for your unique face shape",
+    primaryLabel: "Shop the Collection",
+    primaryTo: "/shop",
+    showTryOn: false,
+  },
+  {
+    id: "photo",
+    headline: "See yourself in",
+    accent: "every frame",
+    sub: "Try on many styles — no app, no download",
+    primaryLabel: "Shop Now",
+    primaryTo: "/shop",
+    showTryOn: true,
+  },
+]
+
+function HeroSection() {
+  const videoRef = useRef(null)
+  const [phase, setPhase] = useState("video")
+  const [contentIdx, setContentIdx] = useState(0)
+  const [textVisible, setTextVisible] = useState(true)
+  const timeoutsRef = useRef([])
+
+  useEffect(() => () => timeoutsRef.current.forEach(clearTimeout), [])
+
+  const schedule = (fn, ms) => {
+    const id = setTimeout(fn, ms)
+    timeoutsRef.current.push(id)
+  }
+
+  const handleVideoEnd = useCallback(() => {
+    timeoutsRef.current.forEach(clearTimeout)
+    timeoutsRef.current = []
+
+    setTextVisible(false)
+    schedule(() => { setPhase("photo"); setContentIdx(1) }, 450)
+    schedule(() => setTextVisible(true), 950)
+    schedule(() => setTextVisible(false), 7200)
+    schedule(() => {
+      if (videoRef.current) {
+        videoRef.current.currentTime = 0
+        videoRef.current.play().catch(() => { })
+      }
+      setContentIdx(0)
+    }, 7650)
+    schedule(() => { setPhase("video"); setTextVisible(true) }, 8100)
+  }, [])
+
+  const content = HERO_STATES[contentIdx]
+  const showPhoto = phase === "photo"
+
+  return (
+    <section className="relative w-full h-[65vh] md:h-[85vh] overflow-hidden -mt-20">
+
+      {/* Video */}
+      <video
+        ref={videoRef}
+        src={heroVideo}
+        autoPlay
+        muted
+        playsInline
+        onEnded={handleVideoEnd}
+        className="absolute inset-0 w-full h-full object-cover object-[center_25%]"
+        style={{ opacity: showPhoto ? 0 : 1, transition: "opacity 0.65s ease-in-out", zIndex: 1 }}
+      />
+
+      {/* Photo */}
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundImage: `url(${nigImage})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center 25%",
+          opacity: showPhoto ? 1 : 0,
+          transition: "opacity 0.65s ease-in-out",
+          zIndex: showPhoto ? 2 : 0,
+        }}
+      />
+
+      {/* Overlay */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background: "linear-gradient(110deg, rgba(0,0,0,0.62) 0%, rgba(0,0,0,0.28) 55%, transparent 100%)",
+          zIndex: 3,
+        }}
+      />
+
+      {/* Content */}
+      <div className="absolute inset-0 flex flex-col justify-center px-6 md:px-16" style={{ zIndex: 5 }}>
+        <div style={{
+          opacity: textVisible ? 1 : 0,
+          transform: textVisible ? "translateY(0px)" : "translateY(8px)",
+          transition: "opacity 0.5s ease, transform 0.5s ease",
+        }}>
+          <h1 style={{
+            fontFamily: "'Lato', 'Helvetica Neue', sans-serif",
+            fontSize: "clamp(32px, 4.5vw, 58px)",
+            fontWeight: 300,
+            letterSpacing: "-0.01em",
+            lineHeight: 1.15,
+            color: "#FFFFFF",
+            margin: "0 0 6px 0",
+            maxWidth: "540px",
+          }}>
+            {content.headline}
+          </h1>
+
+          <h1 style={{
+            fontFamily: "'Lato', 'Helvetica Neue', sans-serif",
+            fontSize: "clamp(32px, 4.5vw, 58px)",
+            fontWeight: 600,
+            letterSpacing: "-0.01em",
+            lineHeight: 1.15,
+            color: "#76CDD6",
+            margin: "0 0 22px 0",
+            maxWidth: "540px",
+          }}>
+            {content.accent}
+          </h1>
+
+          <p style={{
+            fontFamily: "'Lato', sans-serif",
+            fontSize: "clamp(13px, 1.2vw, 15px)",
+            fontWeight: 300,
+            lineHeight: 1.65,
+            color: "rgba(255,255,255,0.60)",
+            margin: "0 0 34px 0",
+            maxWidth: "360px",
+          }}>
+            {content.sub}
+          </p>
+
+          <div style={{ display: "flex", alignItems: "center", gap: "16px", flexWrap: "wrap" }}>
+            <Link
+              to={content.primaryTo}
+              style={{
+                fontFamily: "'Lato', sans-serif",
+                fontSize: "12px",
+                fontWeight: 600,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                color: "#1E1D22",
+                background: "#ffffff",
+                padding: "13px 28px",
+                borderRadius: "2px",
+                textDecoration: "none",
+                display: "inline-block",
+                transition: "background 0.25s, color 0.25s, box-shadow 0.25s",
+                boxShadow: "0 2px 16px rgba(0,0,0,0.15)",
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.background = "#76CDD6"
+                e.currentTarget.style.color = "#fff"
+                e.currentTarget.style.boxShadow = "0 4px 24px rgba(118,205,214,0.4)"
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = "#ffffff"
+                e.currentTarget.style.color = "#1E1D22"
+                e.currentTarget.style.boxShadow = "0 2px 16px rgba(0,0,0,0.15)"
+              }}
+            >
+              {content.primaryLabel}
+            </Link>
+
+            {/* Try-On link — only shown on photo slide */}
+            {content.showTryOn && (
+              <Link
+                to="/try-on"
+                style={{
+                  fontFamily: "'Lato', sans-serif",
+                  fontSize: "12px",
+                  fontWeight: 400,
+                  letterSpacing: "0.06em",
+                  color: "rgba(255,255,255,0.50)",
+                  textDecoration: "none",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "5px",
+                  borderBottom: "1px solid rgba(255,255,255,0.18)",
+                  paddingBottom: "1px",
+                  transition: "color 0.25s, border-color 0.25s",
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.color = "#76CDD6"
+                  e.currentTarget.style.borderBottomColor = "#76CDD6"
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.color = "rgba(255,255,255,0.50)"
+                  e.currentTarget.style.borderBottomColor = "rgba(255,255,255,0.18)"
+                }}
+              >
+                Virtual Try-On
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </Link>
+            )}
           </div>
         </div>
       </div>
-    )
-  }
 
-  return (
-    <section className="relative w-full h-[60vh] md:h-[75vh] overflow-hidden">
-      <Panel s={state} side="left" />
-      <Panel s={nextState} side="right" />
-
-      <div
-        className="absolute top-0 bottom-0 pointer-events-none z-30"
-        style={{
-          left: `calc(${rev * 100}% - 1.5px)`,
-          width: "3px",
-          background: `linear-gradient(to bottom,
-            transparent 0%,
-            ${state.accentColor}80 15%,
-            ${state.accentColor} 40%,
-            ${state.accentColor} 60%,
-            ${state.accentColor}80 85%,
-            transparent 100%
-          )`,
-          boxShadow: `0 0 24px ${state.accentColor}DD, 0 0 8px ${state.accentColor}`,
-        }}
-      />
-
-      <div
-        className="absolute top-0 bottom-0 pointer-events-none z-20"
-        style={{
-          left: `calc(${rev * 100}% - 70px)`,
-          width: "140px",
-          background: `linear-gradient(to right,
-            transparent,
-            ${state.accentColor}0A,
-            ${state.accentColor}25,
-            ${state.accentColor}0A,
-            transparent
-          )`,
-        }}
-      />
-
-      <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-40">
-        <Link
-          to="/try-on"
-          className="group inline-flex items-center gap-2 px-8 py-3.5 rounded-full text-sm font-medium transition-all duration-500 hover:gap-3 hover:scale-[1.02]"
-          style={{
-            backgroundColor: state.accentColor,
-            color: "#FFFFFF",
-            boxShadow: `0 4px 28px ${state.accentColor}70`,
-          }}
-        >
-          {state.cta}
-          <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-          </svg>
-        </Link>
-      </div>
-
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-40">
-        {SCAN_STATES.map((_, idx) => (
-          <button
-            key={idx}
-            onClick={() => {
-              setCurrentState(idx)
-              setScanProgress(0)
-              startTimeRef.current = null
-            }}
-            className="transition-all duration-500 rounded-full cursor-pointer"
-            style={{
-              width: currentState === idx ? "32px" : "6px",
-              height: "3px",
-              backgroundColor: currentState === idx ? state.accentColor : "rgba(255,255,255,0.4)",
-            }}
-          />
-        ))}
+      {/* Phase dots */}
+      <div style={{ position: "absolute", bottom: "24px", right: "32px", zIndex: 6, display: "flex", gap: "6px", alignItems: "center" }}>
+        {[0, 1].map(i => {
+          const active = phase === "video" ? i === 0 : i === 1
+          return (
+            <div key={i} style={{
+              width: active ? "22px" : "5px",
+              height: "2px",
+              borderRadius: "999px",
+              background: active ? "#76CDD6" : "rgba(255,255,255,0.25)",
+              transition: "all 0.5s ease",
+            }} />
+          )
+        })}
       </div>
     </section>
   )
@@ -243,10 +483,13 @@ export default function Home() {
   const [blogs, setBlogs] = useState([])
   const [loading, setLoading] = useState(true)
   const [loadingFrames, setLoadingFrames] = useState(true)
+  const [sunglassesProducts, setSunglassesProducts] = useState([])
+  const [loadingSunglasses, setLoadingSunglasses] = useState(true)
 
   useEffect(() => {
     loadNewCollection()
     loadFrames()
+    loadSunglasses()
     loadApprovedReviews()
     loadBlogs()
   }, [])
@@ -278,16 +521,30 @@ export default function Home() {
     }
   }
 
+  const loadSunglasses = async () => {
+    try {
+      const result = await shopService.getProducts({ limit: 50 })
+      const all = result?.data || []
+      const sunglasses = all.filter(p => p.categories?.name === 'Sunglasses')
+      setSunglassesProducts(sunglasses.slice(0, 4))
+    } catch (error) {
+      console.error('Failed to load sunglasses:', error)
+      setSunglassesProducts([])
+    } finally {
+      setLoadingSunglasses(false)
+    }
+  }
+
   const loadApprovedReviews = async () => {
     try {
       const result = await apiClient.get('/reviews/approved')
       const data = result?.data || []
       const mapped = Array.isArray(data)
         ? data.map((item) => ({
-            name: item.users?.name || 'Velore Customer',
-            rating: item.rating || 0,
-            review: item.comment || '',
-          }))
+          name: item.users?.name || 'Velore Customer',
+          rating: item.rating || 0,
+          review: item.comment || '',
+        }))
         : []
       setApprovedReviews(mapped)
     } catch (error) {
@@ -302,15 +559,15 @@ export default function Home() {
       const data = result?.data || []
       const mapped = Array.isArray(data)
         ? data
-            .filter((blog) => blog.is_published === true)
-            .map((blog) => ({
-              id: blog.post_id,
-              image: blog.image || null,
-              title: blog.title,
-              date: blog.created_at
-                ? new Date(blog.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-                : ''
-            }))
+          .filter((blog) => blog.is_published === true)
+          .map((blog) => ({
+            id: blog.post_id,
+            image: blog.image || null,
+            title: blog.title,
+            date: blog.created_at
+              ? new Date(blog.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+              : ''
+          }))
         : []
       setBlogs(mapped)
     } catch (error) {
@@ -322,33 +579,7 @@ export default function Home() {
   return (
     <div>
       {/* HERO SECTION */}
-      <section className="relative w-full h-[65vh] md:h-[85vh] overflow-hidden -mt-20">
-        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent z-10" />
-        <video
-          src={heroVideo}
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="w-full h-full object-cover object-[center_25%]"
-        />
-        <div className="absolute inset-0 z-20 flex flex-col justify-center px-6 md:px-16 pb-0">
-          <h1 className="text-3xl md:text-6xl font-bold text-white leading-tight mb-4 max-w-md">
-            Eyewear that fits you before you buy
-          </h1>
-          <p className="text-white/70 text-sm md:text-base mb-8 max-w-sm">
-            Discover frames crafted for your unique face shape
-          </p>
-          <div className="flex gap-3">
-            <Link to="/shop" className="bg-white text-gray-900 px-5 py-2.5 text-sm font-medium hover:bg-gray-100 transition">
-              Shop now
-            </Link>
-            <Link to="/try-on" className="border border-white text-white px-5 py-2.5 text-sm font-medium hover:bg-white hover:text-gray-900 transition">
-              Try Virtual Try-On
-            </Link>
-          </div>
-        </div>
-      </section>
+      <HeroSection />
 
       {/* SUNGLASSES SECTION */}
       <section className="px-6 md:px-16 py-20 bg-white">
@@ -356,7 +587,7 @@ export default function Home() {
           <div className="mb-10">
             <div className="flex items-center gap-3 mb-2">
               <span className="inline-block w-8 h-px bg-[#76CDD6]" />
-              <span className="text-[11px] font-medium text-gray-400 uppercase tracking-[0.2em]">Featured</span>
+              <span className="text-[11px] font-medium text-gray-400 uppercase tracking-[0.2em]">Sun Collection</span>
             </div>
             <div className="flex justify-between items-end">
               <h2 className="text-3xl md:text-4xl font-light tracking-tight text-[#1E1D22]">Sunglasses</h2>
@@ -366,35 +597,38 @@ export default function Home() {
             </div>
           </div>
 
-          {loading ? (
-            <div className="text-center py-16 text-gray-400">Loading...</div>
+          {loadingSunglasses ? (
+            <div className="text-center py-16 text-gray-400">Loading sunglasses...</div>
+          ) : sunglassesProducts.length === 0 ? (
+            <div className="text-center py-16 text-gray-400">No sunglasses available yet.</div>
           ) : (
             <div className="relative">
               <div className="grid grid-cols-2 gap-4 md:hidden">
-                {newProducts.filter(p => p.categories?.name === 'Sunglasses').slice(0, 4).map((product) => (
+                {sunglassesProducts.slice(0, 4).map((product) => (
                   <div key={product.product_id}><EyewearCard {...product} /></div>
                 ))}
               </div>
               <div className="hidden md:flex gap-5 overflow-x-auto pb-2 scroll-smooth hide-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                {newProducts.filter(p => p.categories?.name === 'Sunglasses').slice(0, 4).map((product) => (
+                {sunglassesProducts.map((product) => (
                   <div key={product.product_id} className="w-[80vw] sm:w-[45vw] md:w-[30vw] lg:w-[21vw] flex-shrink-0">
                     <EyewearCard {...product} />
                   </div>
                 ))}
                 <Link to="/shop?category=Sunglasses" className="group w-[80vw] sm:w-[45vw] md:w-[30vw] lg:w-[21vw] flex-shrink-0">
-                  <div className="h-full aspect-[3/4] bg-gray-50 rounded-xl flex flex-col items-center justify-center gap-2 border border-gray-100 hover:border-[#76CDD6] transition-all duration-300 hover:shadow-lg group-hover:scale-[0.98]">
-                    <div className="w-12 h-12 rounded-full bg-white shadow-sm group-hover:bg-[#76CDD6]/10 flex items-center justify-center transition-all duration-300">
+                  <div className="h-full aspect-[3/4] bg-white rounded-xl flex flex-col items-center justify-center gap-2 border border-gray-200 hover:border-[#76CDD6] transition-all duration-300 hover:shadow-lg group-hover:scale-[0.98]">
+                    <div className="w-12 h-12 rounded-full bg-gray-100 shadow-sm group-hover:bg-[#76CDD6]/10 flex items-center justify-center transition-all duration-300">
                       <svg className="w-5 h-5 text-gray-400 group-hover:text-[#76CDD6] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                       </svg>
                     </div>
                     <p className="text-sm font-medium text-gray-500 group-hover:text-[#1E1D22] transition-colors">View all</p>
-                    <p className="text-xs text-gray-400">Sunglasses</p>
+                    <p className="text-xs text-gray-400">All sunglasses</p>
                   </div>
                 </Link>
               </div>
             </div>
           )}
+
           <div className="text-center mt-8 md:hidden">
             <Link to="/shop?category=Sunglasses" className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 hover:text-[#1E1D22] transition-colors">
               Shop all sunglasses <span className="text-base">→</span>
@@ -463,32 +697,34 @@ export default function Home() {
 
       {/* Testimonials Section */}
       {approvedReviews.length > 0 ? (
-        <section className="px-6 md:px-16 py-20 bg-[#EFF8FE]">
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-12">
-              <div className="flex items-center justify-center gap-3 mb-3">
-                <span className="inline-block w-8 h-px bg-[#76CDD6]" />
-                <span className="text-[11px] font-medium text-gray-400 uppercase tracking-[0.2em]">Testimonials</span>
-                <span className="inline-block w-8 h-px bg-[#76CDD6]" />
-              </div>
-              <h2 className="text-3xl md:text-4xl font-light tracking-tight text-[#1E1D22]">What our <span className="font-medium">customers say</span></h2>
-              <p className="text-gray-400 text-sm mt-3 max-w-md mx-auto">Real stories from people who found their perfect fit</p>
-            </div>
-            <Testimonials testimonials={approvedReviews} />
-          </div>
-        </section>
-      ) : (
-        <section className="px-6 md:px-16 py-20 bg-[#EFF8FE]">
-          <div className="max-w-7xl mx-auto text-center">
-            <div className="flex items-center justify-center gap-3 mb-3">
-              <span className="inline-block w-8 h-px bg-[#76CDD6]" />
-              <span className="text-[11px] font-medium text-gray-400 uppercase tracking-[0.2em]">Testimonials</span>
-              <span className="inline-block w-8 h-px bg-[#76CDD6]" />
-            </div>
-            <h2 className="text-3xl md:text-4xl font-light tracking-tight text-[#1E1D22] mb-6">What our <span className="font-medium">customers say</span></h2>
-            <div className="bg-white/50 rounded-xl p-8 text-center text-sm text-gray-400 max-w-md mx-auto">Be the first to leave a review!</div>
-          </div>
-        </section>
+        <section className="px-6 md:px-16 py-20 bg-[#EFF8FE] overflow-visible">
+    <div className="max-w-7xl mx-auto overflow-visible">
+      <div className="text-center mb-12">
+        <div className="flex items-center justify-center gap-3 mb-3">
+          <span className="inline-block w-8 h-px bg-[#76CDD6]" />
+          <span className="text-[11px] font-medium text-gray-400 uppercase tracking-[0.2em]">Testimonials</span>
+          <span className="inline-block w-8 h-px bg-[#76CDD6]" />
+        </div>
+        <h2 className="text-3xl md:text-4xl font-light tracking-tight text-[#1E1D22]">What our <span className="font-medium">customers say</span></h2>
+        <p className="text-gray-400 text-sm mt-3 max-w-md mx-auto">Real stories from people who found their perfect fit</p>
+      </div>
+      <div className="overflow-visible py-8">
+        <Testimonials testimonials={approvedReviews} />
+      </div>
+    </div>
+  </section>
+) : (
+  <section className="px-6 md:px-16 py-20 bg-[#EFF8FE] overflow-visible">
+    <div className="max-w-7xl mx-auto text-center">
+      <div className="flex items-center justify-center gap-3 mb-3">
+        <span className="inline-block w-8 h-px bg-[#76CDD6]" />
+        <span className="text-[11px] font-medium text-gray-400 uppercase tracking-[0.2em]">Testimonials</span>
+        <span className="inline-block w-8 h-px bg-[#76CDD6]" />
+      </div>
+      <h2 className="text-3xl md:text-4xl font-light tracking-tight text-[#1E1D22] mb-6">What our <span className="font-medium">customers say</span></h2>
+      <div className="bg-white/50 rounded-xl p-8 text-center text-sm text-gray-400 max-w-md mx-auto">Be the first to leave a review!</div>
+    </div>
+  </section>
       )}
 
       {/* CONTACT LENSES SECTION */}
@@ -513,7 +749,9 @@ export default function Home() {
             <div className="relative">
               <div className="grid grid-cols-2 gap-4 md:hidden">
                 {newProducts.filter(p => p.categories?.name === 'Lenses').slice(0, 4).map((product) => (
-                  <div key={product.product_id}><EyewearCard {...product} /></div>
+                  <div key={product.product_id}>
+                    <EyewearCard {...product} />
+                  </div>
                 ))}
               </div>
               <div className="hidden md:flex gap-5 overflow-x-auto pb-2 scroll-smooth hide-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
@@ -545,65 +783,108 @@ export default function Home() {
       </section>
 
       {/* ABOUT US SECTION */}
-      <section id="about-us" className="scroll-mt-20 py-20 overflow-hidden bg-gray-50" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <section id="about-us" className="scroll-mt-20 py-20 overflow-hidden" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(160deg, #EAF9FB 0%, #D4F0F5 50%, #EAF9FB 100%)' }}>
+
+        {/* Mobile layout */}
         <div className="flex md:hidden flex-col items-center gap-16 px-6 w-full">
           <div style={{ position: 'relative', width: '100%', height: 320 }}>
             {[
-              { w: '48%', h: 150, top: 0, left: '2%', rot: -5, z: 2 },
-              { w: '52%', h: 170, top: 0, left: '48%', rot: 4, z: 1 },
-              { w: '44%', h: 140, top: 155, left: '6%', rot: 3, z: 3 },
-              { w: '50%', h: 160, top: 145, left: '48%', rot: -4, z: 2 },
-              { w: '40%', h: 130, top: 260, left: '30%', rot: 2, z: 1 },
+              { w: '48%', h: 150, top: 0, left: '2%', rot: -5, z: 2, img: d1 },
+              { w: '52%', h: 170, top: 0, left: '48%', rot: 4, z: 1, img: d2 },
+              { w: '44%', h: 140, top: 155, left: '6%', rot: 3, z: 3, img: d3 },
+              { w: '50%', h: 160, top: 145, left: '48%', rot: -4, z: 2, img: pic2 },
+              { w: '40%', h: 130, top: 260, left: '30%', rot: 2, z: 1, img: spimage },
             ].map((p, i) => (
-              <div key={i} style={{ position: 'absolute', width: p.w, height: p.h, top: p.top, left: p.left, transform: `rotate(${p.rot}deg)`, borderRadius: 16, overflow: 'hidden', boxShadow: '0 12px 32px rgba(0,0,0,0.15)', zIndex: p.z }}>
-                <img src={sketchImage} alt="" aria-hidden="true" style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
+              <div key={i} style={{
+                position: 'absolute', width: p.w, height: p.h,
+                top: p.top, left: p.left,
+                transform: `rotate(${p.rot}deg)`,
+                borderRadius: 16, overflow: 'hidden', zIndex: p.z,
+                boxShadow: '0 8px 24px rgba(118,205,214,0.25), 0 20px 48px rgba(0,0,0,0.14), 0 2px 8px rgba(0,0,0,0.08)',
+              }}>
+                <img src={p.img} alt="" aria-hidden="true" style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
               </div>
             ))}
           </div>
           <div className="text-center px-2">
-            <p style={{ fontSize: 72, fontWeight: 700, lineHeight: 1, letterSpacing: '-2px' }} className="text-gray-950 mb-3">20+</p>
-            <p className="text-lg font-semibold text-gray-900 mb-3 leading-snug">years, we've refined our craft, not just in frame design</p>
-            <p className="text-sm text-gray-500 leading-relaxed">but in understanding the unique geometry of every face. Every Velore frame is born from obsessive attention to fit, balance, and comfort.</p>
+            <p style={{ fontSize: 72, fontWeight: 700, lineHeight: 1, letterSpacing: '-2px', color: '#1E1D22' }} className="mb-3">20+</p>
+            <p className="text-lg font-semibold mb-3 leading-snug" style={{ color: '#1E1D22' }}>years, we've refined our craft, not just in frame design</p>
+            <p className="text-sm leading-relaxed" style={{ color: '#5a7a82' }}>but in understanding the unique geometry of every face. Every Velore frame is born from obsessive attention to fit, balance, and comfort.</p>
           </div>
         </div>
 
+        {/* Desktop layout */}
         <div className="hidden md:flex items-center justify-center w-full max-w-7xl mx-auto">
+
+          {/* Left photo cluster */}
           <div style={{ position: 'relative', width: '380px', flexShrink: 0, height: '600px', marginRight: '-30px' }}>
             {[
-              { w: 140, h: 140, top: 15, left: 20, rot: -6, z: 3 },
-              { w: 165, h: 190, top: 0, left: 150, rot: 5, z: 2 },
-              { w: 150, h: 150, top: 130, left: 0, rot: 4, z: 4 },
-              { w: 130, h: 170, top: 170, left: 160, rot: -4, z: 5 },
-              { w: 165, h: 140, top: 290, left: 10, rot: -5, z: 2 },
-              { w: 148, h: 165, top: 330, left: 170, rot: 6, z: 3 },
-              { w: 135, h: 135, top: 440, left: 40, rot: 3, z: 4 },
-              { w: 155, h: 130, top: 470, left: 185, rot: -4, z: 3 },
+              { w: 140, h: 140, top: 15, left: 20, rot: -6, z: 3, img: d1 },
+              { w: 165, h: 190, top: 0, left: 150, rot: 5, z: 2, img: d2 },
+              { w: 150, h: 150, top: 130, left: 0, rot: 4, z: 4, img: d3 },
+              { w: 130, h: 170, top: 170, left: 160, rot: -4, z: 5, img: d4 },
+              { w: 165, h: 140, top: 290, left: 10, rot: -5, z: 2, img: d5 },
+              { w: 148, h: 165, top: 340, left: 170, rot: 6, z: 3, img: d6 },
+              { w: 135, h: 135, top: 450, left: 40, rot: 3, z: 4, img: d7 },
+              { w: 155, h: 130, top: 480, left: 185, rot: -4, z: 3, img: d8 },
             ].map((p, i) => (
-              <div key={i} style={{ position: 'absolute', width: p.w, height: p.h, top: p.top, left: p.left, transform: `rotate(${p.rot}deg)`, zIndex: p.z, borderRadius: 20, overflow: 'hidden', boxShadow: '0 16px 40px rgba(0,0,0,0.12)', transition: 'transform 0.3s ease, box-shadow 0.3s ease' }} className="hover:scale-105 hover:shadow-2xl">
-                <img src={sketchImage} alt="" aria-hidden="true" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} loading="lazy" decoding="async" />
+              <div
+                key={i}
+                style={{
+                  position: 'absolute', width: p.w, height: p.h,
+                  top: p.top, left: p.left,
+                  transform: `rotate(${p.rot}deg)`,
+                  zIndex: p.z, borderRadius: 20, overflow: 'hidden',
+                  boxShadow: '0 8px 24px rgba(118,205,214,0.30), 0 24px 56px rgba(0,0,0,0.16), 0 2px 8px rgba(0,0,0,0.08)',
+                  transition: 'transform 0.35s ease, box-shadow 0.35s ease',
+                }}
+                className="hover:scale-105"
+                onMouseEnter={e => e.currentTarget.style.boxShadow = '0 12px 32px rgba(118,205,214,0.45), 0 32px 64px rgba(0,0,0,0.20), 0 4px 12px rgba(0,0,0,0.10)'}
+                onMouseLeave={e => e.currentTarget.style.boxShadow = '0 8px 24px rgba(118,205,214,0.30), 0 24px 56px rgba(0,0,0,0.16), 0 2px 8px rgba(0,0,0,0.08)'}
+              >
+                <img src={p.img} alt="" aria-hidden="true" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} loading="lazy" decoding="async" />
               </div>
             ))}
           </div>
 
+          {/* Center text */}
           <div style={{ flex: 1, maxWidth: 440, textAlign: 'center', padding: '0 2rem', zIndex: 10 }}>
-            <p style={{ fontSize: 'clamp(88px, 10vw, 128px)', fontWeight: 700, lineHeight: 1, letterSpacing: '-3px', marginBottom: '1.5rem' }} className="text-gray-950">20+</p>
-            <p className="text-2xl md:text-3xl font-semibold text-gray-900 mb-5 leading-snug">years, we've refined our craft, not just in frame design</p>
-            <p className="text-base text-gray-500 leading-relaxed max-w-sm mx-auto">but in understanding the unique geometry of every face. Every Velore frame is born from obsessive attention to fit, balance, and comfort. We combine precision engineering with timeless aesthetics to create eyewear that doesn't just sit on your face — it becomes part of your expression.</p>
+            <p style={{ fontSize: 'clamp(88px, 10vw, 128px)', fontWeight: 700, lineHeight: 1, letterSpacing: '-3px', marginBottom: '1.5rem', color: '#1E1D22' }}>20+</p>
+            <p className="text-2xl md:text-3xl font-semibold mb-5 leading-snug" style={{ color: '#1E1D22' }}>
+              years, we've refined our craft, not just in frame design
+            </p>
+            <p className="text-base leading-relaxed max-w-sm mx-auto" style={{ color: '#5a7a82' }}>
+              but in understanding the unique geometry of every face. Every Velore frame is born from obsessive attention to fit, balance, and comfort. We combine precision engineering with timeless aesthetics to create eyewear that doesn't just sit on your face — it becomes part of your expression.
+            </p>
           </div>
 
+          {/* Right photo cluster */}
           <div style={{ position: 'relative', width: '380px', flexShrink: 0, height: '600px', marginLeft: '-30px' }}>
             {[
-              { w: 140, h: 140, top: 10, right: 15, rot: 6, z: 3 },
-              { w: 160, h: 185, top: 0, right: 155, rot: -5, z: 2 },
-              { w: 148, h: 148, top: 125, right: 0, rot: -4, z: 4 },
-              { w: 130, h: 170, top: 165, right: 160, rot: 5, z: 5 },
-              { w: 165, h: 138, top: 285, right: 10, rot: 5, z: 2 },
-              { w: 150, h: 165, top: 325, right: 170, rot: -6, z: 3 },
-              { w: 135, h: 135, top: 435, right: 35, rot: -3, z: 4 },
-              { w: 155, h: 130, top: 465, right: 185, rot: 4, z: 3 },
+              { w: 140, h: 140, top: 10, right: 15, rot: 6, z: 3, img: pic2 },
+              { w: 160, h: 185, top: 0, right: 155, rot: -5, z: 2, img: spimage },
+              { w: 148, h: 148, top: 125, right: 0, rot: -4, z: 4, img: loginphoto },
+              { w: 130, h: 170, top: 165, right: 160, rot: 5, z: 5, img: loginA },
+              { w: 165, h: 138, top: 290, right: 10, rot: 5, z: 2, img: d7 },
+              { w: 150, h: 165, top: 340, right: 170, rot: -6, z: 3, img: d8 },
+              { w: 135, h: 135, top: 450, right: 35, rot: -3, z: 4, img: d5 },
+              { w: 155, h: 130, top: 480, right: 185, rot: 4, z: 3, img: d6 },
             ].map((p, i) => (
-              <div key={i} style={{ position: 'absolute', width: p.w, height: p.h, top: p.top, right: p.right, transform: `rotate(${p.rot}deg)`, zIndex: p.z, borderRadius: 20, overflow: 'hidden', boxShadow: '0 16px 40px rgba(0,0,0,0.12)', transition: 'transform 0.3s ease, box-shadow 0.3s ease' }} className="hover:scale-105 hover:shadow-2xl">
-                <img src={sketchImage} alt="" aria-hidden="true" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} loading="lazy" decoding="async" />
+              <div
+                key={i}
+                style={{
+                  position: 'absolute', width: p.w, height: p.h,
+                  top: p.top, right: p.right,
+                  transform: `rotate(${p.rot}deg)`,
+                  zIndex: p.z, borderRadius: 20, overflow: 'hidden',
+                  boxShadow: '0 8px 24px rgba(118,205,214,0.30), 0 24px 56px rgba(0,0,0,0.16), 0 2px 8px rgba(0,0,0,0.08)',
+                  transition: 'transform 0.35s ease, box-shadow 0.35s ease',
+                }}
+                className="hover:scale-105"
+                onMouseEnter={e => e.currentTarget.style.boxShadow = '0 12px 32px rgba(118,205,214,0.45), 0 32px 64px rgba(0,0,0,0.20), 0 4px 12px rgba(0,0,0,0.10)'}
+                onMouseLeave={e => e.currentTarget.style.boxShadow = '0 8px 24px rgba(118,205,214,0.30), 0 24px 56px rgba(0,0,0,0.16), 0 2px 8px rgba(0,0,0,0.08)'}
+              >
+                <img src={p.img} alt="" aria-hidden="true" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} loading="lazy" decoding="async" />
               </div>
             ))}
           </div>
