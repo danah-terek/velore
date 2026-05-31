@@ -315,6 +315,17 @@ export default function ProductDetail() {
   navigate(`/try-on?image=${imageParam}&name=${name}`)
 }
 
+useEffect(() => {
+    const currentImages = selectedVariant?.images?.filter(Boolean) || []
+    if (!currentImages || currentImages.length <= 1) return
+    
+    const interval = setInterval(() => {
+      setSelectedImage(prev => (prev + 1) % currentImages.length)
+    }, 5000)
+    
+    return () => clearInterval(interval)
+  }, [selectedVariant])
+
   if (loading) {
     return (
       <div className="flex flex-col justify-center items-center min-h-[60vh] gap-3">
@@ -347,6 +358,9 @@ export default function ProductDetail() {
   const isLenses = categoryName === 'lenses' || categoryName === 'blue light glasses'
   const isGlasses = categoryName === 'eyeglasses' || categoryName === 'glasses' || categoryName === 'optical glasses'
   const isSunglasses = categoryName === 'sunglasses'
+
+  console.log('Product data:', product)
+  console.log('Gender value:', product.gender, product.gender_id, product.specifications?.gender)
 
   return (
     <div className="px-4 md:px-8 lg:px-12 py-10 max-w-6xl mx-auto bg-white text-neutral-900">
@@ -421,36 +435,13 @@ export default function ProductDetail() {
             </div>
           </div>
 
-          {/* Technical Blueprint Layout */}
+                    {/* Technical Blueprint Layout */}
+                    {/* Technical Blueprint Layout */}
           <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm bg-neutral-50/40 p-4 rounded-xl border border-neutral-100">
             {product.brands && (
               <div className="flex flex-col">
                 <span className="text-xs text-neutral-400">Brand</span>
                 <span className="font-medium text-neutral-800">{product.brands.name}</span>
-              </div>
-            )}
-            {product.categories && (
-              <div className="flex flex-col">
-                <span className="text-xs text-neutral-400">Category</span>
-                <span className="font-medium text-neutral-800">{isLenses ? 'Lenses' : product.categories.name}</span>
-              </div>
-            )}
-            {!isLenses && product.specifications?.frame_shape && (
-              <div className="flex flex-col">
-                <span className="text-xs text-neutral-400">Frame Shape</span>
-                <span className="font-medium text-neutral-800">{product.specifications.frame_shape}</span>
-              </div>
-            )}
-            {!isLenses && product.specifications?.face_shape && (
-              <div className="flex flex-col">
-                <span className="text-xs text-neutral-400">Face Shape</span>
-                <span className="font-medium text-neutral-800">{product.specifications.face_shape}</span>
-              </div>
-            )}
-            {product.specifications?.material && (
-              <div className="flex flex-col">
-                <span className="text-xs text-neutral-400">Material</span>
-                <span className="font-medium text-neutral-800">{product.specifications.material}</span>
               </div>
             )}
             {product.gender && (
