@@ -2,7 +2,7 @@ import { lazy, Suspense, useMemo, useState } from 'react'
 import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 
 import { Footer, Navbar, ScrollToTop } from './shared/components/layout'
-import { FavoritesProvider, useFavorites } from './shared/contexts'
+import { FavoritesProvider, useFavorites, CartProvider } from './shared/contexts'
 import { AIAdvisorChat } from './features/ai-advisor'
 
 import TryOn from "./features/tryon/TryOn";
@@ -102,51 +102,53 @@ export default function App() {
   return (
     <BrowserRouter>
       <FavoritesProvider>
-        <ScrollToTop />
-        <Routes>
-          <Route
-            path="/admin/*"
-            element={
-              <Suspense fallback={<PageLoader label="Loading admin…" />}>
-                <AdminApp />
-              </Suspense>
-            }
-          />
+        <CartProvider>
+          <ScrollToTop />
+          <Routes>
+            <Route
+              path="/admin/*"
+              element={
+                <Suspense fallback={<PageLoader label="Loading admin…" />}>
+                  <AdminApp />
+                </Suspense>
+              }
+            />
 
-          <Route path="/" element={<PublicLayout />}>
-            <Route index element={<Home />} />
-            <Route path="shop" element={<Shop />} />
-            <Route path="products" element={<Navigate to="/shop" replace />} />
-            <Route path="product/:id" element={<ProductDetail />} />
+            <Route path="/" element={<PublicLayout />}>
+              <Route index element={<Home />} />
+              <Route path="shop" element={<Shop />} />
+              <Route path="products" element={<Navigate to="/shop" replace />} />
+              <Route path="product/:id" element={<ProductDetail />} />
 
-            <Route path="blogs" element={<Blogs />} />
-            <Route path="blogs/:id" element={<BlogPost />} />
+              <Route path="blogs" element={<Blogs />} />
+              <Route path="blogs/:id" element={<BlogPost />} />
 
-            <Route path="about" element={<About />} />
+              <Route path="about" element={<About />} />
 
-            <Route path="favorite" element={<Favorite />} />
-            <Route path="favorites" element={<Navigate to="/favorite" replace />} />
+              <Route path="favorite" element={<Favorite />} />
+              <Route path="favorites" element={<Navigate to="/favorite" replace />} />
 
-            <Route path="profile" element={<Profile />} />
+              <Route path="profile" element={<Profile />} />
 
-            <Route path="login" element={<Login />} />
-            <Route path="signup" element={<Signup />} />
-            <Route path="register" element={<Navigate to="/signup" replace />} />
-            <Route path="forgot-password" element={<ForgotPassword />} />
-            <Route path="reset-password" element={<ResetPassword />} />
+              <Route path="login" element={<Login />} />
+              <Route path="signup" element={<Signup />} />
+              <Route path="register" element={<Navigate to="/signup" replace />} />
+              <Route path="forgot-password" element={<ForgotPassword />} />
+              <Route path="reset-password" element={<ResetPassword />} />
 
-            <Route path="checkout" element={<Checkout />} />
-            <Route path="payment-success" element={<PaymentSuccess />} />
+              <Route path="checkout" element={<Checkout />} />
+              <Route path="payment-success" element={<PaymentSuccess />} />
 
-            <Route path="refund-policy" element={<PolicyPlaceholder title="Refund Policy" />} />
-            <Route path="privacy-policy" element={<PolicyPlaceholder title="Privacy Policy" />} />
-            <Route path="terms-of-service" element={<PolicyPlaceholder title="Terms of Service" />} />
-            <Route path="shipping-policy" element={<PolicyPlaceholder title="Shipping Policy" />} />
-            <Route path="/try-on" element={<TryOn />} />
+              <Route path="refund-policy" element={<PolicyPlaceholder title="Refund Policy" />} />
+              <Route path="privacy-policy" element={<PolicyPlaceholder title="Privacy Policy" />} />
+              <Route path="terms-of-service" element={<PolicyPlaceholder title="Terms of Service" />} />
+              <Route path="shipping-policy" element={<PolicyPlaceholder title="Shipping Policy" />} />
+              <Route path="/try-on" element={<TryOn />} />
 
-            <Route path="*" element={<NotFound />} />
-          </Route>
-        </Routes>
+              <Route path="*" element={<NotFound />} />
+            </Route>
+          </Routes>
+        </CartProvider>
       </FavoritesProvider>
     </BrowserRouter>
   )

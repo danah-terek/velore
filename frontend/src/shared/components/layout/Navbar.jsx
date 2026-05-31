@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
+import { useCart } from '../../contexts/CartContext'
 import {
   BadgeInfo,
   BookOpen,
@@ -29,7 +30,8 @@ export default function Navbar({ onCartOpen, onContactOpen }) {
   const [notifCount, setNotifCount] = useState(0)
   const location = useLocation()
 
-  const { favorites } = useFavorites()
+const { favorites } = useFavorites()
+const { cartCount } = useCart()
   const isHome = location.pathname === '/'
 
   // Transparent only on homepage when not scrolled
@@ -284,20 +286,30 @@ export default function Navbar({ onCartOpen, onContactOpen }) {
               )}
             </Link>
 
-            <button
+ <button
               onClick={handleCartClick}
-              className={`hidden md:flex p-1 bg-transparent border-none cursor-pointer transition-colors ${iconClass}`}
+              className={`hidden md:flex p-1 bg-transparent border-none cursor-pointer relative transition-colors ${iconClass}`}
               aria-label="Open cart"
             >
               <ShoppingCart size={18} />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
+                  {cartCount}
+                </span>
+              )}
             </button>
 
             <button
               onClick={handleCartClick}
-              className={`md:hidden p-1 bg-transparent border-none cursor-pointer transition-colors ${iconClass}`}
+              className={`md:hidden p-1 bg-transparent border-none cursor-pointer relative transition-colors ${iconClass}`}
               aria-label="Open cart"
             >
               <ShoppingCart size={18} />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
+                  {cartCount}
+                </span>
+              )}
             </button>
 
           </div>

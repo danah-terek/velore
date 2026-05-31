@@ -2,9 +2,9 @@ import { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { Heart, ShoppingBag, Check } from 'lucide-react'
 import { useFavorites } from '../../contexts'
+import { useCart } from '../../contexts/CartContext'
 import useCurrency from '../../hooks/useCurrency'
 import { resolveImageUrl } from '../../utils/imageUrl'
-import cartService from '../../../features/cart/cartService'
 
 export default function EyewearCard({
   id,
@@ -19,6 +19,7 @@ export default function EyewearCard({
   colors,
 }) {
   const { toggleFavorite, isFavorite } = useFavorites()
+  const { addToCart } = useCart()
   const { formatPrice } = useCurrency()
   const [addingToCart, setAddingToCart] = useState(false)
   const [justAdded, setJustAdded] = useState(false)
@@ -53,42 +54,15 @@ export default function EyewearCard({
   const handleAddToCart = async (e) => {
     e.preventDefault()
     e.stopPropagation()
-
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token')
-
-    if (!token) {
-      const localCart = JSON.parse(localStorage.getItem('guestCart') || '[]')
-      const existing = localCart.find(
-        item => item.productId === productIdFinal &&
-          (item.variantId || null) === (firstVariantId || null)
-      )
-      if (existing) {
-        const maxQty = typeof firstVariantStock === 'number' ? firstVariantStock : null
-        const nextQty = existing.quantity + 1
-        existing.quantity = maxQty !== null ? Math.min(nextQty, maxQty) : nextQty
-      } else {
-        localCart.push({
-          productId: productIdFinal,
-          variantId: firstVariantId,
-          name,
-          price: displayPrice,
-          image: imageUrl,
-          quantity: 1,
-          availableStock: typeof firstVariantStock === 'number' ? firstVariantStock : null,
-        })
-      }
-      localStorage.setItem('guestCart', JSON.stringify(localCart))
-      setJustAdded(true)
-      setTimeout(() => setJustAdded(false), 1400)
-      return
-    }
-
     setAddingToCart(true)
     try {
-      await cartService.addItem({
-        productId: Number(productIdFinal),
-        variantId: firstVariantId ? Number(firstVariantId) : undefined,
-        quantity: 1,
+      await addToCart({
+        product_id: productIdFinal,
+        variantId: firstVariantId,
+        name,
+        price: displayPrice,
+        image: imageUrl,
+        availableStock: typeof firstVariantStock === 'number' ? firstVariantStock : null,
       })
       setJustAdded(true)
       setTimeout(() => setJustAdded(false), 1400)
@@ -118,12 +92,10 @@ export default function EyewearCard({
             box-shadow 0.5s cubic-bezier(0.23, 1, 0.32, 1);
           will-change: transform;
         }
-
         .ew-card:hover {
           transform: translateY(-6px);
           box-shadow: 0 20px 48px rgba(0,0,0,0.10), 0 4px 12px rgba(0,0,0,0.06);
         }
-
         .ew-img-wrap {
           position: relative;
           width: 100%;
@@ -131,7 +103,6 @@ export default function EyewearCard({
           overflow: hidden;
           background: rgb(var(--velore-canvas-muted, 248 248 246));
         }
-
         .ew-img-wrap img {
           width: 100%;
           height: 100%;
@@ -139,12 +110,9 @@ export default function EyewearCard({
           padding: 1.5rem;
           transition: transform 0.7s cubic-bezier(0.23, 1, 0.32, 1);
         }
-
         .ew-card:hover .ew-img-wrap img {
           transform: scale(1.06);
         }
-
-        /* Fav button — hidden until hover on desktop, always visible on touch devices */
         .ew-fav {
           position: absolute;
           top: 12px;
@@ -168,38 +136,23 @@ export default function EyewearCard({
             background 0.2s ease;
           z-index: 2;
         }
-
-        .ew-card:hover .ew-fav {
-          opacity: 1;
-          transform: scale(1);
-        }
-
-        .ew-fav:hover {
-          background: rgba(255,255,255,1);
-        }
-
-        /* On touch screens there's no hover — always show the fav button */
+        .ew-card:hover .ew-fav { opacity: 1; transform: scale(1); }
+        .ew-fav:hover { background: rgba(255,255,255,1); }
         @media (hover: none) {
-          .ew-fav {
-            opacity: 1;
-            transform: scale(1);
-          }
+          .ew-fav { opacity: 1; transform: scale(1); }
         }
-
         .ew-body {
           padding: 14px 16px 16px;
           display: flex;
           flex-direction: column;
           gap: 10px;
         }
-
         .ew-meta {
           display: flex;
           align-items: flex-start;
           justify-content: space-between;
           gap: 8px;
         }
-
         .ew-name {
           font-size: 13px;
           font-weight: 500;
@@ -207,20 +160,13 @@ export default function EyewearCard({
           line-height: 1.4;
           flex: 1;
         }
-
         .ew-price {
           font-size: 13px;
           font-weight: 500;
           color: rgb(var(--velore-fg, 17 17 17));
           white-space: nowrap;
         }
-
-        .ew-swatches {
-          display: flex;
-          align-items: center;
-          gap: 5px;
-        }
-
+        .ew-swatches { display: flex; align-items: center; gap: 5px; }
         .ew-swatch {
           width: 13px;
           height: 13px;
@@ -232,24 +178,18 @@ export default function EyewearCard({
           transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.2s ease;
           position: relative;
         }
-
-        .ew-swatch:hover {
-          transform: scale(1.25);
-        }
-
+        .ew-swatch:hover { transform: scale(1.25); }
         .ew-swatch.active {
           border-color: rgb(var(--velore-fg, 17 17 17));
           transform: scale(1.18);
           box-shadow: 0 0 0 1.5px rgb(var(--velore-card-bg-raw, 255 255 255)) inset;
         }
-
         .ew-swatch-label {
           font-size: 10px;
           color: rgba(var(--velore-fg, 17 17 17), 0.45);
           margin-left: 5px;
           letter-spacing: 0.02em;
         }
-
         .ew-add-btn {
           width: 100%;
           height: 38px;
@@ -272,26 +212,17 @@ export default function EyewearCard({
             color 0.28s ease,
             transform 0.15s ease;
         }
-
         .ew-add-btn:hover:not(:disabled),
         .ew-add-btn.added {
           background: rgb(var(--velore-fg, 17 17 17));
           border-color: rgb(var(--velore-fg, 17 17 17));
           color: rgb(var(--velore-card-bg-raw, 255 255 255));
         }
-
-        .ew-add-btn:active:not(:disabled) {
-          transform: scale(0.97);
-        }
-
-        .ew-add-btn:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
+        .ew-add-btn:active:not(:disabled) { transform: scale(0.97); }
+        .ew-add-btn:disabled { opacity: 0.5; cursor: not-allowed; }
       `}</style>
 
       <div className="ew-card">
-        {/* Image */}
         <Link to={`/product/${productIdFinal}`} className="block">
           <div className="ew-img-wrap">
             <img
@@ -299,15 +230,11 @@ export default function EyewearCard({
               alt={name}
               loading="lazy"
               decoding="async"
-              onError={(e) => {
-                e.currentTarget.onerror = null
-                e.currentTarget.src = ''
-              }}
+              onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '' }}
             />
           </div>
         </Link>
 
-        {/* Favorite */}
         <button
           className="ew-fav"
           onClick={(e) => {
@@ -327,15 +254,12 @@ export default function EyewearCard({
           />
         </button>
 
-        {/* Body */}
         <div className="ew-body">
-          {/* Name + Price */}
           <div className="ew-meta">
             <span className="ew-name">{name}</span>
             <span className="ew-price">{formatPrice(displayPrice)}</span>
           </div>
 
-          {/* Swatches */}
           {swatches.length > 0 ? (
             <div className="ew-swatches">
               {swatches.map((s, i) => (
@@ -344,16 +268,10 @@ export default function EyewearCard({
                   className={`ew-swatch${selectedColorIndex === i ? ' active' : ''}`}
                   style={{ backgroundColor: s.hex }}
                   title={s.name}
-                  onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    setSelectedColorIndex(i)
-                  }}
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSelectedColorIndex(i) }}
                 />
               ))}
-              {active?.name && (
-                <span className="ew-swatch-label">{active.name}</span>
-              )}
+              {active?.name && <span className="ew-swatch-label">{active.name}</span>}
             </div>
           ) : colors?.length > 0 ? (
             <div className="ew-swatches">
@@ -363,24 +281,15 @@ export default function EyewearCard({
             </div>
           ) : null}
 
-          {/* Add to cart */}
           <button
             className={`ew-add-btn${justAdded ? ' added' : ''}`}
             onClick={handleAddToCart}
             disabled={addingToCart}
           >
-            {addingToCart ? (
-              'Adding…'
-            ) : justAdded ? (
-              <>
-                <Check size={14} aria-hidden="true" />
-                Added
-              </>
+            {addingToCart ? 'Adding…' : justAdded ? (
+              <><Check size={14} aria-hidden="true" />Added</>
             ) : (
-              <>
-                <ShoppingBag size={14} aria-hidden="true" />
-                Add to cart
-              </>
+              <><ShoppingBag size={14} aria-hidden="true" />Add to cart</>
             )}
           </button>
         </div>
