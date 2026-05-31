@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import { Link } from 'react-router-dom'
 import Testimonials from '../../shared/components/eyewear/Testimonials'
+import TopBanner from '../../shared/components/layout/TopBanner'
 import { EyewearCard } from '../../shared/components/eyewear'
 import heroVideo from '../../assets/herovideo.mp4'
 import { resolveImageUrl } from '../../shared/utils/imageUrl'
@@ -422,45 +423,45 @@ function HeroSection() {
 
             {/* Try-On link — only shown on photo slide */}
             {content.showTryOn && (
-  <button
-    onClick={() => {
-      const orb = document.querySelector('.group.relative.w-20.h-20')
-      if (orb) orb.click()
-    }}
-    style={{
-      fontFamily: "'Lato', sans-serif",
-      fontSize: "12px",
-      fontWeight: 400,
-      letterSpacing: "0.06em",
-      color: "rgba(255,255,255,0.50)",
-      textDecoration: "none",
-      display: "inline-flex",
-      alignItems: "center",
-      gap: "5px",
-      borderBottom: "1px solid rgba(255,255,255,0.18)",
-      paddingBottom: "1px",
-      transition: "color 0.25s, border-color 0.25s",
-      background: "none",
-      borderTop: "none",
-      borderLeft: "none",
-      borderRight: "none",
-      cursor: "pointer",
-    }}
-    onMouseEnter={e => {
-      e.currentTarget.style.color = "#76CDD6"
-      e.currentTarget.style.borderBottomColor = "#76CDD6"
-    }}
-    onMouseLeave={e => {
-      e.currentTarget.style.color = "rgba(255,255,255,0.50)"
-      e.currentTarget.style.borderBottomColor = "rgba(255,255,255,0.18)"
-    }}
-  >
-    Chat with AI
-    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M5 12h14M12 5l7 7-7 7" />
-    </svg>
-  </button>
-)}
+              <button
+                onClick={() => {
+                  const orb = document.querySelector('.group.relative.w-20.h-20')
+                  if (orb) orb.click()
+                }}
+                style={{
+                  fontFamily: "'Lato', sans-serif",
+                  fontSize: "12px",
+                  fontWeight: 400,
+                  letterSpacing: "0.06em",
+                  color: "rgba(255,255,255,0.50)",
+                  textDecoration: "none",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "5px",
+                  borderBottom: "1px solid rgba(255,255,255,0.18)",
+                  paddingBottom: "1px",
+                  transition: "color 0.25s, border-color 0.25s",
+                  background: "none",
+                  borderTop: "none",
+                  borderLeft: "none",
+                  borderRight: "none",
+                  cursor: "pointer",
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.color = "#76CDD6"
+                  e.currentTarget.style.borderBottomColor = "#76CDD6"
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.color = "rgba(255,255,255,0.50)"
+                  e.currentTarget.style.borderBottomColor = "rgba(255,255,255,0.18)"
+                }}
+              >
+                Chat with AI
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -520,7 +521,8 @@ export default function Home() {
       const frames = allProducts.filter(product =>
         product.categories?.name === 'Optical Glasses'
       )
-      setFrameProducts(frames.slice(0, 4))
+      // ── CHANGED: fetch up to 8 for desktop (2 rows × 4)
+      setFrameProducts(frames.slice(0, 8))
     } catch (error) {
       console.error('Failed to load frames:', error)
       setFrameProducts([])
@@ -534,7 +536,8 @@ export default function Home() {
       const result = await shopService.getProducts({ limit: 50 })
       const all = result?.data || []
       const sunglasses = all.filter(p => p.categories?.name === 'Sunglasses')
-      setSunglassesProducts(sunglasses.slice(0, 4))
+      // ── CHANGED: fetch up to 8 for desktop (2 rows × 4)
+      setSunglassesProducts(sunglasses.slice(0, 8))
     } catch (error) {
       console.error('Failed to load sunglasses:', error)
       setSunglassesProducts([])
@@ -599,9 +602,9 @@ export default function Home() {
             </div>
             <div className="flex justify-between items-end">
               <h2 className="text-3xl md:text-4xl font-light tracking-tight text-[#1E1D22]">Sunglasses</h2>
-              <Link to="/shop?category=Sunglasses" className="group hidden md:flex items-center gap-2 text-xs font-medium text-gray-400 hover:text-[#1E1D22] transition-all">
+              {/* <Link to="/shop?category=Sunglasses" className="group hidden md:flex items-center gap-2 text-xs font-medium text-gray-400 hover:text-[#1E1D22] transition-all">
                 Shop all <span className="group-hover:translate-x-1 transition-transform duration-200">→</span>
-              </Link>
+              </Link> */}
             </div>
           </div>
 
@@ -611,34 +614,52 @@ export default function Home() {
             <div className="text-center py-16 text-gray-400">No sunglasses available yet.</div>
           ) : (
             <div className="relative">
+              {/* ── MOBILE: grid showing 6 products ── */}
               <div className="grid grid-cols-2 gap-4 md:hidden">
-                {sunglassesProducts.slice(0, 4).map((product) => (
+                {sunglassesProducts.slice(0, 6).map((product) => (
                   <div key={product.product_id}><EyewearCard {...product} /></div>
                 ))}
               </div>
-              <div className="hidden md:flex gap-5 overflow-x-auto pb-2 scroll-smooth hide-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                {sunglassesProducts.map((product) => (
-                  <div key={product.product_id} className="w-[80vw] sm:w-[45vw] md:w-[30vw] lg:w-[21vw] flex-shrink-0">
+
+              {/* ── DESKTOP: 2 rows of 4 in a grid ── */}
+              <div className="hidden md:grid md:grid-cols-4 gap-5">
+                {sunglassesProducts.slice(0, 8).map((product) => (
+                  <div key={product.product_id}>
                     <EyewearCard {...product} />
                   </div>
                 ))}
-                <Link to="/shop?category=sunglasses" className="group w-[80vw] sm:w-[45vw] md:w-[30vw] lg:w-[21vw] flex-shrink-0">
-                  <div className="h-full aspect-[3/4] bg-white rounded-xl flex flex-col items-center justify-center gap-2 border border-gray-200 hover:border-[#76CDD6] transition-all duration-300 hover:shadow-lg group-hover:scale-[0.98]">
-                    <div className="w-12 h-12 rounded-full bg-gray-100 shadow-sm group-hover:bg-[#76CDD6]/10 flex items-center justify-center transition-all duration-300">
-                      <svg className="w-5 h-5 text-gray-400 group-hover:text-[#76CDD6] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                      </svg>
+                {/* "View all" card — only shown if fewer than 8 products fill the grid */}
+                {sunglassesProducts.length < 8 && (
+                  <Link to="/shop?category=sunglasses" className="group">
+                    <div className="h-full aspect-[3/4] bg-white rounded-xl flex flex-col items-center justify-center gap-2 border border-gray-200 hover:border-[#76CDD6] transition-all duration-300 hover:shadow-lg group-hover:scale-[0.98]">
+                      <div className="w-12 h-12 rounded-full bg-gray-100 shadow-sm group-hover:bg-[#76CDD6]/10 flex items-center justify-center transition-all duration-300">
+                        <svg className="w-5 h-5 text-gray-400 group-hover:text-[#76CDD6] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                      </div>
+                      <p className="text-sm font-medium text-gray-500 group-hover:text-[#1E1D22] transition-colors">View all</p>
+                      <p className="text-xs text-gray-400">All sunglasses</p>
                     </div>
-                    <p className="text-sm font-medium text-gray-500 group-hover:text-[#1E1D22] transition-colors">View all</p>
-                    <p className="text-xs text-gray-400">All sunglasses</p>
-                  </div>
-                </Link>
+                  </Link>
+                )}
               </div>
             </div>
           )}
 
+          {/* Desktop: Shop all button */}
+          <div className="hidden md:flex justify-center mt-10">
+            <Link
+              to="/shop?category=sunglasses"
+              className="group inline-flex items-center gap-2 px-7 py-3 rounded-full border border-gray-300 text-sm font-medium text-black-500 hover:border-[#1E1D22] hover:text-[#1E1D22] transition-all duration-300"
+            >
+              Shop all sunglasses
+              <span className="group-hover:translate-x-1 transition-transform duration-200">→</span>
+            </Link>
+          </div>
+
+          {/* Mobile: Shop all link */}
           <div className="text-center mt-8 md:hidden">
-            <Link to="/shop?category=Sunglasses" className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 hover:text-[#1E1D22] transition-colors">
+            <Link to="/shop?category=sunglasses" className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 hover:text-[#1E1D22] transition-colors">
               Shop all sunglasses <span className="text-base">→</span>
             </Link>
           </div>
@@ -658,9 +679,9 @@ export default function Home() {
             </div>
             <div className="flex justify-between items-end">
               <h2 className="text-3xl md:text-4xl font-light tracking-tight text-[#1E1D22]">Frames</h2>
-              <Link to="/shop?category=glasses" className="group hidden md:flex items-center gap-2 text-xs font-medium text-gray-400 hover:text-[#1E1D22] transition-all">
+              {/* <Link to="/shop?category=glasses" className="group hidden md:flex items-center gap-2 text-xs font-medium text-gray-400 hover:text-[#1E1D22] transition-all">
                 Shop all <span className="group-hover:translate-x-1 transition-transform duration-200">→</span>
-              </Link>
+              </Link> */}
             </div>
           </div>
 
@@ -670,69 +691,91 @@ export default function Home() {
             <div className="text-center py-16 text-gray-400">No frames available yet.</div>
           ) : (
             <div className="relative">
+              {/* ── MOBILE: grid showing 6 products ── */}
               <div className="grid grid-cols-2 gap-4 md:hidden">
-                {frameProducts.slice(0, 4).map((product) => (
+                {frameProducts.slice(0, 6).map((product) => (
                   <div key={product.product_id}><EyewearCard {...product} /></div>
                 ))}
               </div>
-              <div className="hidden md:flex gap-5 overflow-x-auto pb-2 scroll-smooth hide-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                {frameProducts.map((product) => (
-                  <div key={product.product_id} className="w-[80vw] sm:w-[45vw] md:w-[30vw] lg:w-[21vw] flex-shrink-0">
+
+              {/* ── DESKTOP: 2 rows of 4 in a grid ── */}
+              <div className="hidden md:grid md:grid-cols-4 gap-5">
+                {frameProducts.slice(0, 8).map((product) => (
+                  <div key={product.product_id}>
                     <EyewearCard {...product} />
                   </div>
                 ))}
-                <Link to="/shop?category=glasses" className="group w-[80vw] sm:w-[45vw] md:w-[30vw] lg:w-[21vw] flex-shrink-0">
-                  <div className="h-full aspect-[3/4] bg-white rounded-xl flex flex-col items-center justify-center gap-2 border border-gray-200 hover:border-[#76CDD6] transition-all duration-300 hover:shadow-lg group-hover:scale-[0.98]">
-                    <div className="w-12 h-12 rounded-full bg-gray-100 shadow-sm group-hover:bg-[#76CDD6]/10 flex items-center justify-center transition-all duration-300">
-                      <svg className="w-5 h-5 text-gray-400 group-hover:text-[#76CDD6] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                      </svg>
+                {/* "View all" card — only shown if fewer than 8 products fill the grid */}
+                {frameProducts.length < 8 && (
+                  <Link to="/shop?category=glasses" className="group">
+                    <div className="h-full aspect-[3/4] bg-white rounded-xl flex flex-col items-center justify-center gap-2 border border-gray-200 hover:border-[#76CDD6] transition-all duration-300 hover:shadow-lg group-hover:scale-[0.98]">
+                      <div className="w-12 h-12 rounded-full bg-gray-100 shadow-sm group-hover:bg-[#76CDD6]/10 flex items-center justify-center transition-all duration-300">
+                        <svg className="w-5 h-5 text-gray-400 group-hover:text-[#76CDD6] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                      </div>
+                      <p className="text-sm font-medium text-gray-500 group-hover:text-[#1E1D22] transition-colors">View all</p>
+                      <p className="text-xs text-gray-400">All frames</p>
                     </div>
-                    <p className="text-sm font-medium text-gray-500 group-hover:text-[#1E1D22] transition-colors">View all</p>
-                    <p className="text-xs text-gray-400">All frames</p>
-                  </div>
-                </Link>
+                  </Link>
+                )}
               </div>
             </div>
           )}
+
+          {/* Desktop: Shop all button */}
+          <div className="hidden md:flex justify-center mt-10">
+            <Link
+              to="/shop?category=glasses"
+              className="group inline-flex items-center gap-2 px-7 py-3 rounded-full border border-gray-300 text-sm font-medium text-black-500 hover:border-[#1E1D22] hover:text-[#1E1D22] transition-all duration-300"
+            >
+              Shop all frames
+              <span className="group-hover:translate-x-1 transition-transform duration-200">→</span>
+            </Link>
+          </div>
+
+          {/* Mobile: Shop all link */}
           <div className="text-center mt-8 md:hidden">
-            <Link to="/shop?category=Optical%20Glasses" className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 hover:text-[#1E1D22] transition-colors">
+            <Link to="/shop?category=glasses" className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 hover:text-[#1E1D22] transition-colors">
               Shop all frames <span className="text-base">→</span>
             </Link>
           </div>
         </div>
       </section>
 
+      {/* BANNER — after Frames section */}
+      {/* <TopBanner /> */}
+
       {/* Testimonials Section */}
       {approvedReviews.length > 0 ? (
         <section className="px-6 md:px-16 py-20 bg-[#EFF8FE] overflow-visible">
-    <div className="max-w-7xl mx-auto overflow-visible">
-      <div className="text-center mb-12">
-        <div className="flex items-center justify-center gap-3 mb-3">
-          <span className="inline-block w-8 h-px bg-[#76CDD6]" />
-          <span className="text-[11px] font-medium text-gray-400 uppercase tracking-[0.2em]">Testimonials</span>
-          <span className="inline-block w-8 h-px bg-[#76CDD6]" />
-        </div>
-        <h2 className="text-3xl md:text-4xl font-light tracking-tight text-[#1E1D22]">What our <span className="font-medium">customers say</span></h2>
-        <p className="text-gray-400 text-sm mt-3 max-w-md mx-auto">Real stories from people who found their perfect fit</p>
-      </div>
-      <div className="overflow-visible py-8">
-        <Testimonials testimonials={approvedReviews} />
-      </div>
-    </div>
-  </section>
-) : (
-  <section className="px-6 md:px-16 py-20 bg-[#EFF8FE] overflow-visible">
-    <div className="max-w-7xl mx-auto text-center">
-      <div className="flex items-center justify-center gap-3 mb-3">
-        <span className="inline-block w-8 h-px bg-[#76CDD6]" />
-        <span className="text-[11px] font-medium text-gray-400 uppercase tracking-[0.2em]">Testimonials</span>
-        <span className="inline-block w-8 h-px bg-[#76CDD6]" />
-      </div>
-      <h2 className="text-3xl md:text-4xl font-light tracking-tight text-[#1E1D22] mb-6">What our <span className="font-medium">customers say</span></h2>
-      <div className="bg-white/50 rounded-xl p-8 text-center text-sm text-gray-400 max-w-md mx-auto">Be the first to leave a review!</div>
-    </div>
-  </section>
+          <div className="max-w-7xl mx-auto overflow-visible">
+            <div className="text-center mb-12">
+              <div className="flex items-center justify-center gap-3 mb-3">
+                <span className="inline-block w-8 h-px bg-[#76CDD6]" />
+                <span className="text-[11px] font-medium text-gray-400 uppercase tracking-[0.2em]">Testimonials</span>
+                <span className="inline-block w-8 h-px bg-[#76CDD6]" />
+              </div>
+              <h2 className="text-3xl md:text-4xl font-light tracking-tight text-[#1E1D22]">What our <span className="font-medium">customers say</span></h2>
+              <p className="text-gray-400 text-sm mt-3 max-w-md mx-auto">Real stories from people who found their perfect fit</p>
+            </div>
+            <div className="overflow-visible py-8">
+              <Testimonials testimonials={approvedReviews} />
+            </div>
+          </div>
+        </section>
+      ) : (
+        <section className="px-6 md:px-16 py-20 bg-[#EFF8FE] overflow-visible">
+          <div className="max-w-7xl mx-auto text-center">
+            <div className="flex items-center justify-center gap-3 mb-3">
+              <span className="inline-block w-8 h-px bg-[#76CDD6]" />
+              <span className="text-[11px] font-medium text-gray-400 uppercase tracking-[0.2em]">Testimonials</span>
+              <span className="inline-block w-8 h-px bg-[#76CDD6]" />
+            </div>
+            <h2 className="text-3xl md:text-4xl font-light tracking-tight text-[#1E1D22] mb-6">What our <span className="font-medium">customers say</span></h2>
+            <div className="bg-white/50 rounded-xl p-8 text-center text-sm text-gray-400 max-w-md mx-auto">Be the first to leave a review!</div>
+          </div>
+        </section>
       )}
 
       {/* CONTACT LENSES SECTION */}
@@ -745,9 +788,9 @@ export default function Home() {
             </div>
             <div className="flex justify-between items-end">
               <h2 className="text-3xl md:text-4xl font-light tracking-tight text-[#1E1D22]">Contact Lenses</h2>
-              <Link to="/shop?category=lenses" className="group hidden md:flex items-center gap-2 text-xs font-medium text-gray-400 hover:text-[#1E1D22] transition-all">
+              {/* <Link to="/shop?category=lenses" className="group hidden md:flex items-center gap-2 text-xs font-medium text-gray-400 hover:text-[#1E1D22] transition-all">
                 Shop all <span className="group-hover:translate-x-1 transition-transform duration-200">→</span>
-              </Link>
+              </Link> */}
             </div>
           </div>
 
@@ -755,33 +798,52 @@ export default function Home() {
             <div className="text-center py-16 text-gray-400">Loading...</div>
           ) : (
             <div className="relative">
+              {/* ── MOBILE: grid showing 6 products ── */}
               <div className="grid grid-cols-2 gap-4 md:hidden">
-                {newProducts.filter(p => p.categories?.name === 'Lenses').slice(0, 4).map((product) => (
+                {newProducts.filter(p => p.categories?.name === 'Lenses').slice(0, 6).map((product) => (
                   <div key={product.product_id}>
                     <EyewearCard {...product} />
                   </div>
                 ))}
               </div>
-              <div className="hidden md:flex gap-5 overflow-x-auto pb-2 scroll-smooth hide-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                {newProducts.filter(p => p.categories?.name === 'Lenses').slice(0, 4).map((product) => (
-                  <div key={product.product_id} className="w-[80vw] sm:w-[45vw] md:w-[30vw] lg:w-[21vw] flex-shrink-0">
+
+              {/* ── DESKTOP: 2 rows of 4 in a grid ── */}
+              <div className="hidden md:grid md:grid-cols-4 gap-5">
+                {newProducts.filter(p => p.categories?.name === 'Lenses').slice(0, 8).map((product) => (
+                  <div key={product.product_id}>
                     <EyewearCard {...product} />
                   </div>
                 ))}
-                <Link to="/shop?category=lenses" className="group w-[80vw] sm:w-[45vw] md:w-[30vw] lg:w-[21vw] flex-shrink-0">
-                  <div className="h-full aspect-[3/4] bg-white rounded-xl flex flex-col items-center justify-center gap-2 border border-gray-200 hover:border-[#76CDD6] transition-all duration-300 hover:shadow-lg group-hover:scale-[0.98]">
-                    <div className="w-12 h-12 rounded-full bg-gray-100 shadow-sm group-hover:bg-[#76CDD6]/10 flex items-center justify-center transition-all duration-300">
-                      <svg className="w-5 h-5 text-gray-400 group-hover:text-[#76CDD6] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                      </svg>
+                {/* "View all" card — only shown if fewer than 8 lenses fill the grid */}
+                {newProducts.filter(p => p.categories?.name === 'Lenses').length < 8 && (
+                  <Link to="/shop?category=lenses" className="group">
+                    <div className="h-full aspect-[3/4] bg-white rounded-xl flex flex-col items-center justify-center gap-2 border border-gray-200 hover:border-[#76CDD6] transition-all duration-300 hover:shadow-lg group-hover:scale-[0.98]">
+                      <div className="w-12 h-12 rounded-full bg-gray-100 shadow-sm group-hover:bg-[#76CDD6]/10 flex items-center justify-center transition-all duration-300">
+                        <svg className="w-5 h-5 text-gray-400 group-hover:text-[#76CDD6] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                      </div>
+                      <p className="text-sm font-medium text-gray-500 group-hover:text-[#1E1D22] transition-colors">View all</p>
+                      <p className="text-xs text-gray-400">Contact Lenses</p>
                     </div>
-                    <p className="text-sm font-medium text-gray-500 group-hover:text-[#1E1D22] transition-colors">View all</p>
-                    <p className="text-xs text-gray-400">Contact Lenses</p>
-                  </div>
-                </Link>
+                  </Link>
+                )}
               </div>
             </div>
           )}
+
+          {/* Desktop: Shop all button */}
+          <div className="hidden md:flex justify-center mt-10">
+            <Link
+              to="/shop?category=lenses"
+              className="group inline-flex items-center gap-2 px-7 py-3 rounded-full border border-gray-300 text-sm font-medium text-black-500 hover:border-[#1E1D22] hover:text-[#1E1D22] transition-all duration-300"
+            >
+              Shop all contact lenses
+              <span className="group-hover:translate-x-1 transition-transform duration-200">→</span>
+            </Link>
+          </div>
+
+          {/* Mobile: Shop all link */}
           <div className="text-center mt-8 md:hidden">
             <Link to="/shop?category=lenses" className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 hover:text-[#1E1D22] transition-colors">
               Shop all contact lenses <span className="text-base">→</span>
@@ -929,7 +991,7 @@ export default function Home() {
           </div>
 
           <div className="text-center mt-12">
-            <Link to="/blogs" className="inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-[#1E1D22] border-b border-gray-300 hover:border-[#76CDD6] transition-all duration-300 pb-0.5">View all articles <span className="text-lg">→</span></Link>
+            <Link to="/blogs" className="inline-flex items-center gap-2 text-sm font-medium text-black-500 hover:text-[#1E1D22] border-b border-gray-300 hover:border-[#76CDD6] transition-all duration-300 pb-0.5">View all articles <span className="text-lg">→</span></Link>
           </div>
         </div>
       </section>
