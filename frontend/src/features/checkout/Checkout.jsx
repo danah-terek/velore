@@ -825,8 +825,12 @@ discount_amount: discountSafe + pointsDiscountSafe,
                     const hasPrescription = prescription && (prescription.sph_r || prescription.sph_l || prescription.cyl_r || prescription.cyl_l || prescription.axis || prescription.pd)
                     const itemName = item.products?.name || item.name || 'Product'
                     const itemPrice = parseFloat(item.products?.price || item.price || 0)
-                    const itemImage = item.products?.image || item.products?.product_variants?.[0]?.images?.[0] || item.image || null
-
+const itemImage =
+  item.products?.image ||
+  item.product_variants?.images?.[0] ||
+  item.products?.product_variants?.[0]?.images?.[0] ||
+  item.image ||
+  null
                     return (
                       <div key={index} className="flex gap-3 pb-4 mb-4 border-b border-gray-100">
                         <div className="w-12 h-12 bg-gray-100 rounded-sm overflow-hidden flex-shrink-0">

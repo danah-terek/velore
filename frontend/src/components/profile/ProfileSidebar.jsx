@@ -55,15 +55,13 @@ function StatCard({ icon: Icon, label, value }) {
 }
 
 function OrderItem({ item, order, onReviewClick }) {
+  console.log('ITEM:', JSON.stringify(item, null, 2))
   return (
     <div className="flex items-center gap-3 py-3 border-b border-stone-100 last:border-0">
-      <img
-        src={resolveImageUrl(item.image || item.products?.image || item.products?.product_variants?.[0]?.images?.[0]) || ''}
-        alt={item.products?.name || item.name || 'Product'}
-        className="w-12 h-12 rounded-lg object-cover bg-stone-50"
-        loading="lazy"
-        onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '' }}
-      />
+{(item.products?.image || item.product_variants?.images?.[0] || item.products?.product_variants?.[0]?.images?.[0] || item.image)
+        ? <img src={item.products?.image || item.product_variants?.images?.[0] || item.products?.product_variants?.[0]?.images?.[0] || item.image} alt={item.products?.name || item.name || 'Product'} className="w-12 h-12 rounded-lg object-cover bg-stone-50 flex-shrink-0" loading="lazy" />
+        : <div className="w-12 h-12 rounded-lg bg-stone-100 flex items-center justify-center flex-shrink-0"><Package size={16} className="text-stone-300" /></div>
+      }
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-stone-800 truncate">
           {item.products?.name || item.name || 'Product'}
