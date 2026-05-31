@@ -489,26 +489,26 @@ export default function Checkout() {
   const total = Math.max(0, subtotal + shipping - discountSafe - pointsDiscountSafe)
 
   const applyDiscount = async () => {
-    if (cartIsEmpty || !discountCode) return
-    setDiscountError('')
-    try {
-      const res = await fetch('/api/v1/discounts/validate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code: discountCode, orderTotal: subtotal })
-      })
-      const result = await res.json()
-      if (result.valid) {
-        setDiscountAmount(result.discountAmount)
-        setDiscountApplied(true)
-        setDiscountError('')
-      } else {
-        setDiscountError(result.message || 'Invalid discount code')
-      }
-    } catch (e) {
-      setDiscountError('Failed to apply discount code. Please try again.')
+  if (cartIsEmpty || !discountCode) return
+  setDiscountError('')
+  try {
+    const res = await fetch('http://localhost:3000/api/v1/discounts/validate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: discountCode, orderTotal: subtotal })
+    })
+    const result = await res.json()
+    if (result.valid) {
+      setDiscountAmount(result.discountAmount)
+      setDiscountApplied(true)
+      setDiscountError('')
+    } else {
+      setDiscountError(result.message || 'Invalid discount code')
     }
+  } catch (e) {
+    setDiscountError('Failed to apply discount code. Please try again.')
   }
+}
 
   const validateForm = () => {
     const errors = {}
