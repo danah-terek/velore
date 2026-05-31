@@ -422,37 +422,45 @@ function HeroSection() {
 
             {/* Try-On link — only shown on photo slide */}
             {content.showTryOn && (
-              <Link
-                to="/try-on"
-                style={{
-                  fontFamily: "'Lato', sans-serif",
-                  fontSize: "12px",
-                  fontWeight: 400,
-                  letterSpacing: "0.06em",
-                  color: "rgba(255,255,255,0.50)",
-                  textDecoration: "none",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "5px",
-                  borderBottom: "1px solid rgba(255,255,255,0.18)",
-                  paddingBottom: "1px",
-                  transition: "color 0.25s, border-color 0.25s",
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.color = "#76CDD6"
-                  e.currentTarget.style.borderBottomColor = "#76CDD6"
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.color = "rgba(255,255,255,0.50)"
-                  e.currentTarget.style.borderBottomColor = "rgba(255,255,255,0.18)"
-                }}
-              >
-                Virtual Try-On
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M5 12h14M12 5l7 7-7 7" />
-                </svg>
-              </Link>
-            )}
+  <button
+    onClick={() => {
+      const orb = document.querySelector('.group.relative.w-20.h-20')
+      if (orb) orb.click()
+    }}
+    style={{
+      fontFamily: "'Lato', sans-serif",
+      fontSize: "12px",
+      fontWeight: 400,
+      letterSpacing: "0.06em",
+      color: "rgba(255,255,255,0.50)",
+      textDecoration: "none",
+      display: "inline-flex",
+      alignItems: "center",
+      gap: "5px",
+      borderBottom: "1px solid rgba(255,255,255,0.18)",
+      paddingBottom: "1px",
+      transition: "color 0.25s, border-color 0.25s",
+      background: "none",
+      borderTop: "none",
+      borderLeft: "none",
+      borderRight: "none",
+      cursor: "pointer",
+    }}
+    onMouseEnter={e => {
+      e.currentTarget.style.color = "#76CDD6"
+      e.currentTarget.style.borderBottomColor = "#76CDD6"
+    }}
+    onMouseLeave={e => {
+      e.currentTarget.style.color = "rgba(255,255,255,0.50)"
+      e.currentTarget.style.borderBottomColor = "rgba(255,255,255,0.18)"
+    }}
+  >
+    Chat with AI
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 12h14M12 5l7 7-7 7" />
+    </svg>
+  </button>
+)}
           </div>
         </div>
       </div>
@@ -614,7 +622,7 @@ export default function Home() {
                     <EyewearCard {...product} />
                   </div>
                 ))}
-                <Link to="/shop?category=Sunglasses" className="group w-[80vw] sm:w-[45vw] md:w-[30vw] lg:w-[21vw] flex-shrink-0">
+                <Link to="/shop?category=sunglasses" className="group w-[80vw] sm:w-[45vw] md:w-[30vw] lg:w-[21vw] flex-shrink-0">
                   <div className="h-full aspect-[3/4] bg-white rounded-xl flex flex-col items-center justify-center gap-2 border border-gray-200 hover:border-[#76CDD6] transition-all duration-300 hover:shadow-lg group-hover:scale-[0.98]">
                     <div className="w-12 h-12 rounded-full bg-gray-100 shadow-sm group-hover:bg-[#76CDD6]/10 flex items-center justify-center transition-all duration-300">
                       <svg className="w-5 h-5 text-gray-400 group-hover:text-[#76CDD6] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -650,7 +658,7 @@ export default function Home() {
             </div>
             <div className="flex justify-between items-end">
               <h2 className="text-3xl md:text-4xl font-light tracking-tight text-[#1E1D22]">Frames</h2>
-              <Link to="/shop?category=Optical%20Glasses" className="group hidden md:flex items-center gap-2 text-xs font-medium text-gray-400 hover:text-[#1E1D22] transition-all">
+              <Link to="/shop?category=glasses" className="group hidden md:flex items-center gap-2 text-xs font-medium text-gray-400 hover:text-[#1E1D22] transition-all">
                 Shop all <span className="group-hover:translate-x-1 transition-transform duration-200">→</span>
               </Link>
             </div>
@@ -673,7 +681,7 @@ export default function Home() {
                     <EyewearCard {...product} />
                   </div>
                 ))}
-                <Link to="/shop?category=Optical%20Glasses" className="group w-[80vw] sm:w-[45vw] md:w-[30vw] lg:w-[21vw] flex-shrink-0">
+                <Link to="/shop?category=glasses" className="group w-[80vw] sm:w-[45vw] md:w-[30vw] lg:w-[21vw] flex-shrink-0">
                   <div className="h-full aspect-[3/4] bg-white rounded-xl flex flex-col items-center justify-center gap-2 border border-gray-200 hover:border-[#76CDD6] transition-all duration-300 hover:shadow-lg group-hover:scale-[0.98]">
                     <div className="w-12 h-12 rounded-full bg-gray-100 shadow-sm group-hover:bg-[#76CDD6]/10 flex items-center justify-center transition-all duration-300">
                       <svg className="w-5 h-5 text-gray-400 group-hover:text-[#76CDD6] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -737,7 +745,7 @@ export default function Home() {
             </div>
             <div className="flex justify-between items-end">
               <h2 className="text-3xl md:text-4xl font-light tracking-tight text-[#1E1D22]">Contact Lenses</h2>
-              <Link to="/shop?category=Lenses" className="group hidden md:flex items-center gap-2 text-xs font-medium text-gray-400 hover:text-[#1E1D22] transition-all">
+              <Link to="/shop?category=lenses" className="group hidden md:flex items-center gap-2 text-xs font-medium text-gray-400 hover:text-[#1E1D22] transition-all">
                 Shop all <span className="group-hover:translate-x-1 transition-transform duration-200">→</span>
               </Link>
             </div>
@@ -760,7 +768,7 @@ export default function Home() {
                     <EyewearCard {...product} />
                   </div>
                 ))}
-                <Link to="/shop?category=Lenses" className="group w-[80vw] sm:w-[45vw] md:w-[30vw] lg:w-[21vw] flex-shrink-0">
+                <Link to="/shop?category=lenses" className="group w-[80vw] sm:w-[45vw] md:w-[30vw] lg:w-[21vw] flex-shrink-0">
                   <div className="h-full aspect-[3/4] bg-white rounded-xl flex flex-col items-center justify-center gap-2 border border-gray-200 hover:border-[#76CDD6] transition-all duration-300 hover:shadow-lg group-hover:scale-[0.98]">
                     <div className="w-12 h-12 rounded-full bg-gray-100 shadow-sm group-hover:bg-[#76CDD6]/10 flex items-center justify-center transition-all duration-300">
                       <svg className="w-5 h-5 text-gray-400 group-hover:text-[#76CDD6] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -775,7 +783,7 @@ export default function Home() {
             </div>
           )}
           <div className="text-center mt-8 md:hidden">
-            <Link to="/shop?category=Lenses" className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 hover:text-[#1E1D22] transition-colors">
+            <Link to="/shop?category=lenses" className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 hover:text-[#1E1D22] transition-colors">
               Shop all contact lenses <span className="text-base">→</span>
             </Link>
           </div>

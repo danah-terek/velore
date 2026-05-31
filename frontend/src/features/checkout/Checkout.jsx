@@ -12,28 +12,28 @@ const FREE_SHIPPING_THRESHOLD = 50
 
 const WhishLogo = () => (
   <svg width="70" height="26" viewBox="0 0 140 52" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect width="140" height="52" rx="7" fill="#E8001C"/>
+    <rect width="140" height="52" rx="7" fill="#E8001C" />
     <text x="13" y="36" fontFamily="'Arial Black', 'Arial Bold', Arial, sans-serif" fontSize="25" fontWeight="900" fill="white" letterSpacing="-0.5">whish</text>
-    <circle cx="120" cy="18" r="4.5" fill="white" opacity="0.85"/>
-    <circle cx="128" cy="26" r="3.5" fill="white" opacity="0.6"/>
-    <circle cx="120" cy="34" r="2.5" fill="white" opacity="0.4"/>
+    <circle cx="120" cy="18" r="4.5" fill="white" opacity="0.85" />
+    <circle cx="128" cy="26" r="3.5" fill="white" opacity="0.6" />
+    <circle cx="120" cy="34" r="2.5" fill="white" opacity="0.4" />
   </svg>
 )
 
 const VisaLogo = () => (
   <svg width="44" height="28" viewBox="0 0 880 560" xmlns="http://www.w3.org/2000/svg">
-    <rect width="880" height="560" rx="50" fill="#1A1F71"/>
-    <rect y="460" width="880" height="100" rx="0" fill="#F7A600"/>
+    <rect width="880" height="560" rx="50" fill="#1A1F71" />
+    <rect y="460" width="880" height="100" rx="0" fill="#F7A600" />
     <text x="440" y="390" textAnchor="middle" fontFamily="'Times New Roman', Georgia, serif" fontSize="310" fontWeight="bold" fontStyle="italic" fill="white">VISA</text>
   </svg>
 )
 
 const MastercardLogo = () => (
   <svg width="44" height="28" viewBox="0 0 152 96" xmlns="http://www.w3.org/2000/svg">
-    <rect width="152" height="96" rx="9" fill="#1A1A1A"/>
-    <circle cx="55" cy="48" r="32" fill="#EB001B"/>
-    <circle cx="97" cy="48" r="32" fill="#F79E1B"/>
-    <path d="M76 20.5a32 32 0 0 1 0 55A32 32 0 0 1 76 20.5z" fill="#FF5F00"/>
+    <rect width="152" height="96" rx="9" fill="#1A1A1A" />
+    <circle cx="55" cy="48" r="32" fill="#EB001B" />
+    <circle cx="97" cy="48" r="32" fill="#F79E1B" />
+    <path d="M76 20.5a32 32 0 0 1 0 55A32 32 0 0 1 76 20.5z" fill="#FF5F00" />
   </svg>
 )
 
@@ -131,9 +131,9 @@ function CardPaymentModal({ total, onClose, onSubmit }) {
     if (!cardHolder.trim()) newErrors.cardHolder = 'Cardholder name is required'
     if (expiry.length < 5) newErrors.expiry = 'Enter valid expiry (MM/YY)'
     if (cvv.length < 3) newErrors.cvv = 'Enter valid CVV'
-    
+
     setErrors(newErrors)
-    
+
     if (Object.keys(newErrors).length === 0) {
       onSubmit({
         cardNumber: cardNumber.replace(/\s/g, ''),
@@ -153,7 +153,7 @@ function CardPaymentModal({ total, onClose, onSubmit }) {
             <X size={20} />
           </button>
         </div>
-        
+
         <div className="space-y-4">
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1">Card Number</label>
@@ -172,7 +172,7 @@ function CardPaymentModal({ total, onClose, onSubmit }) {
             </div>
             {errors.cardNumber && <p className="text-red-500 text-xs mt-1">{errors.cardNumber}</p>}
           </div>
-          
+
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1">Cardholder Name</label>
             <input
@@ -184,7 +184,7 @@ function CardPaymentModal({ total, onClose, onSubmit }) {
             />
             {errors.cardHolder && <p className="text-red-500 text-xs mt-1">{errors.cardHolder}</p>}
           </div>
-          
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">Expiry Date</label>
@@ -224,7 +224,7 @@ function CardPaymentModal({ total, onClose, onSubmit }) {
           >
             Pay ${total}
           </button>
-          
+
           <p className="text-xs text-gray-400 text-center mt-2">
             🔒 This is a simulation. No real payment will be processed.
           </p>
@@ -273,7 +273,7 @@ function WhishPaymentModal({ total, onClose, onSubmit }) {
               <WhishLogo />
               <span className="text-sm text-gray-500">Pay with Whish</span>
             </div>
-            
+
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">Phone Number</label>
               <input
@@ -299,7 +299,7 @@ function WhishPaymentModal({ total, onClose, onSubmit }) {
               <p className="text-sm text-gray-500">Enter your Whish PIN to confirm</p>
               <p className="text-xs text-gray-400 mt-1">Phone: {phone}</p>
             </div>
-            
+
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">Whish PIN</label>
               <input
@@ -334,7 +334,7 @@ function WhishPaymentModal({ total, onClose, onSubmit }) {
                 Confirm Payment
               </button>
             </div>
-            
+
             <p className="text-xs text-gray-400 text-center mt-2">
               🔒 This is a simulation. No real payment will be processed.
             </p>
@@ -369,9 +369,9 @@ export default function Checkout() {
   })
   const [selectedPayment, setSelectedPayment] = useState('cod')
   const [discountCode, setDiscountCode] = useState('')
-const [discountApplied, setDiscountApplied] = useState(false)
-const [discountAmount, setDiscountAmount] = useState(0)
-const [discountError, setDiscountError] = useState('')
+  const [discountApplied, setDiscountApplied] = useState(false)
+  const [discountAmount, setDiscountAmount] = useState(0)
+  const [discountError, setDiscountError] = useState('')
   // ✅ LOYALTY POINTS STATE
   const [loyaltyPoints, setLoyaltyPoints] = useState(0)
   const [pointsRedeemed, setPointsRedeemed] = useState(false)
@@ -401,28 +401,28 @@ const [discountError, setDiscountError] = useState('')
   useEffect(() => {
     const autofillCheckoutForm = async () => {
       const token = localStorage.getItem('token') || sessionStorage.getItem('token')
-      
+
       if (!token) return
-      
+
       try {
         const response = await fetch('/api/v1/auth/profile', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         })
-        
+
         if (!response.ok) throw new Error('Failed to fetch profile')
-        
+
         const result = await response.json()
         const userData = result?.data
-        
+
         if (!userData) return
-        
+
         setContactInfo({ email: userData.email || '' })
-        
+
         if (userData.addresses && userData.addresses.length > 0) {
           const defaultAddr = userData.addresses[0]
-          
+
           setShippingAddress({
             country: defaultAddr.country || 'Lebanon',
             firstName: userData.name?.split(' ')[0] || '',
@@ -440,13 +440,13 @@ const [discountError, setDiscountError] = useState('')
             lastName: nameParts.slice(1).join(' ') || ''
           }))
         }
-        
+
         setIsAutofilled(true)
       } catch (error) {
         console.error('Auto-fill checkout failed:', error)
       }
     }
-    
+
     autofillCheckoutForm()
   }, [])
 
@@ -488,11 +488,11 @@ const [discountError, setDiscountError] = useState('')
   const pointsDiscountSafe = cartIsEmpty ? 0 : pointsDiscount
   const total = Math.max(0, subtotal + shipping - discountSafe - pointsDiscountSafe)
 
-const applyDiscount = async () => {
+  const applyDiscount = async () => {
   if (cartIsEmpty || !discountCode) return
   setDiscountError('')
   try {
-    const res = await fetch('/api/v1/discounts/validate', {
+    const res = await fetch('http://localhost:3000/api/v1/discounts/validate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ code: discountCode, orderTotal: subtotal })
@@ -519,7 +519,12 @@ const applyDiscount = async () => {
     if (!shippingAddress.lastName.trim()) errors.lastName = 'Last name is required'
     if (!shippingAddress.address.trim()) errors.address = 'Address is required'
     if (!shippingAddress.city.trim()) errors.city = 'City is required'
-    if (!shippingAddress.phone.trim()) errors.phone = 'Phone is required'
+    const phoneDigits = shippingAddress.phone.replace(/\D/g, '')
+    if (!phoneDigits) {
+      errors.phone = 'Phone is required'
+    } else if (phoneDigits.length !== 8) {
+      errors.phone = 'Phone must be exactly 8 digits'
+    }
     setFieldErrors(errors)
     return Object.keys(errors).length === 0
   }
@@ -540,11 +545,11 @@ const applyDiscount = async () => {
 
   const buildOrderPayload = () => {
     const token = localStorage.getItem('token') || sessionStorage.getItem('token')
-    
+
     const payload = {
       payment_method: selectedPayment,
       discount_code: discountApplied ? discountCode : null,
-discount_amount: discountSafe + pointsDiscountSafe,
+      discount_amount: discountSafe + pointsDiscountSafe,
       email: contactInfo.email,
       name: `${shippingAddress.firstName} ${shippingAddress.lastName}`,
       phone: shippingAddress.phone,
@@ -643,7 +648,7 @@ discount_amount: discountSafe + pointsDiscountSafe,
 
   const ctaLabel = () => {
     if (loading) return 'Processing...'
-   if (selectedPayment === 'whish') return `PAY WITH WHISH  •  ${formatPrice(total)}`
+    if (selectedPayment === 'whish') return `PAY WITH WHISH  •  ${formatPrice(total)}`
     if (selectedPayment === 'mastercard') return `PAY BY CARD  •  ${formatPrice(total)}`
     return `CONFIRM ORDER  •  ${formatPrice(total)}`
   }
@@ -658,7 +663,7 @@ discount_amount: discountSafe + pointsDiscountSafe,
           onSubmit={handleCardFormSubmit}
         />
       )}
-      
+
       {showWhishForm && (
         <WhishPaymentModal
           total={total.toFixed(2)}
@@ -757,7 +762,11 @@ discount_amount: discountSafe + pointsDiscountSafe,
                     <input type="text" placeholder="Postal code" value={shippingAddress.postalCode} onChange={(e) => handleShippingChange('postalCode', e.target.value.replace(/\D/g, ''))} className="border border-gray-300 px-4 py-3 text-sm outline-none focus:border-gray-900 rounded-sm" />
                   </div>
                   <div>
-                    <input type="tel" placeholder="Phone" value={shippingAddress.phone} onChange={(e) => handleShippingChange('phone', e.target.value.replace(/\D/g, ''))} className={`w-full border px-4 py-3 text-sm outline-none rounded-sm ${fieldErrors.phone ? 'border-red-500' : 'border-gray-300 focus:border-gray-900'}`} />
+                    <input type="tel" placeholder="Phone" value={shippingAddress.phone} onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '')
+                      if (value.length <= 8) handleShippingChange('phone', value)
+                    }}
+                      maxLength={8} className={`w-full border px-4 py-3 text-sm outline-none rounded-sm ${fieldErrors.phone ? 'border-red-500' : 'border-gray-300 focus:border-gray-900'}`} />
                     {fieldErrors.phone && <p className="text-red-500 text-xs mt-1">{fieldErrors.phone}</p>}
                   </div>
                 </div>
@@ -773,13 +782,12 @@ discount_amount: discountSafe + pointsDiscountSafe,
                   {PAYMENT_METHODS.map(method => (
                     <label
                       key={method.id}
-                      className={`flex items-center gap-4 p-4 border-2 rounded-sm transition-all ${
-                        cartIsEmpty
-                          ? 'border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed'
-                          : selectedPayment === method.id
-                            ? 'border-green-500 bg-green-50 cursor-pointer'
-                            : 'border-gray-200 hover:border-gray-300 cursor-pointer'
-                      }`}
+                      className={`flex items-center gap-4 p-4 border-2 rounded-sm transition-all ${cartIsEmpty
+                        ? 'border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed'
+                        : selectedPayment === method.id
+                          ? 'border-green-500 bg-green-50 cursor-pointer'
+                          : 'border-gray-200 hover:border-gray-300 cursor-pointer'
+                        }`}
                     >
                       <input
                         type="radio"
@@ -825,12 +833,12 @@ discount_amount: discountSafe + pointsDiscountSafe,
                     const hasPrescription = prescription && (prescription.sph_r || prescription.sph_l || prescription.cyl_r || prescription.cyl_l || prescription.axis || prescription.pd)
                     const itemName = item.products?.name || item.name || 'Product'
                     const itemPrice = parseFloat(item.products?.price || item.price || 0)
-const itemImage =
-  item.products?.image ||
-  item.product_variants?.images?.[0] ||
-  item.products?.product_variants?.[0]?.images?.[0] ||
-  item.image ||
-  null
+                    const itemImage =
+                      item.products?.image ||
+                      item.product_variants?.images?.[0] ||
+                      item.products?.product_variants?.[0]?.images?.[0] ||
+                      item.image ||
+                      null
                     return (
                       <div key={index} className="flex gap-3 pb-4 mb-4 border-b border-gray-100">
                         <div className="w-12 h-12 bg-gray-100 rounded-sm overflow-hidden flex-shrink-0">
@@ -854,7 +862,7 @@ const itemImage =
                             </div>
                           )}
                         </div>
-<p className="text-sm font-semibold">{formatPrice(itemPrice * item.quantity)}</p>                      </div>
+                        <p className="text-sm font-semibold">{formatPrice(itemPrice * item.quantity)}</p>                      </div>
                     )
                   })
                 )}
@@ -894,20 +902,26 @@ const itemImage =
                 {/* Discount Code */}
                 <div className="mb-4 pb-4 border-b border-gray-100">
                   <div className="flex gap-2">
-                    <input type="text" placeholder="Discount code" value={discountCode} onChange={(e) => setDiscountCode(e.target.value)} disabled={discountApplied} className="flex-1 border border-gray-300 px-3 py-2 text-sm outline-none rounded-sm disabled:bg-gray-100" />
-                    <button onClick={applyDiscount} disabled={discountApplied || !discountCode} className="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium hover:bg-gray-200 rounded-sm disabled:opacity-50">Apply</button>
+                    <input
+                      type="text"
+                      placeholder="Discount code"
+                      value={discountCode}
+                      onChange={(e) => setDiscountCode(e.target.value)}
+                      disabled={discountApplied}
+                      className="flex-1 border border-gray-300 px-3 py-2 text-sm outline-none rounded-sm disabled:bg-gray-100"
+                    /><button onClick={applyDiscount} disabled={discountApplied || !discountCode} className="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium hover:bg-gray-200 rounded-sm disabled:opacity-50">Apply</button>
                   </div>
-                  
+
                   {/* ✅ Discount hints - shown only when no discount is applied */}
-{!discountApplied && (
-  <div className="mt-2">
-    {discountError
-      ? <p className="text-xs text-red-500">{discountError}</p>
-      : <p className="text-xs text-gray-400">Enter a valid discount code to get a discount</p>
-    }
-  </div>
-)}
-                  
+                  {!discountApplied && (
+                    <div className="mt-2">
+                      {discountError
+                        ? <p className="text-xs text-red-500">{discountError}</p>
+                        : <p className="text-xs text-gray-400">Enter a valid discount code to get a discount</p>
+                      }
+                    </div>
+                  )}
+
                   {discountApplied && (
                     <p className="text-green-600 text-xs mt-2 flex items-center gap-1">
                       <Tag size={12} /> Discount applied!
@@ -917,17 +931,17 @@ const itemImage =
                 </div>
 
                 <div className="space-y-2 text-sm">
-<div className="flex justify-between"><span className="text-gray-600">Subtotal</span><span>{formatPrice(subtotal)}</span></div>
-{discountSafe > 0 && <div className="flex justify-between text-green-600"><span>Discount</span><span>-{formatPrice(discountSafe)}</span></div>}                  {/* ✅ POINTS DISCOUNT LINE */}
+                  <div className="flex justify-between"><span className="text-gray-600">Subtotal</span><span>{formatPrice(subtotal)}</span></div>
+                  {discountSafe > 0 && <div className="flex justify-between text-green-600"><span>Discount</span><span>-{formatPrice(discountSafe)}</span></div>}                  {/* ✅ POINTS DISCOUNT LINE */}
                   {pointsDiscountSafe > 0 && (
                     <div className="flex justify-between text-green-600">
                       <span>Points Discount</span>
-<span>-{formatPrice(pointsDiscountSafe)}</span>
+                      <span>-{formatPrice(pointsDiscountSafe)}</span>
                     </div>
                   )}
                   <div className="flex justify-between"><span className="text-gray-600">Shipping</span><span className={shipping === 0 ? 'text-green-600' : ''}>{shipping === 0 ? 'FREE' : formatPrice(shipping)}</span></div>
                   <div className="border-t border-gray-200 pt-2 mt-2">
-<div className="flex justify-between font-semibold text-base"><span>Total</span><span>{formatPrice(total)}</span></div>                  </div>
+                    <div className="flex justify-between font-semibold text-base"><span>Total</span><span>{formatPrice(total)}</span></div>                  </div>
                 </div>
 
                 <div className="flex items-center justify-center gap-4 my-4 py-3 border-y border-gray-100">

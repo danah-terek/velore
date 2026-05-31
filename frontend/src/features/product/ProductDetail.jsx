@@ -1,12 +1,14 @@
 import { useParams, Link, useNavigate } from "react-router-dom"
 import { useState, useEffect } from "react"
-import { Check, Sliders, Info, ShieldCheck, HelpCircle, X } from 'lucide-react'
+import { Check, Sliders, Info, ShieldCheck, HelpCircle, X, Heart } from 'lucide-react'
 import shopService from "../shop/shopService"
 import useCurrency from '../../shared/hooks/useCurrency'
 import cartService from "../cart/cartService"
 import sizeguide from '../../assets/sizeguide.png'
 import { resolveImageUrl } from '../../shared/utils/imageUrl'
 import ProductReviews from './ProductReviews'
+import { useFavorites } from '../../shared/contexts'
+
 
 function AccordionItem({ title, children }) {
   const [open, setOpen] = useState(false)
@@ -19,7 +21,7 @@ function AccordionItem({ title, children }) {
         {title}
         <span className="text-lg text-neutral-400 font-light ml-4">{open ? '−' : '+'}</span>
       </button>
-      <div 
+      <div
         className={`grid transition-all duration-300 ease-in-out ${open ? 'grid-rows-[1fr] opacity-100 pb-4' : 'grid-rows-[0fr] opacity-0'}`}
       >
         <div className="overflow-hidden">
@@ -106,7 +108,7 @@ function PrescriptionSection({ isLenses, prescription, setPrescription }) {
         <ShieldCheck size={16} className="text-neutral-500" />
         <span className="text-sm font-semibold text-neutral-800">Prescription Configuration</span>
       </div>
-      
+
       <div>
         <div className="flex items-center gap-1.5 mb-1">
           <p className="text-sm font-medium text-neutral-900">SPH (Sphere)</p>
@@ -182,6 +184,8 @@ export default function ProductDetail() {
   const navigate = useNavigate()
   const { formatPrice } = useCurrency()
   const [product, setProduct] = useState(null)
+  const { toggleFavorite, isFavorite } = useFavorites()
+  const favorited = product ? isFavorite(product.product_id) : false
   const [loading, setLoading] = useState(true)
   const [selectedImage, setSelectedImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
@@ -303,26 +307,26 @@ export default function ProductDetail() {
   }
 
   const handleTryOn = () => {
-  const getFirstImage = (img) => {
-    if (!img) return ''
-    if (Array.isArray(img)) return img[0] || ''
-    if (typeof img === 'string') return img.trim().split(' ')[0] || ''
-    return ''
+    const getFirstImage = (img) => {
+      if (!img) return ''
+      if (Array.isArray(img)) return img[0] || ''
+      if (typeof img === 'string') return img.trim().split(' ')[0] || ''
+      return ''
+    }
+    const tryOnImage = getFirstImage(selectedVariant?.tryon_images) || getFirstImage(selectedVariant?.images) || ''
+    const name = encodeURIComponent(product.name)
+    const imageParam = encodeURIComponent(tryOnImage)
+    navigate(`/try-on?image=${imageParam}&name=${name}`)
   }
-  const tryOnImage = getFirstImage(selectedVariant?.tryon_images) || getFirstImage(selectedVariant?.images) || ''
-  const name = encodeURIComponent(product.name)
-  const imageParam = encodeURIComponent(tryOnImage)
-  navigate(`/try-on?image=${imageParam}&name=${name}`)
-}
 
-useEffect(() => {
+  useEffect(() => {
     const currentImages = selectedVariant?.images?.filter(Boolean) || []
     if (!currentImages || currentImages.length <= 1) return
-    
+
     const interval = setInterval(() => {
       setSelectedImage(prev => (prev + 1) % currentImages.length)
     }, 5000)
-    
+
     return () => clearInterval(interval)
   }, [selectedVariant])
 
@@ -365,7 +369,7 @@ useEffect(() => {
   return (
     <div className="px-4 md:px-8 lg:px-12 py-10 max-w-6xl mx-auto bg-white text-neutral-900">
       {sizeGuideOpen && <SizeGuideModal onClose={() => setSizeGuideOpen(false)} />}
-      
+
       <style>{`
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -373,10 +377,10 @@ useEffect(() => {
 
       {/* REFINED 50/50 BALANCED GRID */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 xl:gap-14 items-start">
-        
+
         {/* LEFT — COMPACT PICTURE CANVAS */}
         <div className="flex flex-col gap-4 lg:sticky lg:top-24 w-full max-w-xl mx-auto lg:mx-0">
-          
+
           {/* Main Visual Node (Kept proportionate and max-height optimized) */}
           <div className="bg-neutral-50 rounded-2xl border border-neutral-100 overflow-hidden relative group aspect-square max-h-[520px]">
             <img
@@ -397,11 +401,10 @@ useEffect(() => {
               <button
                 key={i}
                 onClick={() => setSelectedImage(i)}
-                className={`w-14 h-14 md:w-16 md:h-16 rounded-xl overflow-hidden flex-shrink-0 relative transition-all duration-300 bg-neutral-50 border p-0.5 ${
-                  selectedImage === i 
-                    ? 'border-neutral-900 shadow-sm scale-[1.02]' 
+                className={`w-14 h-14 md:w-16 md:h-16 rounded-xl overflow-hidden flex-shrink-0 relative transition-all duration-300 bg-neutral-50 border p-0.5 ${selectedImage === i
+                    ? 'border-neutral-900 shadow-sm scale-[1.02]'
                     : 'border-neutral-100 hover:border-neutral-300'
-                }`}
+                  }`}
               >
                 <img
                   src={resolveImageUrl(img) || ''}
@@ -417,26 +420,37 @@ useEffect(() => {
 
         {/* RIGHT — DETAILED DESIGN SPECIFICATIONS */}
         <div className="flex flex-col gap-5 w-full">
-          
-          {/* Header Typography Group */}
-          <div className="border-b border-neutral-100 pb-4">
-            <div className="mb-1.5">
-              <span className="text-xs bg-neutral-50 border border-neutral-100 px-2.5 py-1 rounded text-neutral-500">
-                Collection Edition
-              </span>
-            </div>
-            <h1 className="text-2xl md:text-3xl font-semibold text-neutral-950 mb-2">{product.name}</h1>
-            
-            <div className="flex items-baseline gap-2.5">
-              <span className="text-xl font-bold text-neutral-950">{formatPrice(finalPrice)}</span>
-              {product.compare_price && (
-                <span className="text-sm text-neutral-400 line-through font-light">{formatPrice(product.compare_price)}</span>
-              )}
-            </div>
-          </div>
 
-                    {/* Technical Blueprint Layout */}
-                    {/* Technical Blueprint Layout */}
+          {/* Header Typography Group */}
+          <div className="mb-1.5 flex items-center justify-between">
+  <span className="text-xs bg-neutral-50 border border-neutral-100 px-2.5 py-1 rounded text-neutral-500">
+    Collection Edition
+  </span>
+  <button
+    onClick={() => {
+      const firstImage = product.product_variants?.[0]?.images?.[0] || ''
+      toggleFavorite({
+        id: product.product_id,
+        image: firstImage,
+        name: product.name,
+        price: product.price,
+        description: product.description,
+        colors: product.product_variants?.filter(v => v.color_name).map(v => v.color_hex) || [],
+      })
+    }}
+    className={`p-2 rounded-full transition-all duration-300 ${
+      favorited 
+        ? 'bg-red-50 text-red-500' 
+        : 'bg-neutral-50 text-neutral-400 hover:text-red-400'
+    }`}
+    aria-label={favorited ? 'Remove from favorites' : 'Add to favorites'}
+  >
+    <Heart size={18} fill={favorited ? 'currentColor' : 'none'} />
+  </button>
+</div>
+
+          {/* Technical Blueprint Layout */}
+          {/* Technical Blueprint Layout */}
           <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm bg-neutral-50/40 p-4 rounded-xl border border-neutral-100">
             {product.brands && (
               <div className="flex flex-col">
@@ -467,11 +481,10 @@ useEffect(() => {
                       setSelectedImage(0)
                     }}
                     title={v.color_name}
-                    className={`w-6 h-6 rounded-full border transition-all duration-300 flex items-center justify-center ${
-                      selectedVariant?.variant_id === v.variant_id 
-                        ? 'ring-2 ring-neutral-900 border-white ring-offset-1 scale-105' 
+                    className={`w-6 h-6 rounded-full border transition-all duration-300 flex items-center justify-center ${selectedVariant?.variant_id === v.variant_id
+                        ? 'ring-2 ring-neutral-900 border-white ring-offset-1 scale-105'
                         : 'border-neutral-200 hover:scale-105'
-                    }`}
+                      }`}
                     style={{ backgroundColor: v.color_hex || '#ccc' }}
                   />
                 ))}
@@ -491,11 +504,10 @@ useEffect(() => {
                     <button
                       key={size}
                       onClick={() => variantForSize && setSelectedVariant(variantForSize)}
-                      className={`px-4 py-2 text-sm border rounded-lg transition-all ${
-                        isSelected 
-                          ? 'bg-neutral-950 text-white border-neutral-950 shadow-sm scale-[1.02]' 
+                      className={`px-4 py-2 text-sm border rounded-lg transition-all ${isSelected
+                          ? 'bg-neutral-950 text-white border-neutral-950 shadow-sm scale-[1.02]'
                           : 'border-neutral-200 text-neutral-600 hover:border-neutral-400 bg-white'
-                      }`}
+                        }`}
                     >
                       {size}
                     </button>
