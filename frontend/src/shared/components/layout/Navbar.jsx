@@ -300,16 +300,6 @@ export default function Navbar({ onCartOpen, onContactOpen }) {
               <ShoppingCart size={18} />
             </button>
 
-            <Link
-              to="/ar"
-              className={`text-xs font-semibold rounded-lg px-2.5 py-1 tracking-wide transition-colors ${
-                isTransparent
-                  ? 'bg-white/20 text-white hover:bg-white/35'
-                  : 'bg-gray-900 text-white hover:bg-gray-700'
-              }`}
-            >
-              AR
-            </Link>
           </div>
         </div>
 
