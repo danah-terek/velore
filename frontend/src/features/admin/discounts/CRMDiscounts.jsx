@@ -161,7 +161,7 @@ export default function CRMDiscounts() {
                 type="text"
                 placeholder="e.g. SUMMER20"
                 value={form.code}
-                onChange={e => setForm(p => ({ ...p, code: e.target.value.toUpperCase() }))}
+                onChange={e => setForm(p => ({ ...p, code: e.target.value }))}
                 style={inputStyle}
                 onFocus={handleFocus}
                 onBlur={handleBlur}

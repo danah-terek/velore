@@ -2,7 +2,7 @@ const prisma = require('../../shared/utils/database')
 
 async function validateDiscountCode(code, orderTotal) {
   const discount = await prisma.discount_codes.findUnique({
-    where: { code: code }
+    where: { code: code.toUpperCase() }  // ← fix
   })
   if (!discount) return { valid: false, message: 'Invalid discount code' }
   if (!discount.is_active) return { valid: false, message: 'This code is no longer active' }
@@ -39,7 +39,7 @@ async function getAllCodes() {
 async function createCode({ code, type, value, min_order, max_uses, expires_at }) {
   return await prisma.discount_codes.create({
     data: {
-      code: code,
+      code: code.toUpperCase(),  // ← fix
       type,
       value: parseFloat(value),
       min_order: min_order ? parseFloat(min_order) : 0,
@@ -51,23 +51,23 @@ async function createCode({ code, type, value, min_order, max_uses, expires_at }
 
 async function deleteCode(code) {
   await prisma.discount_codes.delete({
-    where: { code: code }
+    where: { code: code.toUpperCase() }  // ← fix
   })
 }
 
 async function toggleCode(code) {
   const current = await prisma.discount_codes.findUnique({
-    where: { code: code }
+    where: { code: code.toUpperCase() }  // ← fix
   })
   await prisma.discount_codes.update({
-    where: { code: code },
+    where: { code: code.toUpperCase() },  // ← fix
     data: { is_active: !current.is_active }
   })
 }
 
 async function incrementUsage(code) {
   await prisma.discount_codes.update({
-    where: { code: code },
+    where: { code: code.toUpperCase() },  // ← fix
     data: { used_count: { increment: 1 } }
   })
 }
