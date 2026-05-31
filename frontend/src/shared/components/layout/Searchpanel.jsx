@@ -4,7 +4,6 @@ import { Search, X, TrendingUp } from 'lucide-react'
 import apiClient from '../../../shared/services/apiClient'
 import { resolveImageUrl } from '../../utils/imageUrl'
 
-const TRENDING_TAGS = ['Glasses', 'Hot', 'Rounded', 'Sunglasses', 'Unisex']
 
 export default function SearchPanel({ isOpen, onClose }) {
   const navigate = useNavigate()
@@ -127,30 +126,7 @@ export default function SearchPanel({ isOpen, onClose }) {
         <div className="flex-1 overflow-y-auto px-5 py-6">
 
           {/* Trending Tags — only show when not searching */}
-          {!showResults && (
-            <div className="mb-8">
-              <div className="flex items-center gap-2 mb-3">
-                <TrendingUp size={13} className="text-gray-400" />
-                <p className="text-xs font-bold tracking-widest text-gray-400">TRENDING SEARCH</p>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {TRENDING_TAGS.map(tag => (
-                  <button
-                    key={tag}
-                    onClick={() => handleTagClick(tag)}
-                    className="px-3 py-1.5 text-xs font-semibold tracking-wider border transition-all duration-150 rounded-sm hover:bg-gray-900 hover:text-white hover:border-gray-900"
-                    style={{
-                      borderColor: 'rgba(var(--velore-border-soft, 200 195 185), 1)',
-                      color: '#555',
-                      letterSpacing: '0.08em',
-                    }}
-                  >
-                    {tag.toUpperCase()}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+
 
           {/* Section Title */}
           <div className="mb-4">

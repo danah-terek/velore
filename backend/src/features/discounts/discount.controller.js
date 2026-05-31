@@ -4,8 +4,8 @@ async function validate(req, res) {
   try {
     const { code, orderTotal } = req.body
     if (!code || !orderTotal) return res.status(400).json({ success: false, message: 'Code and order total are required' })
-    const result = await validateDiscountCode(code, Number(orderTotal))
-    return res.json({ success: result.valid, ...result })
+   const result = await validateDiscountCode(code.toUpperCase(), Number(orderTotal))
+        return res.json({ success: result.valid, ...result })
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message })
   }

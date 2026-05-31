@@ -104,12 +104,10 @@ const adminService = {
           payments: { select: { amount: true, status: true } }
         }
       }),
-      isSuperAdmin
-        ? prisma.payments.aggregate({
-          _sum: { amount: true },
-          where: { status: 'completed' }
-        })
-        : Promise.resolve(null)
+prisma.payments.aggregate({
+        _sum: { amount: true },
+        where: { status: 'completed' }
+      })
     ])
 
     const data = {
@@ -125,9 +123,7 @@ const adminService = {
       }))
     }
 
-    if (isSuperAdmin) {
-      data.revenue = { total: Number(totalRevenue?._sum?.amount || 0) }
-    }
+data.revenue = { total: Number(totalRevenue?._sum?.amount || 0) }
 
     return data
   },
@@ -464,8 +460,14 @@ const adminService = {
         console.error('Loyalty/notification error:', e.message, e.stack)
       }
     }
-    await adminService.log(adminId, 'UPDATE_ORDER_STATUS', `Order ${orderId} => ${status}`)
+if (status === 'delivered') {
+      await prisma.payments.updateMany({
+        where: { order_id: Number(orderId) },
+        data: { status: 'completed' }
+      })
+    }
 
+    await adminService.log(adminId, 'UPDATE_ORDER_STATUS', `Order ${orderId} => ${status}`)
     return { id: updated.order_id.toString(), status: updated.status }
   },
 

@@ -53,7 +53,6 @@ const searchProducts = async (query) => {
         LOWER(p.name) LIKE ${'%' + searchTerm + '%'}
         OR LOWER(b.name) LIKE ${'%' + searchTerm + '%'}
         OR LOWER(c.name) LIKE ${'%' + searchTerm + '%'}
-        OR LOWER(COALESCE(p.description, '')) LIKE ${'%' + searchTerm + '%'}
         OR LOWER(COALESCE(p.frame_shape, '')) LIKE ${'%' + searchTerm + '%'}
         OR LOWER(COALESCE(p.material, '')) LIKE ${'%' + searchTerm + '%'}
       )
