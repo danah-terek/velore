@@ -10,8 +10,8 @@ import ProductReviews from './ProductReviews'
 import { useFavorites } from '../../shared/contexts'
 
 
-function AccordionItem({ title, children }) {
-  const [open, setOpen] = useState(false)
+function AccordionItem({ title, children, defaultOpen = false }) {
+  const [open, setOpen] = useState(defaultOpen)
   return (
     <div className="border-b border-neutral-100 last:border-0">
       <button
@@ -370,18 +370,19 @@ export default function ProductDetail() {
     <div className="px-4 md:px-8 lg:px-12 py-10 max-w-6xl mx-auto bg-white text-neutral-900">
       {sizeGuideOpen && <SizeGuideModal onClose={() => setSizeGuideOpen(false)} />}
 
-      <style>{`
+   <style>{`
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        @keyframes bannerPulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(118,205,214,0.0); border-color: #76CDD6; }
+          50% { box-shadow: 0 0 0 6px rgba(118,205,214,0.15); border-color: #5bb8c2; }
+        }
       `}</style>
 
-      {/* REFINED 50/50 BALANCED GRID */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 xl:gap-14 items-start">
 
         {/* LEFT — COMPACT PICTURE CANVAS */}
         <div className="flex flex-col gap-4 lg:sticky lg:top-24 w-full max-w-xl mx-auto lg:mx-0">
-
-          {/* Main Visual Node (Kept proportionate and max-height optimized) */}
           <div className="bg-neutral-50 rounded-2xl border border-neutral-100 overflow-hidden relative group aspect-square max-h-[520px]">
             <img
               src={resolveImageUrl(images[selectedImage]) || ''}
@@ -395,7 +396,6 @@ export default function ProductDetail() {
             </div>
           </div>
 
-          {/* Under-Image Micro Horizontal Thumb Array */}
           <div className="flex gap-2.5 overflow-x-auto no-scrollbar py-1">
             {images.map((img, i) => (
               <button
@@ -421,36 +421,48 @@ export default function ProductDetail() {
         {/* RIGHT — DETAILED DESIGN SPECIFICATIONS */}
         <div className="flex flex-col gap-5 w-full">
 
-          {/* Header Typography Group */}
-          <div className="mb-1.5 flex items-center justify-between">
-  <span className="text-xs bg-neutral-50 border border-neutral-100 px-2.5 py-1 rounded text-neutral-500">
-    Collection Edition
-  </span>
-  <button
-    onClick={() => {
-      const firstImage = product.product_variants?.[0]?.images?.[0] || ''
-      toggleFavorite({
-        id: product.product_id,
-        image: firstImage,
-        name: product.name,
-        price: product.price,
-        description: product.description,
-        colors: product.product_variants?.filter(v => v.color_name).map(v => v.color_hex) || [],
-      })
-    }}
-    className={`p-2 rounded-full transition-all duration-300 ${
-      favorited 
-        ? 'bg-red-50 text-red-500' 
-        : 'bg-neutral-50 text-neutral-400 hover:text-red-400'
-    }`}
-    aria-label={favorited ? 'Remove from favorites' : 'Add to favorites'}
-  >
-    <Heart size={18} fill={favorited ? 'currentColor' : 'none'} />
-  </button>
-</div>
+{isGlasses && product.virtual_try_on && (
+            <div
+onClick={handleTryOn}
+              className="cursor-pointer w-full rounded-2xl px-5 py-4 flex items-center gap-4 mb-2 group transition-all duration-300 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99]"
+              style={{ background: 'linear-gradient(135deg, #e8f9fb 0%, #c8eef3 100%)', border: '1.5px solid #76CDD6', animation: 'bannerPulse 2.5s ease-in-out infinite' }}
+            >
+              <div className="text-2xl">✨</div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-neutral-900">Try these on before you buy</p>
+                <p className="text-xs text-neutral-500 mt-0.5">See how they look on your face — virtually, in seconds.</p>
+              </div>
+              <span className="text-xs font-semibold text-[#76CDD6] whitespace-nowrap">Try On →</span>
+            </div>
+          )}
 
-          {/* Technical Blueprint Layout */}
-          {/* Technical Blueprint Layout */}
+          <div className="mb-1.5 flex items-center justify-between">
+                        <span className="text-xs bg-neutral-50 border border-neutral-100 px-2.5 py-1 rounded text-neutral-500">
+              Collection Edition
+            </span>
+            <button
+              onClick={() => {
+                const firstImage = product.product_variants?.[0]?.images?.[0] || ''
+                toggleFavorite({
+                  id: product.product_id,
+                  image: firstImage,
+                  name: product.name,
+                  price: product.price,
+                  description: product.description,
+                  colors: product.product_variants?.filter(v => v.color_name).map(v => v.color_hex) || [],
+                })
+              }}
+              className={`p-2 rounded-full transition-all duration-300 ${
+                favorited
+                  ? 'bg-red-50 text-red-500'
+                  : 'bg-neutral-50 text-neutral-400 hover:text-red-400'
+              }`}
+              aria-label={favorited ? 'Remove from favorites' : 'Add to favorites'}
+            >
+              <Heart size={18} fill={favorited ? 'currentColor' : 'none'} />
+            </button>
+          </div>
+
           <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm bg-neutral-50/40 p-4 rounded-xl border border-neutral-100">
             {product.brands && (
               <div className="flex flex-col">
@@ -466,7 +478,6 @@ export default function ProductDetail() {
             )}
           </div>
 
-          {/* Color Matrix Controls */}
           {colors.length > 0 && (
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-neutral-500 block">
@@ -492,7 +503,6 @@ export default function ProductDetail() {
             </div>
           )}
 
-          {/* Size Profiles Matrix */}
           {sizes.length > 0 && (
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-neutral-500 block">Select Size</label>
@@ -530,6 +540,8 @@ export default function ProductDetail() {
             )}
           </div>
 
+          {/* ✨ Virtual Try-On — Prominent CTA */}
+          
           {/* Stock Monitor Alert System */}
           {stockQty !== null && (
             <div className="flex items-center gap-2 border-t border-neutral-100 pt-3">
@@ -559,7 +571,6 @@ export default function ProductDetail() {
           {/* DOCK TRANSACTION SYSTEM */}
           <div className="flex flex-col gap-3 pt-4 border-t border-neutral-100">
             <div className="flex gap-3">
-              {/* Counter */}
               <div className="flex items-center border border-neutral-200 bg-neutral-50/50 rounded-xl overflow-hidden shadow-sm">
                 <button
                   onClick={() => { setStockMessage(''); setQuantity(q => Math.max(1, q - 1)) }}
@@ -584,7 +595,6 @@ export default function ProductDetail() {
                 </button>
               </div>
 
-              {/* Action Button */}
               <button
                 onClick={handleAddToCart}
                 disabled={addingToCart || !canAdd}
@@ -604,26 +614,19 @@ export default function ProductDetail() {
                 )}
               </button>
             </div>
-
-            {/* Virtual Try-On Link */}
-            {product.virtual_try_on && (
-              <button
-                onClick={handleTryOn}
-                className="w-full border border-neutral-200 text-neutral-900 bg-white py-3.5 px-6 rounded-xl text-sm font-medium hover:bg-neutral-50 active:scale-[0.99] transition-all duration-300 flex items-center justify-center gap-2 shadow-sm"
-              >
-                <span>✨</span> Launch Virtual Try-On
-              </button>
-            )}
           </div>
 
           {/* Disclosure Navigation Dropdowns */}
           <div className="border-t border-neutral-100 pt-2 mt-2">
-            <AccordionItem title="Description">
+
+            {/* Description — always open for sunglasses */}
+            <AccordionItem title="Description" defaultOpen={isSunglasses}>
               <p>{product.description}</p>
             </AccordionItem>
 
+            {/* Dimensions — always open for glasses */}
             {isGlasses && (product.specifications?.lens_width || product.specifications?.bridge_width || product.specifications?.temple_length) && (
-              <AccordionItem title="Dimensions & Proportions">
+              <AccordionItem title="Dimensions & Proportions" defaultOpen={isGlasses}>
                 {product.specifications?.lens_width && <p className="flex justify-between py-1"><span className="text-neutral-400">Lens Width</span> <span className="text-neutral-800 font-medium">{product.specifications.lens_width} mm</span></p>}
                 {product.specifications?.bridge_width && <p className="flex justify-between py-1"><span className="text-neutral-400">Bridge Width</span> <span className="text-neutral-800 font-medium">{product.specifications.bridge_width} mm</span></p>}
                 {product.specifications?.temple_length && <p className="flex justify-between py-1"><span className="text-neutral-400">Temple Arm Length</span> <span className="text-neutral-800 font-medium">{product.specifications.temple_length} mm</span></p>}
@@ -647,8 +650,9 @@ export default function ProductDetail() {
               </AccordionItem>
             )}
 
+            {/* Curvature — always open for lenses */}
             {isLenses && (product.specifications?.diameter || product.specifications?.base_curve || product.specifications?.water_content) && (
-              <AccordionItem title="Curvature Specifications">
+              <AccordionItem title="Curvature Specifications" defaultOpen={isLenses}>
                 {product.specifications?.diameter && <p className="flex justify-between py-1"><span className="text-neutral-400">Diameter</span> <span className="text-neutral-800 font-medium">{product.specifications.diameter} mm</span></p>}
                 {product.specifications?.base_curve && <p className="flex justify-between py-1"><span className="text-neutral-400">Base Curve</span> <span className="text-neutral-800 font-medium">{product.specifications.base_curve} mm</span></p>}
                 {product.specifications?.water_content && <p className="flex justify-between py-1"><span className="text-neutral-400">Water Content</span> <span className="text-neutral-800 font-medium">{product.specifications.water_content}%</span></p>}

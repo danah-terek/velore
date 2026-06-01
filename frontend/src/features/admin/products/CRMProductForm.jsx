@@ -278,9 +278,13 @@ export default function CRMProductForm({
     typeof serverMessage === 'string' &&
     (/variant failed/i.test(serverMessage) || /partial/i.test(serverMessage))
 
-  const catId = values.category_id
-  const isGlasses = catId === '1' || catId === '2'
-  const isLenses = catId === '3'
+const catId = String(values.category_id || '')
+const selectedCat = categories?.find(c => c.category_id === catId)
+  const catName = selectedCat?.name?.toLowerCase() || ''
+  const isLenses = catName === 'lenses'
+  const isGlasses = catName === 'optical glasses'
+  const isSunglasses = catName === 'sunglasses'
+  const isFrames = isGlasses || isSunglasses
 
   return (
     <form onSubmit={(e) => { e.preventDefault(); onSubmit() }} className="space-y-5">
@@ -360,24 +364,23 @@ export default function CRMProductForm({
               </button>
             </div>
           </Field>
+{isFrames && (
+            <Field label="Frame Shape (optional)" error={errors.frame_shape}>
+              <PInput value={values.frame_shape} onChange={(e) => onChange({ frame_shape: e.target.value })} placeholder="square / round / aviator…" />
+            </Field>
+          )}
 
-          <Field label="Gender (optional)" error={errors.gender}>
-            <PSelect value={values.gender} onChange={(e) => onChange({ gender: e.target.value })}>
-              {genderOptions.map((g) => <option key={g || 'empty'} value={g}>{g ? g : '—'}</option>)}
-            </PSelect>
-          </Field>
+          {isFrames && (
+            <Field label="Face Shape (optional)" error={errors.face_shape}>
+              <PInput value={values.face_shape} onChange={(e) => onChange({ face_shape: e.target.value })} placeholder="oval / square / heart…" />
+            </Field>
+          )}
 
-          <Field label="Frame Shape (optional)" error={errors.frame_shape}>
-            <PInput value={values.frame_shape} onChange={(e) => onChange({ frame_shape: e.target.value })} placeholder="square / round / aviator…" />
-          </Field>
-
-          <Field label="Face Shape (optional)" error={errors.face_shape}>
-            <PInput value={values.face_shape} onChange={(e) => onChange({ face_shape: e.target.value })} placeholder="oval / square / heart…" />
-          </Field>
-
-          <Field label="Material (optional)" error={errors.material}>
-            <PInput value={values.material} onChange={(e) => onChange({ material: e.target.value })} placeholder="acetate / metal / titanium…" />
-          </Field>
+          {isFrames && (
+            <Field label="Material (optional)" error={errors.material}>
+              <PInput value={values.material} onChange={(e) => onChange({ material: e.target.value })} placeholder="acetate / metal / titanium…" />
+            </Field>
+          )}
 
           {isGlasses && (<>
             <Field label="Lens Width (mm)">
@@ -428,8 +431,16 @@ export default function CRMProductForm({
             </Field>
           </>)}
 
+{!isLenses && (
+            <Field label="Gender (optional)" error={errors.gender}>
+              <PSelect value={values.gender} onChange={(e) => onChange({ gender: e.target.value })}>
+                {genderOptions.map((g) => <option key={g || 'empty'} value={g}>{g ? g : '—'}</option>)}
+              </PSelect>
+            </Field>
+          )}
+
           <Field label="Active" error={errors.is_active}>
-            <PCheckbox
+                        <PCheckbox
               id="is_active"
               checked={!!values.is_active}
               onChange={(e) => onChange({ is_active: e.target.checked })}
