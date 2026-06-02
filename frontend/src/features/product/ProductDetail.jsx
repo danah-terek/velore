@@ -418,8 +418,11 @@ export default function ProductDetail() {
           </div>
         </div>
 
-        {/* RIGHT — DETAILED DESIGN SPECIFICATIONS */}
+{/* RIGHT — DETAILED DESIGN SPECIFICATIONS */}
         <div className="flex flex-col gap-5 w-full">
+          <h1 className="text-2xl font-semibold text-neutral-900">{product.name}</h1>
+          <p className="text-xl font-light text-neutral-700">{formatPrice(finalPrice)}</p>
+
 
           {isGlasses && product.virtual_try_on && (
             <div
@@ -437,9 +440,7 @@ export default function ProductDetail() {
           )}
 
           <div className="mb-1.5 flex items-center justify-between">
-            <span className="text-xs bg-neutral-50 border border-neutral-100 px-2.5 py-1 rounded text-neutral-500">
-              Collection Edition
-            </span>
+          
             <button
               onClick={() => {
                 const firstImage = product.product_variants?.[0]?.images?.[0] || ''
@@ -547,9 +548,9 @@ export default function ProductDetail() {
               {stockQty === 0 ? 'Out of stock' : stockQty <= (selectedVariant?.low_stock_alert || 5) ? `Only ${stockQty} left` : 'In stock'}
             </p>
           )}
-          {isLenses && (
+{isLenses && (
             <p className="text-xs text-green-600">
-              {selectedVariant?.variant_prescriptions?.reduce((sum, rx) => sum + (rx.stock_quantity || 0), 0) || 0} lenses in stock
+              {selectedVariant?.variant_prescriptions?.reduce((sum, rx) => sum + (rx.stock_quantity || 0), 0) || 0} lenses in stock (across {selectedVariant?.variant_prescriptions?.length || 0} prescriptions)
             </p>
           )}
 
@@ -585,19 +586,18 @@ export default function ProductDetail() {
                 }}
                 className="w-full border border-neutral-200 px-4 py-3 text-sm rounded-lg outline-none focus:border-neutral-900 bg-white"
               >
-                {product.product_variants.map(v => {
-                  const pd = v.prescription_data || {}
-                  const hasPrescription = pd.sph || pd.cyl || pd.axis || pd.bc || pd.dia
-                  const label = hasPrescription
-                    ? [pd.sph && `SPH: ${pd.sph}`, pd.cyl && `CYL: ${pd.cyl}`, pd.axis && `Axis: ${pd.axis}°`, pd.bc && `BC: ${pd.bc}`, pd.dia && `DIA: ${pd.dia}`].filter(Boolean).join(' | ')
-                    : v.sku || `Variant #${v.variant_id}`
-                  const stock = v.stock_quantity !== null && v.stock_quantity !== undefined ? `${v.stock_quantity} in stock` : ''
+{product.product_variants.map((v, vi) => {
+                  const rxs = v.variant_prescriptions || []
+                  const label = rxs.length > 0
+                    ? rxs.map(rx => [rx.sph && `SPH ${rx.sph}`, rx.cyl && `CYL ${rx.cyl}`, rx.bc && `BC ${rx.bc}`, rx.dia && `DIA ${rx.dia}`].filter(Boolean).join(' | ')).join(' / ')
+                    : `Variant ${vi + 1}`
                   return (
                     <option key={v.variant_id} value={v.variant_id}>
-                      {label} {stock ? `(${stock})` : ''}
+                      {label}
                     </option>
                   )
                 })}
+
               </select>
               {selectedVariant?.prescription_data && (
                 <div className="mt-3 p-3 bg-white rounded-lg border border-neutral-100">

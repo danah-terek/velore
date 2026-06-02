@@ -45,7 +45,7 @@ export default function TopBanner() {
       <div
         style={{
           background: '#111827',
-          height: '72px',
+          height: '40px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',

@@ -215,11 +215,13 @@ export default function CRMProductEditor({ mode }) {
 
 const isLenses = useMemo(() => {
   const catId = String(values.category_id || '')
+  if (!catId) return false
   const selectedCat = (options.categories || []).find(c => c.category_id === catId)
+  if (!selectedCat && options.loading) return false
   const name = (selectedCat?.name || '').toLowerCase()
-  console.log('DEBUG - catId:', catId, 'catName:', name, 'isLenses:', name === 'lenses')
   return name === 'lenses'
-}, [values.category_id, options.categories])
+}, [values.category_id, options.categories, options.loading])
+
   const loadOptions = useCallback(async () => {
     setOptions({ loading: true, error: null, categories: [], brands: [] })
     try {
@@ -373,12 +375,13 @@ const isLenses = useMemo(() => {
                   if (Object.keys(vErr).length) { setSaving(false); return }
                   try {
                     const variantPayload = buildVariantPayload(defaultVariant, uploadedPaths, uploadedTryOnImagePaths)
-                    await adminProductService.createProductVariant(newIdStr, variantPayload)
+                    const variantRes = await adminProductService.createProductVariant(newIdStr, variantPayload)
+                    const createdVariantId = variantRes?.data?.variant_id
                     if (defaultVariant.prescriptions?.length > 0) {
-                       console.log('Creating prescriptions for variant:', newIdStr, defaultVariant.prescriptions)
+                      console.log('Creating prescriptions for variant:', createdVariantId, defaultVariant.prescriptions)
                       for (const rx of defaultVariant.prescriptions) {
                         if (rx.sph || rx.cyl) {
-                          await adminProductService.createVariantPrescription(newIdStr, rx)
+                          await adminProductService.createVariantPrescription(createdVariantId, rx)
                         }
                       }
                     }
