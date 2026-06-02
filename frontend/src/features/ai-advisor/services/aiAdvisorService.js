@@ -15,12 +15,13 @@ export const aiAdvisorService = {
       body: formData,
     });
 
-    const data = await response.json();
+const data = await response.json();
 
     if (!response.ok) {
       throw new Error(data.error || 'Analysis failed');
     }
 
+    console.log('AI Response:', JSON.stringify(data, null, 2))
     return data;
   },
 
