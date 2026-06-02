@@ -1,3 +1,5 @@
+import React from 'react'
+
 const S = {
   wrap: {
     width: '100%',
@@ -27,6 +29,11 @@ const S = {
     verticalAlign: 'middle',
     color: '#1E1D22',
   },
+  expandedTd: {
+    padding: '0 16px 12px 16px',
+    borderBottom: '1px solid rgba(118,205,214,0.12)',
+    verticalAlign: 'top',
+  },
   rowBase: {
     background: '#ffffff',
     transition: 'background 0.13s ease',
@@ -34,9 +41,12 @@ const S = {
   rowHover: {
     background: '#EFF8FE',
   },
+  expandedRowBase: {
+    background: '#ffffff',
+  },
 }
 
-export default function CRMDataTable({ columns, rows, rowKey }) {
+export default function CRMDataTable({ columns, rows, rowKey, renderExpanded }) {
   return (
     <div style={S.wrap}>
       <table style={S.table}>
@@ -52,25 +62,40 @@ export default function CRMDataTable({ columns, rows, rowKey }) {
         <tbody>
           {rows.map((r, i) => {
             const isLast = i === rows.length - 1
+            const expandedContent = renderExpanded ? renderExpanded(r) : null
             return (
-              <tr
-                key={rowKey(r)}
-                style={S.rowBase}
-                onMouseEnter={(e) => Object.assign(e.currentTarget.style, S.rowHover)}
-                onMouseLeave={(e) => Object.assign(e.currentTarget.style, S.rowBase)}
-              >
-                {columns.map((c) => (
-                  <td
-                    key={c.key}
-                    style={{
-                      ...S.td,
-                      ...(isLast ? { borderBottom: 'none' } : {}),
-                    }}
-                  >
-                    {typeof c.cell === 'function' ? c.cell(r) : r[c.key]}
-                  </td>
-                ))}
-              </tr>
+              <React.Fragment key={rowKey(r)}>
+                <tr
+                  style={S.rowBase}
+                  onMouseEnter={(e) => Object.assign(e.currentTarget.style, S.rowHover)}
+                  onMouseLeave={(e) => Object.assign(e.currentTarget.style, S.rowBase)}
+                >
+                  {columns.map((c) => (
+                    <td
+                      key={c.key}
+                      style={{
+                        ...S.td,
+                        ...(isLast && !expandedContent ? { borderBottom: 'none' } : {}),
+                      }}
+                    >
+                      {typeof c.cell === 'function' ? c.cell(r) : r[c.key]}
+                    </td>
+                  ))}
+                </tr>
+                {expandedContent && (
+                  <tr style={S.expandedRowBase}>
+                    <td
+                      colSpan={columns.length}
+                      style={{
+                        ...S.expandedTd,
+                        ...(isLast ? { borderBottom: 'none' } : {}),
+                      }}
+                    >
+                      {expandedContent}
+                    </td>
+                  </tr>
+                )}
+              </React.Fragment>
             )
           })}
         </tbody>

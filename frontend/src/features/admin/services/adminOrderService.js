@@ -10,5 +10,11 @@ export const adminOrderService = {
   async updateStatus({ orderId, status }) {
     return adminApiClient.patch(`/admin/orders/${orderId}/status`, { status })
   },
+    async getById(orderId) {
+    return adminApiClient.get(`/admin/orders/${orderId}`)
+  },
+
+
+
 }
 

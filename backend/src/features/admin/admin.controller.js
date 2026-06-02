@@ -154,7 +154,14 @@ const adminController = {
       return jsonError(res, 500, error.message)
     }
   },
-
+  async getOrderById(req, res) {
+    try {
+      const data = await adminService.getOrderById(req.params.orderId)
+      return jsonSuccess(res, data)
+    } catch (error) {
+      return jsonError(res, 404, error.message)
+    }
+  },
   async updateOrderStatus(req, res) {
     try {
       const data = await adminService.updateOrderStatus(req.admin.adminId, req.params.orderId, req.body.status)

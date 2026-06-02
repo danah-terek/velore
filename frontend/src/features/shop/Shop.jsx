@@ -206,7 +206,7 @@ useEffect(() => {
     setLoading(true)
     setError(null)
     try {
-      const params = {}
+      const params = { limit: 100 }
       if (activeCategory !== 'all') {
         const categoryMap = { sunglasses: 1, glasses: 2, lenses: 3 }
         if (categoryMap[activeCategory]) params.category_id = categoryMap[activeCategory]

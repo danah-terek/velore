@@ -106,8 +106,23 @@ const cartService = {
       })
     }
 
+    // Fetch prescription stock for items that have a prescription_id
+    const itemsWithPrescription = cart.cart_items.filter(item => item.prescription_id);
+    let prescriptionStocks = {};
+    if (itemsWithPrescription.length > 0) {
+      const prescriptionIds = itemsWithPrescription.map(item => item.prescription_id);
+      const prescriptions = await prisma.variant_prescriptions.findMany({
+        where: { id: { in: prescriptionIds } },
+        select: { id: true, stock_quantity: true }
+      });
+      prescriptions.forEach(p => { prescriptionStocks[p.id] = p.stock_quantity; });
+    }
+
     const cartItems = (cart.cart_items || []).map((item) => {
-      const available = item.product_variants?.stock_quantity ?? null
+      const prescriptionId = item.prescription_id;
+      const available = prescriptionId
+        ? (prescriptionStocks[prescriptionId] ?? 0)
+        : (item.product_variants?.stock_quantity ?? null);
       return {
         ...item,
         available_stock: available,

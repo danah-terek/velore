@@ -274,13 +274,18 @@ export default function ProductDetail() {
     }
 
     // ✅ FIXED: Use underscore naming to match backend expectations
-    const itemData = {
-      product_id: product.product_id,
-      variant_id: selectedVariant?.variant_id,
-      quantity,
-      prescriptionData: prescription,
-      prescriptionId: isLenses ? selectedPrescriptionId : undefined,
-    }
+const itemData = {
+  product_id: product.product_id,
+  variant_id: selectedVariant?.variant_id,
+  quantity,
+  prescriptionData: prescription,
+  prescriptionId: isLenses ? selectedPrescriptionId : undefined,
+  
+  // Add these 3 lines right here:
+  name: product.name,
+  price: selectedVariant?.price || product.price,
+  images: product.images || [product.image || product.image_url],
+}
 
     console.log('Adding to cart:', itemData)
 
@@ -744,7 +749,11 @@ export default function ProductDetail() {
 
               <button
                 onClick={handleAddToCart}
-                disabled={addingToCart || !canAdd}
+                disabled={
+                  addingToCart ||
+                  !canAdd ||
+                  (isLenses && !selectedPrescriptionId)
+                }
                 className="flex-1 bg-neutral-950 text-white py-3.5 px-6 rounded-xl text-sm font-medium hover:bg-neutral-800 active:scale-[0.99] transition-all duration-300 disabled:bg-neutral-200 disabled:text-neutral-400 disabled:transform-none shadow-sm flex items-center justify-center"
               >
                 {addingToCart ? (
@@ -754,6 +763,8 @@ export default function ProductDetail() {
                     <Check size={16} className="animate-bounce" />
                     Added to Cart
                   </span>
+                ) : isLenses && !selectedPrescriptionId ? (
+                  'Select a Prescription'
                 ) : !canAdd ? (
                   'Out of Stock'
                 ) : (

@@ -422,6 +422,55 @@ data.revenue = { total: Number(totalRevenue?._sum?.amount || 0) }
     }
   },
 
+  async getOrderById(orderId) {
+    const order = await prisma.orders.findUnique({
+      where: { order_id: Number(orderId) },
+      include: {
+        users: { select: { name: true, email: true } },
+        payments: { select: { amount: true, status: true, payment_meth: true } },
+        orders_items: {
+          include: {
+            products: {
+              select: { name: true, price: true, product_id: true }
+            },
+            product_variants: {
+              select: { variant_id: true, color_name: true, size: true, images: true }
+            }
+          }
+        }
+      }
+    })
+
+    if (!order) throw new Error('Order not found')
+
+    return {
+      id: order.order_id.toString(),
+      user: { name: order.users?.name, email: order.users?.email },
+      status: order.status,
+      items_count: order.orders_items.length,
+      payment: order.payments,
+      date: order.order_date,
+      items: order.orders_items.map(item => ({
+        id: item.order_item_id.toString(),
+        quantity: item.quantity,
+        price: item.unit_price?.toString() || item.total_price?.toString() || '0',
+                product: {
+          id: item.products?.product_id?.toString(),
+          name: item.products?.name,
+          price: item.products?.price?.toString()
+        },
+        variant: item.product_variants ? {
+          id: item.product_variants.variant_id?.toString(),
+          color: item.product_variants.color_name,
+          size: item.product_variants.size,
+          image: item.product_variants.images?.[0] || null
+        } : null,
+        prescription_data: item.prescription_data || null
+      }))
+    }
+  },
+
+
   async updateOrderStatus(adminId, orderId, status) {
     const allowed = ['pending', 'processing', 'shipped', 'delivered', 'cancelled']
     if (!allowed.includes(status)) throw new Error(`Invalid status. Must be: ${allowed.join(', ')}`)

@@ -39,6 +39,7 @@ router.delete('/products/:productId', rbac.requirePermission('delete:products'),
 
 // Orders
 router.get('/orders', rbac.requirePermission('read:orders'), adminController.getOrders)
+router.get('/orders/:orderId', rbac.requirePermission('read:orders'), adminController.getOrderById)
 router.patch('/orders/:orderId/status', rbac.requirePermission('write:orders'), adminController.updateOrderStatus)
 
 // Audit Logs

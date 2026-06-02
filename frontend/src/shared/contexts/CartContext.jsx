@@ -26,7 +26,18 @@ export function CartProvider({ children }) {
       try {
         const response = await cartService.getCart()
         const items = response?.data?.cart_items || response?.cart_items || []
-        setCartItems(Array.isArray(items) ? items : [])
+        
+        const savedRx = JSON.parse(localStorage.getItem('prescriptionDataBackup') || '{}')
+        
+        const merged = (Array.isArray(items) ? items : []).map(serverItem => {
+          const key = `${serverItem.variant_id}_${serverItem.prescription_id}`
+          if (savedRx[key]) {
+            return { ...serverItem, prescriptionData: savedRx[key] }
+          }
+          return serverItem
+        })
+        
+        setCartItems(merged)
       } catch (err) {
         console.error('Failed to load cart:', err)
         setCartItems([])
@@ -54,102 +65,151 @@ export function CartProvider({ children }) {
   }, [cartItems])
 
   // ─── Add to cart ───────────────────────────────────────────────────────────
-  const addToCart = async (product) => {
+  const addToCart = async (itemData) => {
+    if (!itemData) return;
+
     const token = getToken()
+    const productId = itemData.product_id;
+    const variantId = itemData.variant_id;
+    const qtyToAdd = Number(itemData.quantity) || 1;
+    const pId = (itemData.prescriptionId !== undefined && itemData.prescriptionId !== null) 
+      ? String(itemData.prescriptionId) 
+      : null;
 
     if (token) {
       // Optimistic update
       setCartItems(prev => {
         const exists = prev.find(
-          i => String(i.variant_id) === String(product.variantId)
+          i => (i.variant_id && variantId ? String(i.variant_id) === String(variantId) : i.variant_id === variantId) &&
+               (i.prescription_id ? String(i.prescription_id) : null) === pId
         )
         if (exists) {
           return prev.map(i =>
-            String(i.variant_id) === String(product.variantId)
-              ? { ...i, quantity: (Number(i.quantity) || 1) + 1 }
+            (i.variant_id && variantId ? String(i.variant_id) === String(variantId) : i.variant_id === variantId) &&
+            (i.prescription_id ? String(i.prescription_id) : null) === pId
+              ? { ...i, quantity: (Number(i.quantity) || 0) + qtyToAdd }
               : i
           )
         }
         return [...prev, {
-          product_id: product.product_id,
-          variant_id: product.variantId,
-          quantity: 1,
-          products: { name: product.name, price: product.price },
-          images: [product.image],
+          product_id: productId,
+          variant_id: variantId,
+          prescription_id: pId ? Number(pId) : null,
+          prescriptionData: itemData.prescriptionData || null,
+          quantity: qtyToAdd,
+          products: { name: itemData.name || '', price: itemData.price || 0 },
+          images: itemData.images || [],
         }]
       })
+
       try {
-        await cartService.addItem({
-          productId: Number(product.product_id),
-          variantId: product.variantId ? Number(product.variantId) : undefined,
-          quantity: 1,
-        })
-        await loadCart() // sync with server truth
+        // Build payload - only include prescriptionData if it has values
+        const payload = {
+          productId: Number(productId),
+          variantId: variantId ? Number(variantId) : undefined,
+          quantity: qtyToAdd,
+          prescriptionId: pId ? Number(pId) : null,
+        }
+        if (itemData.prescriptionData && Object.values(itemData.prescriptionData).some(v => v !== '' && v !== null && v !== undefined)) {
+          payload.prescriptionData = itemData.prescriptionData
+        }
+        await cartService.addItem(payload)
+        
+        // Save to localStorage backup
+        if (itemData.prescriptionData && Object.values(itemData.prescriptionData).some(v => v !== '' && v !== null)) {
+          const savedRx = JSON.parse(localStorage.getItem('prescriptionDataBackup') || '{}')
+          savedRx[`${variantId}_${pId}`] = itemData.prescriptionData
+          localStorage.setItem('prescriptionDataBackup', JSON.stringify(savedRx))
+        }
+        await loadCart()
         showToast('Added to cart!')
       } catch (err) {
         console.error('Failed to add to cart:', err)
-        await loadCart() // rollback
+        await loadCart()
       }
     } else {
       // Guest
       setCartItems(prev => {
         const exists = prev.find(
-          i => String(i.product_id) === String(product.product_id) &&
-               String(i.variant_id ?? '') === String(product.variantId ?? '')
+          i => String(i.product_id) === String(productId) &&
+               String(i.variant_id ?? '') === String(variantId ?? '') &&
+               (i.prescription_id ? String(i.prescription_id) : null) === pId
         )
         if (exists) {
           return prev.map(i =>
-            String(i.product_id) === String(product.product_id) &&
-            String(i.variant_id ?? '') === String(product.variantId ?? '')
-              ? { ...i, quantity: (Number(i.quantity) || 1) + 1 }
+            String(i.product_id) === String(productId) &&
+            String(i.variant_id ?? '') === String(variantId ?? '') &&
+            (i.prescription_id ? String(i.prescription_id) : null) === pId
+              ? { ...i, quantity: (Number(i.quantity) || 0) + qtyToAdd }
               : i
           )
         }
         return [...prev, {
-          product_id: product.product_id,
-          variant_id: product.variantId,
-          quantity: 1,
-          products: { name: product.name, price: product.price },
-          images: [product.image],
+          product_id: productId,
+          variant_id: variantId,
+          prescription_id: pId ? Number(pId) : null,
+          prescriptionData: itemData.prescriptionData || null,
+          quantity: qtyToAdd,
+          products: { name: itemData.name || '', price: itemData.price || 0 },
+          images: itemData.images || [],
         }]
       })
+      if (itemData.prescriptionData && Object.values(itemData.prescriptionData).some(v => v !== '' && v !== null)) {
+        const savedRx = JSON.parse(localStorage.getItem('prescriptionDataBackup') || '{}')
+        savedRx[`${variantId}_${pId}`] = itemData.prescriptionData
+        localStorage.setItem('prescriptionDataBackup', JSON.stringify(savedRx))
+      }
       showToast('Added to cart!')
     }
   }
 
   // ─── Remove from cart ──────────────────────────────────────────────────────
-  const removeFromCart = async (variantId) => {
-    // Optimistic
+  const removeFromCart = async (variantId, prescriptionId = null) => {
+    const token = getToken()
+
+    const itemToDelete = cartItems.find(i => 
+      String(i.variant_id ?? '') === String(variantId ?? '') &&
+      String(i.prescription_id ?? '') === String(prescriptionId ?? '')
+    );
+
     setCartItems(prev =>
-      prev.filter(i => String(i.variant_id) !== String(variantId))
+      prev.filter(i => 
+        !(String(i.variant_id ?? '') === String(variantId ?? '') &&
+          String(i.prescription_id ?? '') === String(prescriptionId ?? ''))
+      )
     )
-    if (getToken()) {
+
+    if (token) {
       try {
-        await cartService.removeItem(variantId)
-        await loadCart()
+        const targetId = itemToDelete?.cart_item_id || variantId;
+        await cartService.removeItem(targetId);
+        await loadCart();
       } catch (err) {
-        console.error('Failed to remove:', err)
-        await loadCart()
+        console.error('Failed to remove item:', err);
+        await loadCart();
       }
     }
   }
 
   // ─── Update quantity ───────────────────────────────────────────────────────
-  const updateQuantity = async (variantId, newQuantity) => {
-    if (newQuantity < 1) return removeFromCart(variantId)
+  const updateQuantity = async (variantId, newQuantity, prescriptionId = null) => {
+    if (newQuantity < 1) return removeFromCart(variantId, prescriptionId)
 
-    // Optimistic
     setCartItems(prev =>
       prev.map(i =>
-        String(i.variant_id) === String(variantId)
+        String(i.variant_id ?? '') === String(variantId ?? '') &&
+        String(i.prescription_id ?? '') === String(prescriptionId ?? '')
           ? { ...i, quantity: newQuantity }
           : i
       )
     )
+
     if (getToken()) {
       try {
-        // Find the cart_item_id for this variant
-        const item = cartItems.find(i => String(i.variant_id) === String(variantId))
+        const item = cartItems.find(i => 
+          String(i.variant_id ?? '') === String(variantId ?? '') &&
+          String(i.prescription_id ?? '') === String(prescriptionId ?? '')
+        )
         if (!item?.cart_item_id) return
         await cartService.updateQuantity({ cart_item_id: item.cart_item_id, quantity: newQuantity })
         await loadCart()
@@ -163,6 +223,7 @@ export function CartProvider({ children }) {
   // ─── Clear cart ────────────────────────────────────────────────────────────
   const clearCart = async () => {
     setCartItems([])
+    localStorage.removeItem('prescriptionDataBackup')
     if (getToken()) {
       try {
         await cartService.clearCart()

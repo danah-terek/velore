@@ -32,45 +32,20 @@ function CartItem({ item, onQuantityChange, onRemove }) {
 
   const prescription = item.prescription_data || item.prescriptionData || null
 
-// Handle both formats: the one from the backend (sph, cyl, etc.) and the one from frontend (sph_r, sph_l, etc.)
-const hasPrescription = prescription && (
-  prescription.sph || prescription.cyl || prescription.axis || prescription.bc || prescription.dia ||
-  prescription.sph_r || prescription.sph_l ||
-  prescription.cyl_r || prescription.cyl_l
-)
+  // Robust check for any filled prescription data field
+  const hasPrescription = prescription && (
+    prescription.sph || prescription.cyl || prescription.axis || prescription.bc || prescription.dia ||
+    prescription.sph_r || prescription.sph_l ||
+    prescription.cyl_r || prescription.cyl_l ||
+    prescription.power || prescription.power_r || prescription.power_l
+  )
 
-// Normalize prescription data for display
-const getPrescriptionDisplay = () => {
-  if (!prescription) return null
-  
-  // Format from backend (single values per prescription)
-  if (prescription.sph !== undefined || prescription.cyl !== undefined) {
-    return {
-      sph: prescription.sph,
-      cyl: prescription.cyl,
-      axis: prescription.axis,
-      bc: prescription.bc,
-      dia: prescription.dia,
-    }
-  }
-  
-  // Format from frontend (left/right eye)
-  if (prescription.sph_r !== undefined || prescription.sph_l !== undefined) {
-    return {
-      sph_r: prescription.sph_r,
-      sph_l: prescription.sph_l,
-      cyl_r: prescription.cyl_r,
-      cyl_l: prescription.cyl_l,
-      axis: prescription.axis,
-      pd: prescription.pd,
-    }
-  }
-  
-  return null
-}
-
-const displayPrescription = getPrescriptionDisplay()
-const isLegacyFormat = displayPrescription && (displayPrescription.sph !== undefined)
+  // Identify whether this data profile maps to standard glasses or single contacts/lenses
+  const isContactLens = prescription && (
+    prescription.bc !== undefined || 
+    prescription.dia !== undefined || 
+    prescription.power !== undefined
+  )
 
   const stockIssue = typeof availableStock === 'number' && quantity > availableStock
   const disablePlus = typeof availableStock === 'number' && quantity >= availableStock
@@ -101,7 +76,7 @@ const isLegacyFormat = displayPrescription && (displayPrescription.sph !== undef
               {name}
             </Link>
             <button
-              onClick={() => onRemove(variantId)}
+              onClick={() => onRemove(variantId, item.prescription_id || null)}
               className="text-gray-300 hover:text-red-500 hover:bg-red-50 p-1 rounded-lg transition-all flex-shrink-0 opacity-0 group-hover:opacity-100"
               title="Remove"
             >
@@ -109,66 +84,73 @@ const isLegacyFormat = displayPrescription && (displayPrescription.sph !== undef
             </button>
           </div>
 
-                    {hasPrescription && displayPrescription && (
+          {/* PRESCRIPTION MANAGEMENT CARDS */}
+          {hasPrescription && (
             <div className="mt-2 p-2 bg-blue-50/30 rounded-xl border border-blue-100/50 text-[10px] text-gray-600">
               <div className="flex items-center gap-1.5 mb-2 pb-1.5 border-b border-blue-100/40">
                 <span className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
-                <span className="font-semibold text-blue-800 uppercase tracking-wider text-[9px]">Prescription Specs</span>
+                <span className="font-semibold text-blue-800 uppercase tracking-wider text-[9px]">
+                  {isContactLens ? 'Contact Lens Specs' : 'Glasses Prescription'}
+                </span>
               </div>
               
-              {isLegacyFormat ? (
-                // Single prescription format (for lenses)
+              {isContactLens ? (
+                /* ─── CONTACT LENSES DETAILED DISPLAY ─── */
                 <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-                  {displayPrescription.sph && (
+                  {(prescription.power !== undefined || prescription.sph !== undefined) && (
                     <div className="flex justify-between">
-                      <span className="text-gray-500">SPH:</span>
-                      <span className="font-medium text-gray-900">{displayPrescription.sph}</span>
+                      <span className="text-gray-500">PWR / SPH:</span>
+                      <span className="font-medium text-gray-900">{prescription.power || prescription.sph}</span>
                     </div>
                   )}
-                  {displayPrescription.cyl && (
+                  {prescription.bc && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Base Curve (BC):</span>
+                      <span className="font-medium text-gray-900">{prescription.bc}</span>
+                    </div>
+                  )}
+                  {prescription.dia && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Diameter (DIA):</span>
+                      <span className="font-medium text-gray-900">{prescription.dia}</span>
+                    </div>
+                  )}
+                  {prescription.cyl && (
                     <div className="flex justify-between">
                       <span className="text-gray-500">CYL:</span>
-                      <span className="font-medium text-gray-900">{displayPrescription.cyl}</span>
+                      <span className="font-medium text-gray-900">{prescription.cyl}</span>
                     </div>
                   )}
-                  {displayPrescription.axis && (
+                  {prescription.axis && (
                     <div className="flex justify-between">
                       <span className="text-gray-500">Axis:</span>
-                      <span className="font-medium text-gray-900">{displayPrescription.axis}°</span>
-                    </div>
-                  )}
-                  {displayPrescription.bc && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">BC:</span>
-                      <span className="font-medium text-gray-900">{displayPrescription.bc}</span>
-                    </div>
-                  )}
-                  {displayPrescription.dia && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">DIA:</span>
-                      <span className="font-medium text-gray-900">{displayPrescription.dia}</span>
+                      <span className="font-medium text-gray-900">{prescription.axis}°</span>
                     </div>
                   )}
                 </div>
               ) : (
-                // Left/Right eye format (for glasses)
+                /* ─── EYE GLASSES DETAILED DISPLAY (OD/OS) ─── */
                 <>
                   <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                     <div className="border-r border-gray-200/60 pr-2">
-                      <p className="font-bold text-gray-900 mb-0.5 border-b border-gray-200/40 pb-0.5">OD (Right)</p>
-                      <p className="flex justify-between"><span>SPH:</span> <span className="font-medium text-gray-900">{displayPrescription.sph_r || '-'}</span></p>
-                      <p className="flex justify-between"><span>CYL:</span> <span className="font-medium text-gray-900">{displayPrescription.cyl_r || '-'}</span></p>
+                      <p className="font-bold text-gray-900 mb-0.5 border-b border-gray-200/40 pb-0.5">OD (Right Eye)</p>
+                      <p className="flex justify-between"><span>SPH:</span> <span className="font-medium text-gray-900">{prescription.sph_r || prescription.sph || '-'}</span></p>
+                      <p className="flex justify-between"><span>CYL:</span> <span className="font-medium text-gray-900">{prescription.cyl_r || '-'}</span></p>
                     </div>
                     <div className="pl-1">
-                      <p className="font-bold text-gray-900 mb-0.5 border-b border-gray-200/40 pb-0.5">OS (Left)</p>
-                      <p className="flex justify-between"><span>SPH:</span> <span className="font-medium text-gray-900">{displayPrescription.sph_l || '-'}</span></p>
-                      <p className="flex justify-between"><span>CYL:</span> <span className="font-medium text-gray-900">{displayPrescription.cyl_l || '-'}</span></p>
+                      <p className="font-bold text-gray-900 mb-0.5 border-b border-gray-200/40 pb-0.5">OS (Left Eye)</p>
+                      <p className="flex justify-between"><span>SPH:</span> <span className="font-medium text-gray-900">{prescription.sph_l || prescription.sph || '-'}</span></p>
+                      <p className="flex justify-between"><span>CYL:</span> <span className="font-medium text-gray-900">{prescription.cyl_l || '-'}</span></p>
                     </div>
                   </div>
-                  {(displayPrescription.axis || displayPrescription.pd) && (
+                  {(prescription.axis || prescription.axis_r || prescription.axis_l || prescription.pd) && (
                     <div className="mt-1.5 pt-1.5 border-t border-blue-100/40 grid grid-cols-2 gap-2 text-[9px] font-medium text-gray-500">
-                      {displayPrescription.axis && <p>AXIS: <span className="text-gray-900 font-semibold">{displayPrescription.axis}°</span></p>}
-                      {displayPrescription.pd && <p>PD: <span className="text-gray-900 font-semibold">{displayPrescription.pd} mm</span></p>}
+                      {(prescription.axis || prescription.axis_r || prescription.axis_l) && (
+                        <p>AXIS: <span className="text-gray-900 font-semibold">
+                          {prescription.axis ? `${prescription.axis}°` : `R: ${prescription.axis_r || '-'}° / L: ${prescription.axis_l || '-'}°`}
+                        </span></p>
+                      )}
+                      {prescription.pd && <p>PD: <span className="text-gray-900 font-semibold">{prescription.pd} mm</span></p>}
                     </div>
                   )}
                 </>
@@ -191,7 +173,7 @@ const isLegacyFormat = displayPrescription && (displayPrescription.sph !== undef
         <div className="flex items-center justify-between mt-2">
           <div className="flex items-center bg-gray-50 rounded-lg border border-gray-200 overflow-hidden">
             <button
-              onClick={() => onQuantityChange(variantId, quantity - 1)}
+              onClick={() => onQuantityChange(variantId, quantity - 1, item.prescription_id || null)}
               className="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
               disabled={quantity <= 1}
             >
@@ -199,7 +181,7 @@ const isLegacyFormat = displayPrescription && (displayPrescription.sph !== undef
             </button>
             <span className="w-9 text-center text-sm font-medium text-gray-900 select-none">{quantity}</span>
             <button
-              onClick={() => onQuantityChange(variantId, quantity + 1)}
+              onClick={() => onQuantityChange(variantId, quantity + 1, item.prescription_id || null)}
               className="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
               disabled={disablePlus}
             >
@@ -299,15 +281,13 @@ export default function CartSidebar({ isOpen, onClose }) {
     }
   }
 
-  const handleQuantityChange = async (variantId, newQuantity) => {
-    if (!variantId) return
+  const handleQuantityChange = async (variantId, newQuantity, prescriptionId = null) => {
     setCartMessage('')
-    await updateQuantity(variantId, newQuantity)
+    await updateQuantity(variantId, newQuantity, prescriptionId)
   }
 
-  const handleRemove = async (variantId) => {
-    if (!variantId) return
-    await removeFromCart(variantId)
+  const handleRemove = async (variantId, prescriptionId = null) => {
+    await removeFromCart(variantId, prescriptionId)
   }
 
   const hasStockIssues = items.some(item => {
@@ -392,7 +372,7 @@ export default function CartSidebar({ isOpen, onClose }) {
               <div className="divide-y divide-gray-100">
                 {items.map((item, index) => (
                   <CartItem
-                    key={item.cart_item_id || `${item.variant_id}_${item.prescription_id || ''}_${index}`}
+                    key={item.cart_item_id || `${item.variant_id || 'base'}_${item.prescription_id || 'none'}_${index}`}
                     item={item}
                     onQuantityChange={handleQuantityChange}
                     onRemove={handleRemove}

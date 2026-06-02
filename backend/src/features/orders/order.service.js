@@ -1,4 +1,3 @@
-
 const prisma = require('../../shared/utils/database')
 const serialize = (obj) => JSON.parse(JSON.stringify(obj, (_, v) =>
   typeof v === 'bigint' ? v.toString() : v
@@ -72,37 +71,71 @@ const orderService = {
         if (!productIdNum) throw new Error('Product ID is required')
         if (!Number.isInteger(qty) || qty < 1) throw new Error('Quantity must be at least 1.')
         const v = await resolveVariantForProductTx(tx, { productIdNum, variantIdNum })
-        const available = Number(v.stock_quantity || 0)
-        if (qty > available) throw new Error(formatStockError({ available, productName: v.products?.name }))
+        const prescriptionId = item.prescription_id || item.prescriptionId || null
+
+        if (prescriptionId) {
+          // Use prescription stock for lenses
+          const prescription = await tx.variant_prescriptions.findUnique({
+            where: { id: Number(prescriptionId) },
+            select: { stock_quantity: true }
+          })
+          const availableRx = Number(prescription?.stock_quantity || 0)
+          if (qty > availableRx) throw new Error(formatStockError({ available: availableRx, productName: v.products?.name }))
+        } else {
+          // Use variant stock for glasses/other
+          const available = Number(v.stock_quantity || 0)
+          if (qty > available) throw new Error(formatStockError({ available, productName: v.products?.name }))
+        }
+      
         const basePrice = parseFloat(v.products?.price || 0)
         const adj = parseFloat(v.price_adjustment || 0)
         const unitPrice = basePrice + adj
 
-
-        
         resolved.push({
           product_id: productIdNum,
           variant_id: Number(v.variant_id),
           quantity: qty,
           unit_price: unitPrice,
           product_name: v.products?.name || null,
+          prescription_data: item.prescription_data || item.prescriptionData || null,
+          prescription_id: item.prescription_id || item.prescriptionId || null,
         })
       }
       for (const r of resolved) {
-        const updated = await tx.product_variants.updateMany({
-          where: {
-            variant_id: Number(r.variant_id),
-            stock_quantity: { gte: r.quantity },
-          },
-          data: { stock_quantity: { decrement: r.quantity } },
-        })
-        if (!updated || updated.count !== 1) {
-          const v2 = await tx.product_variants.findUnique({
-            where: { variant_id: Number(r.variant_id) },
-            select: { stock_quantity: true, products: { select: { name: true } } },
+        if (r.prescription_id) {
+          // Decrement prescription stock
+          const updated = await tx.variant_prescriptions.updateMany({
+            where: {
+              id: Number(r.prescription_id),
+              stock_quantity: { gte: r.quantity },
+            },
+            data: { stock_quantity: { decrement: r.quantity } },
           })
-          const available = Number(v2?.stock_quantity || 0)
-          throw new Error(formatStockError({ available, productName: v2?.products?.name }))
+          if (!updated || updated.count !== 1) {
+            const p = await tx.variant_prescriptions.findUnique({
+              where: { id: Number(r.prescription_id) },
+              select: { stock_quantity: true },
+            })
+            const available = Number(p?.stock_quantity || 0)
+            throw new Error(formatStockError({ available, productName: r.product_name }))
+          }
+        } else {
+          // Decrement variant stock
+          const updated = await tx.product_variants.updateMany({
+            where: {
+              variant_id: Number(r.variant_id),
+              stock_quantity: { gte: r.quantity },
+            },
+            data: { stock_quantity: { decrement: r.quantity } },
+          })
+          if (!updated || updated.count !== 1) {
+            const v2 = await tx.product_variants.findUnique({
+              where: { variant_id: Number(r.variant_id) },
+              select: { stock_quantity: true, products: { select: { name: true } } },
+            })
+            const available = Number(v2?.stock_quantity || 0)
+            throw new Error(formatStockError({ available, productName: v2?.products?.name }))
+          }
         }
       }
       let addressId
@@ -136,12 +169,13 @@ const orderService = {
           address_id: Number(addressId),
           status: 'pending',
           orders_items: {
-            create: resolved.map((r) => ({
+             create: resolved.map((r) => ({
               product_id: Number(r.product_id),
               variant_id: Number(r.variant_id),
               quantity: Number(r.quantity),
               unit_price: r.unit_price,
               total_price: parseFloat((r.unit_price * r.quantity).toFixed(2)),
+              prescription_data: r.prescription_data || null,
             }))
           }
         },
@@ -150,7 +184,7 @@ const orderService = {
       if (!isGuest && cart?.carts_id) {
         await tx.cart_items.deleteMany({ where: { cart_id: cart.carts_id } })
       }
-await tx.payments.create({
+      await tx.payments.create({
         data: {
           order_id: order.order_id,
           amount: total,

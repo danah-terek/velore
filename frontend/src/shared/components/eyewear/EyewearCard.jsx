@@ -56,14 +56,14 @@ export default function EyewearCard({
     e.stopPropagation()
     setAddingToCart(true)
     try {
-      await addToCart({
+await addToCart({
         product_id: productIdFinal,
         variantId: firstVariantId,
         name,
         price: displayPrice,
         image: imageUrl,
         availableStock: typeof firstVariantStock === 'number' ? firstVariantStock : null,
-      })
+      }, null) // Explicitly passing null for prescriptionId on general product cards
       setJustAdded(true)
       setTimeout(() => setJustAdded(false), 1400)
     } catch (error) {

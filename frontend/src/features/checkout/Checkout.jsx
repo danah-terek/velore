@@ -94,7 +94,7 @@ function OrderConfirmationModal({ orderNumber, total, onClose }) {
             </div>
           </div>
           <Link
-            to="/shop"
+            to="/"
             className="w-full text-center py-3 bg-gray-900 text-white text-sm font-semibold rounded-lg hover:bg-gray-700 transition"
             onClick={onClose}
           >
@@ -450,20 +450,31 @@ export default function Checkout() {
     autofillCheckoutForm()
   }, [])
 
-  const loadCart = async () => {
+const loadCart = async () => {
     const token = localStorage.getItem('token') || sessionStorage.getItem('token')
     if (token) {
       try {
         const result = await cartService.getCart()
         const cart = result?.data || {}
         const items = cart?.cart_items || []
-        setCartItems(items)
+        
+        const savedRx = JSON.parse(localStorage.getItem('prescriptionDataBackup') || '{}')
+        const merged = items.map(serverItem => {
+          const key = `${serverItem.variant_id}_${serverItem.prescription_id}`
+          if (savedRx[key]) {
+            return { ...serverItem, prescriptionData: savedRx[key] }
+          }
+          return serverItem
+        })
+        
+        setCartItems(merged)
         setCartTotal(parseFloat(cart?.total || 0))
       } catch { loadGuestCart() }
     } else {
       loadGuestCart()
     }
   }
+  
 
   const loadGuestCart = () => {
     const guestCart = JSON.parse(localStorage.getItem('guestCart') || '[]')
@@ -676,8 +687,7 @@ export default function Checkout() {
         <OrderConfirmationModal
           orderNumber={confirmedOrder.orderNumber}
           total={total.toFixed(2)}
-          onClose={() => { setShowCODModal(false); navigate('/shop') }}
-        />
+onClose={() => { setShowCODModal(false); window.location.href = '/' }}        />
       )}
 
       <div className="px-6 md:px-16 py-8">
@@ -830,7 +840,13 @@ export default function Checkout() {
                 ) : (
                   cartItems.map((item, index) => {
                     const prescription = item.prescription_data || item.prescriptionData || null
-                    const hasPrescription = prescription && (prescription.sph_r || prescription.sph_l || prescription.cyl_r || prescription.cyl_l || prescription.axis || prescription.pd)
+const hasPrescription = prescription && (
+  prescription.sph || prescription.cyl || prescription.axis || prescription.bc || prescription.dia ||
+  prescription.sph_r || prescription.sph_l ||
+  prescription.cyl_r || prescription.cyl_l ||
+  prescription.power || prescription.power_r || prescription.power_l ||
+  prescription.pd
+)
                     const itemName = item.products?.name || item.name || 'Product'
                     const itemPrice = parseFloat(item.products?.price || item.price || 0)
                     const itemImage =
@@ -851,34 +867,56 @@ export default function Checkout() {
                           <p className="text-sm font-medium truncate">{itemName}</p>
                           <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
                           {hasPrescription && (
-  <div className="mt-1 p-1.5 bg-blue-50 rounded-sm border border-blue-100">
-    <p className="text-xs font-medium text-blue-700">Prescription:</p>
-    <div className="text-xs text-blue-600 space-y-0.5">
-      {prescription.sph !== undefined && prescription.sph !== null && (
-        <p>SPH: {prescription.sph}</p>
-      )}
-      {prescription.cyl !== undefined && prescription.cyl !== null && (
-        <p>CYL: {prescription.cyl}</p>
-      )}
-      {prescription.axis !== undefined && prescription.axis !== null && (
-        <p>Axis: {prescription.axis}°</p>
-      )}
-      {prescription.bc !== undefined && prescription.bc !== null && (
-        <p>BC: {prescription.bc}</p>
-      )}
-      {prescription.dia !== undefined && prescription.dia !== null && (
-        <p>DIA: {prescription.dia}</p>
-      )}
-      {/* Legacy format for glasses */}
-      {(prescription.sph_r || prescription.sph_l) && (
-        <>
-          <p>SPH: R {prescription.sph_r || '0.00'} / L {prescription.sph_l || '0.00'}</p>
-          <p>CYL: R {prescription.cyl_r || '0.00'} / L {prescription.cyl_l || '0.00'}</p>
-          {prescription.axis && <p>Axis: {prescription.axis}°</p>}
-          {prescription.pd && <p>PD: {prescription.pd}mm</p>}
-        </>
-      )}
+  <div className="mt-1 p-1.5 bg-blue-50/30 rounded-md border border-blue-100/50 text-[10px] text-gray-600">
+    <div className="flex items-center gap-1 mb-1 pb-1 border-b border-blue-100/40">
+      <span className="w-1 h-1 bg-blue-500 rounded-full" />
+      <span className="font-semibold text-blue-800 uppercase tracking-wider text-[8px]">
+        {prescription.bc !== undefined || prescription.dia !== undefined || prescription.power !== undefined
+          ? 'Contact Lens Specs'
+          : 'Glasses Prescription'
+        }
+      </span>
     </div>
+    {prescription.bc !== undefined || prescription.dia !== undefined || prescription.power !== undefined ? (
+      <div className="grid grid-cols-2 gap-x-3 gap-y-0.5">
+        {(prescription.power || prescription.sph) && (
+          <div className="flex justify-between"><span className="text-gray-500">PWR/SPH:</span><span className="font-medium text-gray-900">{prescription.power || prescription.sph}</span></div>
+        )}
+        {prescription.bc && (
+          <div className="flex justify-between"><span className="text-gray-500">BC:</span><span className="font-medium text-gray-900">{prescription.bc}</span></div>
+        )}
+        {prescription.dia && (
+          <div className="flex justify-between"><span className="text-gray-500">DIA:</span><span className="font-medium text-gray-900">{prescription.dia}</span></div>
+        )}
+        {prescription.cyl && (
+          <div className="flex justify-between"><span className="text-gray-500">CYL:</span><span className="font-medium text-gray-900">{prescription.cyl}</span></div>
+        )}
+        {prescription.axis && (
+          <div className="flex justify-between"><span className="text-gray-500">Axis:</span><span className="font-medium text-gray-900">{prescription.axis}°</span></div>
+        )}
+      </div>
+    ) : (
+      <div className="grid grid-cols-2 gap-x-3 gap-y-0.5">
+        <div className="border-r border-gray-200/60 pr-1">
+          <p className="font-bold text-gray-900 mb-0.5 border-b border-gray-200/40 pb-0.5">OD (Right)</p>
+          <p className="flex justify-between"><span>SPH:</span><span className="font-medium text-gray-900">{prescription.sph_r || prescription.sph || '-'}</span></p>
+          <p className="flex justify-between"><span>CYL:</span><span className="font-medium text-gray-900">{prescription.cyl_r || '-'}</span></p>
+        </div>
+        <div className="pl-1">
+          <p className="font-bold text-gray-900 mb-0.5 border-b border-gray-200/40 pb-0.5">OS (Left)</p>
+          <p className="flex justify-between"><span>SPH:</span><span className="font-medium text-gray-900">{prescription.sph_l || prescription.sph || '-'}</span></p>
+          <p className="flex justify-between"><span>CYL:</span><span className="font-medium text-gray-900">{prescription.cyl_l || '-'}</span></p>
+        </div>
+      </div>
+    )}
+    {(prescription.axis || prescription.axis_r || prescription.axis_l || prescription.pd) && (
+      <div className="mt-1 pt-1 border-t border-blue-100/40 flex gap-3 text-[9px] font-medium text-gray-500">
+        {(prescription.axis || prescription.axis_r || prescription.axis_l) && (
+          <p>AXIS: <span className="text-gray-900 font-semibold">{prescription.axis ? `${prescription.axis}°` : `R: ${prescription.axis_r || '-'}° / L: ${prescription.axis_l || '-'}°`}</span></p>
+        )}
+        {prescription.pd && <p>PD: <span className="text-gray-900 font-semibold">{prescription.pd} mm</span></p>}
+      </div>
+    )}
   </div>
 )}
                         </div>
