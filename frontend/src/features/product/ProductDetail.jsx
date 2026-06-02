@@ -201,6 +201,7 @@ export default function ProductDetail() {
     pd: '',
   })
   const [sizeGuideOpen, setSizeGuideOpen] = useState(false)
+   const [selectedPrescriptionId, setSelectedPrescriptionId] = useState(null)
 
   useEffect(() => {
     loadProduct()
@@ -576,8 +577,8 @@ export default function ProductDetail() {
             <div className="border border-neutral-200/80 bg-neutral-50/30 rounded-2xl p-5 my-2">
               <p className="text-sm font-semibold text-neutral-800 mb-3">Select Your Prescription</p>
 
-              {/* Flatten all prescriptions from all variants into a single array */}
               {(() => {
+                // Flatten all prescriptions from all variants into a single array
                 const allPrescriptions = []
                 product.product_variants.forEach(variant => {
                   const rxs = variant.variant_prescriptions || []
@@ -590,6 +591,9 @@ export default function ProductDetail() {
                   })
                 })
 
+                // Find the currently selected prescription
+                const currentRx = allPrescriptions.find(rx => rx.id === selectedPrescriptionId)
+
                 if (allPrescriptions.length === 0) {
                   return <p className="text-sm text-neutral-500">No prescriptions available for this product.</p>
                 }
@@ -597,10 +601,11 @@ export default function ProductDetail() {
                 return (
                   <>
                     <select
-                      value={selectedVariant?.variant_id || ''}
+                      value={selectedPrescriptionId || ''}
                       onChange={(e) => {
                         const selected = allPrescriptions.find(rx => rx.id == e.target.value)
                         if (selected) {
+                          setSelectedPrescriptionId(selected.id)
                           setSelectedVariant(selected.variant)
                           setSelectedImage(0)
                         }
@@ -625,23 +630,19 @@ export default function ProductDetail() {
                     </select>
 
                     {/* Show selected prescription details */}
-                    {selectedVariant && (() => {
-                      const selectedRx = allPrescriptions.find(rx => rx.variant_id === selectedVariant.variant_id)
-                      if (!selectedRx) return null
-                      return (
-                        <div className="mt-3 p-3 bg-white rounded-lg border border-neutral-100">
-                          <p className="text-xs text-neutral-500 mb-1">Selected prescription:</p>
-                          <div className="grid grid-cols-3 gap-2 text-xs">
-                            {selectedRx.sph && <span>SPH: <strong>{selectedRx.sph}</strong></span>}
-                            {selectedRx.cyl && <span>CYL: <strong>{selectedRx.cyl}</strong></span>}
-                            {selectedRx.axis && <span>Axis: <strong>{selectedRx.axis}°</strong></span>}
-                            {selectedRx.bc && <span>BC: <strong>{selectedRx.bc}</strong></span>}
-                            {selectedRx.dia && <span>DIA: <strong>{selectedRx.dia}</strong></span>}
-                          </div>
-                          <p className="text-xs text-neutral-400 mt-2">Stock: {selectedRx.stock_quantity || 0} units available</p>
+                    {currentRx && (
+                      <div className="mt-3 p-3 bg-white rounded-lg border border-neutral-100">
+                        <p className="text-xs text-neutral-500 mb-1">Selected prescription:</p>
+                        <div className="grid grid-cols-3 gap-2 text-xs">
+                          {currentRx.sph !== null && currentRx.sph !== '' && <span>SPH: <strong>{currentRx.sph}</strong></span>}
+                          {currentRx.cyl !== null && currentRx.cyl !== '' && <span>CYL: <strong>{currentRx.cyl}</strong></span>}
+                          {currentRx.axis !== null && currentRx.axis !== '' && <span>Axis: <strong>{currentRx.axis}°</strong></span>}
+                          {currentRx.bc !== null && currentRx.bc !== '' && <span>BC: <strong>{currentRx.bc}</strong></span>}
+                          {currentRx.dia !== null && currentRx.dia !== '' && <span>DIA: <strong>{currentRx.dia}</strong></span>}
                         </div>
-                      )
-                    })()}
+                        <p className="text-xs text-neutral-400 mt-2">Stock: {currentRx.stock_quantity || 0} units available</p>
+                      </div>
+                    )}
                   </>
                 )
               })()}
