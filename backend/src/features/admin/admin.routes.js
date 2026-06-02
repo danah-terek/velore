@@ -4,6 +4,7 @@ const { adminAuthMiddleware } = require('../../shared/middleware/middleware')
 const rbac = require('../rbac')
 const { uploadProductImagesHandler } = require('./admin.uploads')
 const variants = require('./admin.variants')
+const prescriptions = require('./admin.prescriptions')
 
 // ─── Public ────────────────────────────────────────────────────
 router.post('/login', adminController.login)
@@ -57,5 +58,9 @@ router.patch('/staff/:staffId', rbac.requireSuperAdmin, adminController.updateSt
 router.delete('/staff/:staffId', rbac.requireSuperAdmin, adminController.deleteStaff)
 
 
+router.get('/variants/:variantId/prescriptions', rbac.requirePermission('read:products'), prescriptions.listPrescriptions)
+router.post('/variants/:variantId/prescriptions', rbac.requirePermission('write:products'), prescriptions.createPrescription)
+router.patch('/prescriptions/:id', rbac.requirePermission('write:products'), prescriptions.updatePrescription)
+router.delete('/prescriptions/:id', rbac.requirePermission('write:products'), prescriptions.deletePrescription)
 
 module.exports = router

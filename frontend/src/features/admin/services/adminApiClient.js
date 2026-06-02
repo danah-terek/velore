@@ -9,7 +9,7 @@ function getBaseUrl() {
 export const adminApiClient = axios.create({
   baseURL: getBaseUrl(),
   headers: { 'Content-Type': 'application/json' },
-  timeout: 30000,
+  timeout: 60000,
 })
 
 adminApiClient.interceptors.request.use((config) => {

@@ -53,6 +53,19 @@ async function listVariants(req, res) {
       low_stock_alert: true,
       images: true,
       tryon_images: true,
+      variant_prescriptions: {        // ← ADD THIS
+        orderBy: { id: 'asc' },
+        select: {
+          id: true,
+          sph: true,
+          cyl: true,
+          axis: true,
+          bc: true,
+          dia: true,
+          stock_quantity: true,
+        }
+      },
+      prescription_data: true,
       created_at: true,
       updated_at: true,
     }
@@ -76,7 +89,7 @@ async function createVariant(req, res) {
 
   const {
     sku, color_name, color_hex, size, price_adjustment,
-    stock_quantity, low_stock_alert, images, tryon_images,
+    stock_quantity, low_stock_alert, images, tryon_images, prescription_data,
   } = req.body || {}
 
   if (!sku || typeof sku !== 'string' || !sku.trim()) {
@@ -120,6 +133,7 @@ async function createVariant(req, res) {
         low_stock_alert: low ?? 5,
         images: images ?? [],
         tryon_images: tryon_images ?? [],
+        prescription_data: prescription_data ?? null,
       },
       select: {
         variant_id: true,
@@ -133,6 +147,7 @@ async function createVariant(req, res) {
         low_stock_alert: true,
         images: true,
         tryon_images: true,
+        prescription_data: true,
         created_at: true,
         updated_at: true,
       }
@@ -162,7 +177,7 @@ async function updateVariant(req, res) {
 
   const {
     sku, color_name, color_hex, size, price_adjustment,
-    stock_quantity, low_stock_alert, images, tryon_images,
+    stock_quantity, low_stock_alert, images, tryon_images, prescription_data,
   } = req.body || {}
 
   if (sku !== undefined) {
@@ -206,6 +221,7 @@ async function updateVariant(req, res) {
         ...(low_stock_alert !== undefined ? { low_stock_alert: low } : {}),
         ...(images !== undefined ? { images } : {}),
         ...(tryon_images !== undefined ? { tryon_images } : {}),
+        ...(prescription_data !== undefined ? { prescription_data } : {}),
       },
       select: {
         variant_id: true,
@@ -219,6 +235,7 @@ async function updateVariant(req, res) {
         low_stock_alert: true,
         images: true,
         tryon_images: true,
+        prescription_data: true,
         created_at: true,
         updated_at: true,
       }

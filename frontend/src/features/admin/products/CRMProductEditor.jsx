@@ -75,7 +75,7 @@ const inputStyle = {
   transition: 'border-color 0.16s ease',
 }
 const handleFocus = e => e.target.style.borderColor = '#76CDD6'
-const handleBlur  = e => e.target.style.borderColor = 'rgba(118,205,214,0.30)'
+const handleBlur = e => e.target.style.borderColor = 'rgba(118,205,214,0.30)'
 
 function PaletteInput({ value, onChange, inputMode }) {
   return (
@@ -92,7 +92,7 @@ function PaletteInput({ value, onChange, inputMode }) {
 
 function PaletteBtn({ onClick, disabled, children, variant = 'primary' }) {
   const isPrimary = variant === 'primary'
-  const isDanger  = variant === 'danger'
+  const isDanger = variant === 'danger'
   const base = isDanger
     ? { background: 'linear-gradient(135deg,#e05555,#c0392b)', color: '#fff', border: 'none' }
     : isPrimary
@@ -183,17 +183,22 @@ export default function CRMProductEditor({ mode }) {
   const [newBrandName, setNewBrandName] = useState('')
   const [thumbnailUrl, setThumbnailUrl] = useState('')
 
+
   const [defaultVariant, setDefaultVariant] = useState({
-    sku: '', stock_quantity: '', low_stock_alert: '', color_name: '', color_hex: '', size: '', price_adjustment: '',
-  })
+  sku: '', stock_quantity: '', low_stock_alert: '', color_name: '', color_hex: '', size: '', price_adjustment: '',
+  sph: '', cyl: '', axis: '', bc: '', dia: '',
+  prescriptions: [],
+})
   const [defaultVariantErrors, setDefaultVariantErrors] = useState({})
 
   const [variantsState, setVariantsState] = useState({ loading: false, error: null, rows: [] })
   const [variantBusyId, setVariantBusyId] = useState(null)
   const [variantConfirmDeleteId, setVariantConfirmDeleteId] = useState(null)
   const [variantDrafts, setVariantDrafts] = useState({})
+  const [prescriptionDrafts, setPrescriptionDrafts] = useState({})
   const [variantNew, setVariantNew] = useState({
     sku: '', stock_quantity: '', low_stock_alert: '', color_name: '', color_hex: '', size: '', price_adjustment: '', images: [],
+    sph: '', cyl: '', axis: '', bc: '', dia: '',
   })
   const [variantNewImages, setVariantNewImages] = useState([])
   const [variantNewUploadedPaths, setVariantNewUploadedPaths] = useState([])
@@ -208,6 +213,13 @@ export default function CRMProductEditor({ mode }) {
   )
   const [errors, setErrors] = useState({})
 
+const isLenses = useMemo(() => {
+  const catId = String(values.category_id || '')
+  const selectedCat = (options.categories || []).find(c => c.category_id === catId)
+  const name = (selectedCat?.name || '').toLowerCase()
+  console.log('DEBUG - catId:', catId, 'catName:', name, 'isLenses:', name === 'lenses')
+  return name === 'lenses'
+}, [values.category_id, options.categories])
   const loadOptions = useCallback(async () => {
     setOptions({ loading: true, error: null, categories: [], brands: [] })
     try {
@@ -254,6 +266,7 @@ export default function CRMProductEditor({ mode }) {
     setVariantsState({ loading: true, error: null, rows: [] })
     try {
       const res = await adminProductService.listProductVariants(productId)
+      console.log('First variant prescriptions:', res.data?.[0]?.variant_prescriptions)
       setVariantsState({ loading: false, error: null, rows: res.data || [] })
     } catch (e) {
       setVariantsState({ loading: false, error: e?.message || e?.error || 'Failed to load variants', rows: [] })
@@ -361,6 +374,14 @@ export default function CRMProductEditor({ mode }) {
                   try {
                     const variantPayload = buildVariantPayload(defaultVariant, uploadedPaths, uploadedTryOnImagePaths)
                     await adminProductService.createProductVariant(newIdStr, variantPayload)
+                    if (defaultVariant.prescriptions?.length > 0) {
+                       console.log('Creating prescriptions for variant:', newIdStr, defaultVariant.prescriptions)
+                      for (const rx of defaultVariant.prescriptions) {
+                        if (rx.sph || rx.cyl) {
+                          await adminProductService.createVariantPrescription(newIdStr, rx)
+                        }
+                      }
+                    }
                   } catch (e) {
                     const msg = e?.message || e?.error || 'Variant creation failed'
                     setServerMessage(`Product created, but variant failed: ${msg}`)
@@ -538,14 +559,25 @@ export default function CRMProductEditor({ mode }) {
                       {['stock_quantity', 'low_stock_alert', 'price_adjustment'].map((k) => (
                         <div key={k}>
                           <FieldLabel>{k}</FieldLabel>
-                          <PaletteInput
-                            value={current[k] ?? ''}
-                            onChange={(e) => setVariantDrafts((m) => ({ ...m, [v.variant_id]: { ...(m[v.variant_id] || {}), [k]: e.target.value } }))}
-                            inputMode={k === 'price_adjustment' ? 'decimal' : 'numeric'}
-                          />
+                          {k === 'stock_quantity' && isLenses ? (
+                            <input
+                              value={v.variant_prescriptions?.reduce((sum, rx) => sum + (rx.stock_quantity || 0), 0) || 0}
+                              readOnly
+                              className="w-full px-2 py-1.5 text-xs border rounded opacity-60"
+                              style={{ border: '1px solid rgba(118,205,214,0.30)', borderRadius: '4px', background: '#EFF8FE' }}
+                            />
+                          ) : (
+                            <PaletteInput
+                              value={current[k] ?? ''}
+                              onChange={(e) => setVariantDrafts((m) => ({ ...m, [v.variant_id]: { ...(m[v.variant_id] || {}), [k]: e.target.value } }))}
+                              inputMode={k === 'price_adjustment' ? 'decimal' : 'numeric'}
+                            />
+                          )}
                         </div>
                       ))}
                     </div>
+
+
 
                     {/* Images */}
                     <div className="mt-5">
@@ -672,6 +704,100 @@ export default function CRMProductEditor({ mode }) {
                         </div>
                       ) : null}
                     </div>
+                    {console.log('isLenses check:', isLenses, 'v.variant_prescriptions:', v.variant_prescriptions)}
+                    {/* Prescriptions Section */}
+                    {isLenses && (
+                      <div className="mt-5 border-t border-[rgba(118,205,214,0.30)] pt-5">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="text-sm font-semibold" style={{ color: '#1E1D22' }}>Prescriptions</div>
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              await adminProductService.createVariantPrescription(v.variant_id, {
+                                sph: '', cyl: '', axis: null, bc: null, dia: null, stock_quantity: 0
+                              })
+                              loadVariants()
+                            }}
+                            className="text-[10px] font-bold uppercase px-3 py-1.5 transition-colors"
+                            style={{ border: '1px solid #76CDD6', color: '#76CDD6', borderRadius: '4px', background: 'transparent' }}
+                            onMouseEnter={e => { e.currentTarget.style.background = '#76CDD6'; e.currentTarget.style.color = '#fff' }}
+                            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#76CDD6' }}
+                          >
+                            + Add Prescription
+                          </button>
+                        </div>
+{console.log('length check:', v.variant_prescriptions?.length, v.variant_prescriptions)}
+                        {v.variant_prescriptions?.length > 0 ? (
+                          <div className="space-y-2">
+                            {v.variant_prescriptions.map((rx, rxi) => (
+                              <div key={rx.id} className="grid grid-cols-3 md:grid-cols-6 gap-2 p-3 rounded-lg" style={{ background: '#EFF8FE', border: '1px solid rgba(118,205,214,0.25)' }}>
+                                {['sph', 'cyl', 'axis', 'bc', 'dia'].map(field => (
+                                  <div key={field}>
+                                    <label className="text-[9px] uppercase tracking-wider font-bold mb-0.5 block" style={{ color: 'rgba(30,29,34,0.45)' }}>{field.toUpperCase()}</label>
+                                    <input
+                                      value={prescriptionDrafts[rx.id]?.[field] ?? rx[field] ?? ''}
+                                      onChange={(e) => {
+                                        setPrescriptionDrafts(prev => ({
+                                          ...prev,
+                                          [rx.id]: { ...(prev[rx.id] || {}), [field]: e.target.value }
+                                        }))
+                                      }}
+                                      className="w-full px-2 py-1.5 text-xs border rounded"
+                                      style={{ border: '1px solid rgba(118,205,214,0.30)', borderRadius: '4px', background: '#fff' }}
+                                      placeholder={field === 'axis' ? '180' : field === 'sph' ? '-2.50' : field === 'cyl' ? '-1.25' : field === 'bc' ? '8.6' : '14.2'}
+                                    />
+                                  </div>
+                                ))}
+                                <div>
+                                  <label className="text-[9px] uppercase tracking-wider font-bold mb-0.5 block" style={{ color: 'rgba(30,29,34,0.45)' }}>Stock</label>
+                                  <input
+                                    value={prescriptionDrafts[rx.id]?.stock_quantity ?? rx.stock_quantity ?? 0}
+                                    onChange={(e) => {
+                                      setPrescriptionDrafts(prev => ({
+                                        ...prev,
+                                        [rx.id]: { ...(prev[rx.id] || {}), stock_quantity: e.target.value }
+                                      }))
+                                    }}
+                                    className="w-full px-2 py-1.5 text-xs border rounded"
+                                    style={{ border: '1px solid rgba(118,205,214,0.30)', borderRadius: '4px', background: '#fff' }}
+                                  />
+                                </div>
+                                <div className="flex items-end gap-1">
+                                  <button
+                                    onClick={async () => {
+                                      const draft = prescriptionDrafts[rx.id] || {}
+                                      await adminProductService.updateVariantPrescription(rx.id, {
+                                        sph: draft.sph ?? rx.sph,
+                                        cyl: draft.cyl ?? rx.cyl,
+                                        axis: draft.axis ?? rx.axis,
+                                        bc: draft.bc ?? rx.bc,
+                                        dia: draft.dia ?? rx.dia,
+                                        stock_quantity: draft.stock_quantity ?? rx.stock_quantity,
+                                      })
+                                      setPrescriptionDrafts(prev => { const next = { ...prev }; delete next[rx.id]; return next })
+                                      loadVariants()
+                                    }}
+                                    className="text-[10px] font-bold uppercase px-2 py-1.5 transition-colors"
+                                    style={{ border: '1px solid #76CDD6', color: '#76CDD6', borderRadius: '4px', background: 'transparent' }}
+                                  >
+                                    Save
+                                  </button>
+                                  <button
+                                    onClick={() => adminProductService.deleteVariantPrescription(rx.id).then(loadVariants)}
+                                    className="text-[10px] font-bold uppercase px-2 py-1.5 transition-colors"
+                                    style={{ border: '1px solid rgba(224,85,85,0.40)', color: '#e05555', borderRadius: '4px', background: 'transparent' }}
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-xs" style={{ color: 'rgba(30,29,34,0.40)' }}>No prescriptions added yet.</p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )
               })}
@@ -712,6 +838,17 @@ export default function CRMProductEditor({ mode }) {
                 </div>
               ))}
             </div>
+
+            {isLenses && (
+              <div className="mt-4 pt-4" style={{ borderTop: '1px solid rgba(118,205,214,0.18)' }}>
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-xs font-bold uppercase tracking-wider" style={{ color: '#76CDD6' }}>Prescriptions (added after variant is created)</p>
+                </div>
+                <p className="text-[10px]" style={{ color: 'rgba(30,29,34,0.45)' }}>
+                  Create the variant first, then add prescriptions from the variant card above.
+                </p>
+              </div>
+            )}
 
             {/* New variant images */}
             <div className="mt-4">

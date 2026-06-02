@@ -66,4 +66,17 @@ export const adminProductService = {
   async deleteProductVariant(variantId) {
     return adminApiClient.delete(`/admin/variants/${variantId}`)
   },
+
+  async listVariantPrescriptions(variantId) {
+  return adminApiClient.get(`/admin/variants/${variantId}/prescriptions`)
+},
+async createVariantPrescription(variantId, payload) {
+  return adminApiClient.post(`/admin/variants/${variantId}/prescriptions`, payload)
+},
+async updateVariantPrescription(id, payload) {
+  return adminApiClient.patch(`/admin/prescriptions/${id}`, payload)
+},
+async deleteVariantPrescription(id) {
+  return adminApiClient.delete(`/admin/prescriptions/${id}`)
+},
 }

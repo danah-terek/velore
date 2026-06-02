@@ -370,7 +370,7 @@ export default function ProductDetail() {
     <div className="px-4 md:px-8 lg:px-12 py-10 max-w-6xl mx-auto bg-white text-neutral-900">
       {sizeGuideOpen && <SizeGuideModal onClose={() => setSizeGuideOpen(false)} />}
 
-   <style>{`
+      <style>{`
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         @keyframes bannerPulse {
@@ -402,8 +402,8 @@ export default function ProductDetail() {
                 key={i}
                 onClick={() => setSelectedImage(i)}
                 className={`w-14 h-14 md:w-16 md:h-16 rounded-xl overflow-hidden flex-shrink-0 relative transition-all duration-300 bg-neutral-50 border p-0.5 ${selectedImage === i
-                    ? 'border-neutral-900 shadow-sm scale-[1.02]'
-                    : 'border-neutral-100 hover:border-neutral-300'
+                  ? 'border-neutral-900 shadow-sm scale-[1.02]'
+                  : 'border-neutral-100 hover:border-neutral-300'
                   }`}
               >
                 <img
@@ -421,9 +421,9 @@ export default function ProductDetail() {
         {/* RIGHT — DETAILED DESIGN SPECIFICATIONS */}
         <div className="flex flex-col gap-5 w-full">
 
-{isGlasses && product.virtual_try_on && (
+          {isGlasses && product.virtual_try_on && (
             <div
-onClick={handleTryOn}
+              onClick={handleTryOn}
               className="cursor-pointer w-full rounded-2xl px-5 py-4 flex items-center gap-4 mb-2 group transition-all duration-300 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99]"
               style={{ background: 'linear-gradient(135deg, #e8f9fb 0%, #c8eef3 100%)', border: '1.5px solid #76CDD6', animation: 'bannerPulse 2.5s ease-in-out infinite' }}
             >
@@ -437,7 +437,7 @@ onClick={handleTryOn}
           )}
 
           <div className="mb-1.5 flex items-center justify-between">
-                        <span className="text-xs bg-neutral-50 border border-neutral-100 px-2.5 py-1 rounded text-neutral-500">
+            <span className="text-xs bg-neutral-50 border border-neutral-100 px-2.5 py-1 rounded text-neutral-500">
               Collection Edition
             </span>
             <button
@@ -452,11 +452,10 @@ onClick={handleTryOn}
                   colors: product.product_variants?.filter(v => v.color_name).map(v => v.color_hex) || [],
                 })
               }}
-              className={`p-2 rounded-full transition-all duration-300 ${
-                favorited
-                  ? 'bg-red-50 text-red-500'
-                  : 'bg-neutral-50 text-neutral-400 hover:text-red-400'
-              }`}
+              className={`p-2 rounded-full transition-all duration-300 ${favorited
+                ? 'bg-red-50 text-red-500'
+                : 'bg-neutral-50 text-neutral-400 hover:text-red-400'
+                }`}
               aria-label={favorited ? 'Remove from favorites' : 'Add to favorites'}
             >
               <Heart size={18} fill={favorited ? 'currentColor' : 'none'} />
@@ -493,8 +492,8 @@ onClick={handleTryOn}
                     }}
                     title={v.color_name}
                     className={`w-6 h-6 rounded-full border transition-all duration-300 flex items-center justify-center ${selectedVariant?.variant_id === v.variant_id
-                        ? 'ring-2 ring-neutral-900 border-white ring-offset-1 scale-105'
-                        : 'border-neutral-200 hover:scale-105'
+                      ? 'ring-2 ring-neutral-900 border-white ring-offset-1 scale-105'
+                      : 'border-neutral-200 hover:scale-105'
                       }`}
                     style={{ backgroundColor: v.color_hex || '#ccc' }}
                   />
@@ -515,8 +514,8 @@ onClick={handleTryOn}
                       key={size}
                       onClick={() => variantForSize && setSelectedVariant(variantForSize)}
                       className={`px-4 py-2 text-sm border rounded-lg transition-all ${isSelected
-                          ? 'bg-neutral-950 text-white border-neutral-950 shadow-sm scale-[1.02]'
-                          : 'border-neutral-200 text-neutral-600 hover:border-neutral-400 bg-white'
+                        ? 'bg-neutral-950 text-white border-neutral-950 shadow-sm scale-[1.02]'
+                        : 'border-neutral-200 text-neutral-600 hover:border-neutral-400 bg-white'
                         }`}
                     >
                       {size}
@@ -541,15 +540,17 @@ onClick={handleTryOn}
           </div>
 
           {/* ✨ Virtual Try-On — Prominent CTA */}
-          
+
           {/* Stock Monitor Alert System */}
-          {stockQty !== null && (
-            <div className="flex items-center gap-2 border-t border-neutral-100 pt-3">
-              <span className={`w-2 h-2 rounded-full ${stockQty === 0 ? 'bg-red-500' : stockQty <= (selectedVariant?.low_stock_alert || 5) ? 'bg-orange-400 animate-pulse' : 'bg-green-500'}`} />
-              <p className={`text-xs ${stockQty === 0 ? 'text-red-500 font-medium' : stockQty <= (selectedVariant?.low_stock_alert || 5) ? 'text-orange-500 font-semibold' : 'text-neutral-400'}`}>
-                {stockQty === 0 ? 'Out of stock' : stockQty <= (selectedVariant?.low_stock_alert || 5) ? `Low Stock: Only ${stockQty} remaining` : 'In Stock'}
-              </p>
-            </div>
+          {stockQty !== null && !isLenses && (
+            <p className={`text-xs ${stockQty <= (selectedVariant?.low_stock_alert || 5) ? 'text-orange-500' : 'text-green-600'}`}>
+              {stockQty === 0 ? 'Out of stock' : stockQty <= (selectedVariant?.low_stock_alert || 5) ? `Only ${stockQty} left` : 'In stock'}
+            </p>
+          )}
+          {isLenses && (
+            <p className="text-xs text-green-600">
+              {selectedVariant?.variant_prescriptions?.reduce((sum, rx) => sum + (rx.stock_quantity || 0), 0) || 0} lenses in stock
+            </p>
           )}
 
           {stockMessage && (
@@ -560,12 +561,57 @@ onClick={handleTryOn}
           )}
 
           {/* Adaptive Prescription Drawer Injection */}
-          {(isGlasses || (isLenses && product.specifications?.prescription_applies !== false)) && (
+          {/* Prescription for Glasses — Keep the manual form */}
+          {isGlasses && (
             <PrescriptionSection
-              isLenses={isLenses}
+              isLenses={false}
               prescription={prescription}
               setPrescription={setPrescription}
             />
+          )}
+
+          {/* Prescription for Lenses — Dropdown to select variant */}
+          {isLenses && product.product_variants?.length > 0 && (
+            <div className="border border-neutral-200/80 bg-neutral-50/30 rounded-2xl p-5 my-2">
+              <p className="text-sm font-semibold text-neutral-800 mb-3">Select Your Prescription</p>
+              <select
+                value={selectedVariant?.variant_id || ''}
+                onChange={(e) => {
+                  const v = product.product_variants.find(v => v.variant_id == e.target.value)
+                  if (v) {
+                    setSelectedVariant(v)
+                    setSelectedImage(0)
+                  }
+                }}
+                className="w-full border border-neutral-200 px-4 py-3 text-sm rounded-lg outline-none focus:border-neutral-900 bg-white"
+              >
+                {product.product_variants.map(v => {
+                  const pd = v.prescription_data || {}
+                  const hasPrescription = pd.sph || pd.cyl || pd.axis || pd.bc || pd.dia
+                  const label = hasPrescription
+                    ? [pd.sph && `SPH: ${pd.sph}`, pd.cyl && `CYL: ${pd.cyl}`, pd.axis && `Axis: ${pd.axis}°`, pd.bc && `BC: ${pd.bc}`, pd.dia && `DIA: ${pd.dia}`].filter(Boolean).join(' | ')
+                    : v.sku || `Variant #${v.variant_id}`
+                  const stock = v.stock_quantity !== null && v.stock_quantity !== undefined ? `${v.stock_quantity} in stock` : ''
+                  return (
+                    <option key={v.variant_id} value={v.variant_id}>
+                      {label} {stock ? `(${stock})` : ''}
+                    </option>
+                  )
+                })}
+              </select>
+              {selectedVariant?.prescription_data && (
+                <div className="mt-3 p-3 bg-white rounded-lg border border-neutral-100">
+                  <p className="text-xs text-neutral-500 mb-1">Selected prescription details:</p>
+                  <div className="grid grid-cols-3 gap-2 text-xs">
+                    {selectedVariant.prescription_data.sph && <span>SPH: <strong>{selectedVariant.prescription_data.sph}</strong></span>}
+                    {selectedVariant.prescription_data.cyl && <span>CYL: <strong>{selectedVariant.prescription_data.cyl}</strong></span>}
+                    {selectedVariant.prescription_data.axis && <span>Axis: <strong>{selectedVariant.prescription_data.axis}°</strong></span>}
+                    {selectedVariant.prescription_data.bc && <span>BC: <strong>{selectedVariant.prescription_data.bc}</strong></span>}
+                    {selectedVariant.prescription_data.dia && <span>DIA: <strong>{selectedVariant.prescription_data.dia}</strong></span>}
+                  </div>
+                </div>
+              )}
+            </div>
           )}
 
           {/* DOCK TRANSACTION SYSTEM */}

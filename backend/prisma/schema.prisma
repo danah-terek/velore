@@ -256,9 +256,11 @@ model product_variants {
   stock_quantity         Int?                     @default(0)
   low_stock_alert        Int?                     @default(5)
   images                 String[]
+  variant_prescriptions variant_prescriptions[]
+  tryon_images           String[]
+  prescription_data      Json?                    // ← ADD THIS
   created_at             DateTime?                @default(now()) @db.Timestamptz(6)
   updated_at             DateTime?                @default(now()) @db.Timestamptz(6)
-  tryon_images           String[]
   cart_items             cart_items[]
   orders_items           orders_items[]
   prescription_inventory prescription_inventory[]
@@ -449,4 +451,16 @@ model legal_pages {
   title      String
   content    String    @default("")
   updated_at DateTime? @updatedAt @db.Timestamptz(6)
+}
+
+model variant_prescriptions {
+  id              BigInt             @id @default(autoincrement())
+  variant_id      BigInt
+  sph             String?
+  cyl             String?
+  axis            Int?
+  bc              Float?
+  dia             Float?
+  stock_quantity  Int?               @default(0)
+  product_variants product_variants  @relation(fields: [variant_id], references: [variant_id], onDelete: Cascade)
 }

@@ -113,6 +113,13 @@ export function buildVariantPayload(values, imagePaths, tryOnImagePaths = []) {
     low_stock_alert: values.low_stock_alert !== '' ? Number(values.low_stock_alert) : undefined,
     images: Array.isArray(imagePaths) ? imagePaths : [],
     tryon_images: Array.isArray(tryOnImagePaths) ? tryOnImagePaths : [],
+    prescription_data: (values.sph || values.cyl || values.axis || values.bc || values.dia) ? {
+      sph: values.sph || null,
+      cyl: values.cyl || null,
+      axis: values.axis ? parseInt(values.axis) : null,
+      bc: values.bc ? parseFloat(values.bc) : null,
+      dia: values.dia ? parseFloat(values.dia) : null,
+    } : undefined,
   }
   Object.keys(payload).forEach((k) => payload[k] === undefined && delete payload[k])
   return payload
@@ -132,7 +139,7 @@ const inputStyle = {
   transition: 'border-color 0.16s ease',
 }
 const onFocus = e => e.target.style.borderColor = '#76CDD6'
-const onBlur  = e => e.target.style.borderColor = 'rgba(118,205,214,0.30)'
+const onBlur = e => e.target.style.borderColor = 'rgba(118,205,214,0.30)'
 
 function PInput({ value, onChange, placeholder, inputMode, autoFocus, disabled }) {
   return (
@@ -278,8 +285,8 @@ export default function CRMProductForm({
     typeof serverMessage === 'string' &&
     (/variant failed/i.test(serverMessage) || /partial/i.test(serverMessage))
 
-const catId = String(values.category_id || '')
-const selectedCat = categories?.find(c => c.category_id === catId)
+  const catId = String(values.category_id || '')
+  const selectedCat = categories?.find(c => c.category_id === catId)
   const catName = selectedCat?.name?.toLowerCase() || ''
   const isLenses = catName === 'lenses'
   const isGlasses = catName === 'optical glasses'
@@ -364,7 +371,7 @@ const selectedCat = categories?.find(c => c.category_id === catId)
               </button>
             </div>
           </Field>
-{isFrames && (
+          {isFrames && (
             <Field label="Frame Shape (optional)" error={errors.frame_shape}>
               <PInput value={values.frame_shape} onChange={(e) => onChange({ frame_shape: e.target.value })} placeholder="square / round / aviator…" />
             </Field>
@@ -395,12 +402,6 @@ const selectedCat = categories?.find(c => c.category_id === catId)
           </>)}
 
           {isLenses && (<>
-            <Field label="Diameter (mm)">
-              <PInput value={values.diameter || ''} onChange={(e) => onChange({ diameter: e.target.value })} placeholder="14.2" inputMode="decimal" />
-            </Field>
-            <Field label="Base Curve (mm)">
-              <PInput value={values.base_curve || ''} onChange={(e) => onChange({ base_curve: e.target.value })} placeholder="8.6" inputMode="decimal" />
-            </Field>
             <Field label="Water Content (%)">
               <PInput value={values.water_content || ''} onChange={(e) => onChange({ water_content: e.target.value })} placeholder="55" inputMode="numeric" />
             </Field>
@@ -431,7 +432,7 @@ const selectedCat = categories?.find(c => c.category_id === catId)
             </Field>
           </>)}
 
-{!isLenses && (
+          {!isLenses && (
             <Field label="Gender (optional)" error={errors.gender}>
               <PSelect value={values.gender} onChange={(e) => onChange({ gender: e.target.value })}>
                 {genderOptions.map((g) => <option key={g || 'empty'} value={g}>{g ? g : '—'}</option>)}
@@ -440,7 +441,7 @@ const selectedCat = categories?.find(c => c.category_id === catId)
           )}
 
           <Field label="Active" error={errors.is_active}>
-                        <PCheckbox
+            <PCheckbox
               id="is_active"
               checked={!!values.is_active}
               onChange={(e) => onChange({ is_active: e.target.checked })}
@@ -448,19 +449,19 @@ const selectedCat = categories?.find(c => c.category_id === catId)
             />
           </Field>
           <Field label="Virtual Try-On">
-  <div className="flex items-center gap-3 min-h-[42px] px-3 py-2 rounded-xl border border-[rgba(var(--velore-border-soft),0.95)] bg-[rgba(var(--velore-pearl),0.85)]">
-    <input
-      id="virtual_try_on"
-      type="checkbox"
-      checked={!!values.virtual_try_on}
-      onChange={(e) => onChange({ virtual_try_on: e.target.checked })}
-      className="w-4 h-4 rounded border-[rgba(var(--velore-border-soft),0.95)] text-[rgb(var(--velore-accent))] focus:ring-[rgba(var(--velore-ring),0.35)]"
-    />
-    <label htmlFor="virtual_try_on" className="text-sm text-[rgba(var(--velore-fg),0.78)]">
-      Enable Virtual Try-On
-    </label>
-  </div>
-</Field>
+            <div className="flex items-center gap-3 min-h-[42px] px-3 py-2 rounded-xl border border-[rgba(var(--velore-border-soft),0.95)] bg-[rgba(var(--velore-pearl),0.85)]">
+              <input
+                id="virtual_try_on"
+                type="checkbox"
+                checked={!!values.virtual_try_on}
+                onChange={(e) => onChange({ virtual_try_on: e.target.checked })}
+                className="w-4 h-4 rounded border-[rgba(var(--velore-border-soft),0.95)] text-[rgb(var(--velore-accent))] focus:ring-[rgba(var(--velore-ring),0.35)]"
+              />
+              <label htmlFor="virtual_try_on" className="text-sm text-[rgba(var(--velore-fg),0.78)]">
+                Enable Virtual Try-On
+              </label>
+            </div>
+          </Field>
         </div>
       </FormSection>
 
@@ -500,6 +501,74 @@ const selectedCat = categories?.find(c => c.category_id === catId)
               <PInput value={defaultVariant.price_adjustment} onChange={(e) => onDefaultVariantChange({ price_adjustment: e.target.value })} placeholder="0" inputMode="decimal" />
             </Field>
           </div>
+
+          {/* Multiple Prescriptions for Default Variant */}
+          {isLenses && (
+            <div className="mt-4 pt-4" style={{ borderTop: '1px solid rgba(118,205,214,0.18)' }}>
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs font-bold uppercase tracking-wider" style={{ color: '#76CDD6' }}>Prescriptions</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newRx = { sph: '', cyl: '', axis: '', bc: '', dia: '', stock_quantity: 0 }
+                    onDefaultVariantChange({
+                      prescriptions: [...(defaultVariant.prescriptions || []), newRx]
+                    })
+                  }}
+                  className="text-[10px] font-bold uppercase px-3 py-1.5"
+                  style={{ border: '1px solid #76CDD6', color: '#76CDD6', borderRadius: '4px', background: 'transparent' }}
+                >
+                  + Add Prescription
+                </button>
+              </div>
+              {(defaultVariant.prescriptions || []).map((rx, i) => (
+                <div key={i} className="grid grid-cols-3 md:grid-cols-6 gap-2 p-3 mb-2 rounded-lg" style={{ background: '#fff', border: '1px solid rgba(118,205,214,0.25)' }}>
+                  {['sph', 'cyl', 'axis', 'bc', 'dia'].map(field => (
+                    <div key={field}>
+                      <label className="text-[9px] uppercase font-bold block mb-0.5" style={{ color: 'rgba(30,29,34,0.45)' }}>{field}</label>
+                      <input
+                        value={rx[field] || ''}
+                        onChange={(e) => {
+                          const updated = [...(defaultVariant.prescriptions || [])]
+                          updated[i] = { ...updated[i], [field]: e.target.value }
+                          onDefaultVariantChange({ prescriptions: updated })
+                        }}
+                        className="w-full px-2 py-1.5 text-xs border rounded"
+                        style={{ border: '1px solid rgba(118,205,214,0.30)', borderRadius: '4px' }}
+                        placeholder={field === 'sph' ? '-2.50' : field === 'cyl' ? '-1.25' : field === 'axis' ? '180' : field === 'bc' ? '8.6' : '14.2'}
+                      />
+                    </div>
+                  ))}
+                  <div>
+                    <label className="text-[9px] uppercase font-bold block mb-0.5" style={{ color: 'rgba(30,29,34,0.45)' }}>Stock</label>
+                    <input
+                      value={rx.stock_quantity || 0}
+                      onChange={(e) => {
+                        const updated = [...(defaultVariant.prescriptions || [])]
+                        updated[i] = { ...updated[i], stock_quantity: e.target.value }
+                        onDefaultVariantChange({ prescriptions: updated })
+                      }}
+                      className="w-full px-2 py-1.5 text-xs border rounded"
+                      style={{ border: '1px solid rgba(118,205,214,0.30)', borderRadius: '4px' }}
+                    />
+                  </div>
+                  <div className="flex items-end">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const updated = (defaultVariant.prescriptions || []).filter((_, idx) => idx !== i)
+                        onDefaultVariantChange({ prescriptions: updated })
+                      }}
+                      className="text-[10px] font-bold uppercase px-2 py-1.5"
+                      style={{ border: '1px solid rgba(224,85,85,0.40)', color: '#e05555', borderRadius: '4px', background: 'transparent' }}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Image upload area */}
           <div

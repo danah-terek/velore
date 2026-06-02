@@ -43,6 +43,19 @@ const productSelect = {
       low_stock_alert: true,
       images: true,
       tryon_images: true,
+      prescription_data: true,
+      variant_prescriptions: {
+        orderBy: { id: 'asc' },
+        select: {
+          id: true,
+          sph: true,
+          cyl: true,
+          axis: true,
+          bc: true,
+          dia: true,
+          stock_quantity: true,
+        }
+      },
     },
   },
 };
@@ -193,7 +206,7 @@ const deleteProduct = async (product_id) => {
 // ─── GET RECOMMENDED PRODUCTS ─────────────────────────────────────────────────
 const getRecommended = async ({ exclude = [], limit = 6 } = {}) => {
   // Build the WHERE clause for exclusions
-  const excludeClause = exclude.length > 0 
+  const excludeClause = exclude.length > 0
     ? `AND p.product_id NOT IN (${exclude.map(Number).join(',')})`
     : '';
 
