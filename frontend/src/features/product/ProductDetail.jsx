@@ -418,7 +418,7 @@ export default function ProductDetail() {
           </div>
         </div>
 
-{/* RIGHT — DETAILED DESIGN SPECIFICATIONS */}
+        {/* RIGHT — DETAILED DESIGN SPECIFICATIONS */}
         <div className="flex flex-col gap-5 w-full">
           <h1 className="text-2xl font-semibold text-neutral-900">{product.name}</h1>
           <p className="text-xl font-light text-neutral-700">{formatPrice(finalPrice)}</p>
@@ -440,7 +440,7 @@ export default function ProductDetail() {
           )}
 
           <div className="mb-1.5 flex items-center justify-between">
-          
+
             <button
               onClick={() => {
                 const firstImage = product.product_variants?.[0]?.images?.[0] || ''
@@ -548,7 +548,7 @@ export default function ProductDetail() {
               {stockQty === 0 ? 'Out of stock' : stockQty <= (selectedVariant?.low_stock_alert || 5) ? `Only ${stockQty} left` : 'In stock'}
             </p>
           )}
-{isLenses && (
+          {isLenses && (
             <p className="text-xs text-green-600">
               {selectedVariant?.variant_prescriptions?.reduce((sum, rx) => sum + (rx.stock_quantity || 0), 0) || 0} lenses in stock (across {selectedVariant?.variant_prescriptions?.length || 0} prescriptions)
             </p>
@@ -575,42 +575,76 @@ export default function ProductDetail() {
           {isLenses && product.product_variants?.length > 0 && (
             <div className="border border-neutral-200/80 bg-neutral-50/30 rounded-2xl p-5 my-2">
               <p className="text-sm font-semibold text-neutral-800 mb-3">Select Your Prescription</p>
-              <select
-                value={selectedVariant?.variant_id || ''}
-                onChange={(e) => {
-                  const v = product.product_variants.find(v => v.variant_id == e.target.value)
-                  if (v) {
-                    setSelectedVariant(v)
-                    setSelectedImage(0)
-                  }
-                }}
-                className="w-full border border-neutral-200 px-4 py-3 text-sm rounded-lg outline-none focus:border-neutral-900 bg-white"
-              >
-{product.product_variants.map((v, vi) => {
-                  const rxs = v.variant_prescriptions || []
-                  const label = rxs.length > 0
-                    ? rxs.map(rx => [rx.sph && `SPH ${rx.sph}`, rx.cyl && `CYL ${rx.cyl}`, rx.bc && `BC ${rx.bc}`, rx.dia && `DIA ${rx.dia}`].filter(Boolean).join(' | ')).join(' / ')
-                    : `Variant ${vi + 1}`
-                  return (
-                    <option key={v.variant_id} value={v.variant_id}>
-                      {label}
-                    </option>
-                  )
-                })}
 
-              </select>
-              {selectedVariant?.prescription_data && (
-                <div className="mt-3 p-3 bg-white rounded-lg border border-neutral-100">
-                  <p className="text-xs text-neutral-500 mb-1">Selected prescription details:</p>
-                  <div className="grid grid-cols-3 gap-2 text-xs">
-                    {selectedVariant.prescription_data.sph && <span>SPH: <strong>{selectedVariant.prescription_data.sph}</strong></span>}
-                    {selectedVariant.prescription_data.cyl && <span>CYL: <strong>{selectedVariant.prescription_data.cyl}</strong></span>}
-                    {selectedVariant.prescription_data.axis && <span>Axis: <strong>{selectedVariant.prescription_data.axis}°</strong></span>}
-                    {selectedVariant.prescription_data.bc && <span>BC: <strong>{selectedVariant.prescription_data.bc}</strong></span>}
-                    {selectedVariant.prescription_data.dia && <span>DIA: <strong>{selectedVariant.prescription_data.dia}</strong></span>}
-                  </div>
-                </div>
-              )}
+              {/* Flatten all prescriptions from all variants into a single array */}
+              {(() => {
+                const allPrescriptions = []
+                product.product_variants.forEach(variant => {
+                  const rxs = variant.variant_prescriptions || []
+                  rxs.forEach(rx => {
+                    allPrescriptions.push({
+                      ...rx,
+                      variant_id: variant.variant_id,
+                      variant: variant
+                    })
+                  })
+                })
+
+                if (allPrescriptions.length === 0) {
+                  return <p className="text-sm text-neutral-500">No prescriptions available for this product.</p>
+                }
+
+                return (
+                  <>
+                    <select
+                      value={selectedVariant?.variant_id || ''}
+                      onChange={(e) => {
+                        const selected = allPrescriptions.find(rx => rx.id == e.target.value)
+                        if (selected) {
+                          setSelectedVariant(selected.variant)
+                          setSelectedImage(0)
+                        }
+                      }}
+                      className="w-full border border-neutral-200 px-4 py-3 text-sm rounded-lg outline-none focus:border-neutral-900 bg-white"
+                    >
+                      <option value="">Select a prescription</option>
+                      {allPrescriptions.map((rx) => {
+                        const parts = []
+                        if (rx.sph) parts.push(`SPH ${rx.sph}`)
+                        if (rx.cyl) parts.push(`CYL ${rx.cyl}`)
+                        if (rx.axis) parts.push(`Axis ${rx.axis}°`)
+                        if (rx.bc) parts.push(`BC ${rx.bc}`)
+                        if (rx.dia) parts.push(`DIA ${rx.dia}`)
+                        const label = parts.join(' | ') || `Prescription ${rx.id}`
+                        return (
+                          <option key={rx.id} value={rx.id}>
+                            {label}
+                          </option>
+                        )
+                      })}
+                    </select>
+
+                    {/* Show selected prescription details */}
+                    {selectedVariant && (() => {
+                      const selectedRx = allPrescriptions.find(rx => rx.variant_id === selectedVariant.variant_id)
+                      if (!selectedRx) return null
+                      return (
+                        <div className="mt-3 p-3 bg-white rounded-lg border border-neutral-100">
+                          <p className="text-xs text-neutral-500 mb-1">Selected prescription:</p>
+                          <div className="grid grid-cols-3 gap-2 text-xs">
+                            {selectedRx.sph && <span>SPH: <strong>{selectedRx.sph}</strong></span>}
+                            {selectedRx.cyl && <span>CYL: <strong>{selectedRx.cyl}</strong></span>}
+                            {selectedRx.axis && <span>Axis: <strong>{selectedRx.axis}°</strong></span>}
+                            {selectedRx.bc && <span>BC: <strong>{selectedRx.bc}</strong></span>}
+                            {selectedRx.dia && <span>DIA: <strong>{selectedRx.dia}</strong></span>}
+                          </div>
+                          <p className="text-xs text-neutral-400 mt-2">Stock: {selectedRx.stock_quantity || 0} units available</p>
+                        </div>
+                      )
+                    })()}
+                  </>
+                )
+              })()}
             </div>
           )}
 
