@@ -65,42 +65,42 @@ class FaceShapeClassifier:
             t = self.thresholds
             
             scores = {'Round': 0.0, 'Oval': 0.0, 'Square': 0.0, 'Heart': 0.0, 'Rectangle': 0.0}
-            
-            # Round
-            if r['length_to_width'] < 1.15: scores['Round'] += 30
-            if r['jaw_to_forehead'] > 0.85: scores['Round'] += 25
-            if r['jaw_to_cheekbone'] > 0.85: scores['Round'] += 20
-            if r['chin_to_jaw'] > 0.65: scores['Round'] += 25
-            
-            # Oval
-            if 1.10 <= r['length_to_width'] <= 1.45: scores['Oval'] += 35
-            if 0.80 <= r['jaw_to_forehead'] <= 1.0: scores['Oval'] += 25
-            if 0.85 <= r['forehead_to_cheekbone'] <= 1.05: scores['Oval'] += 20
-            if 0.50 <= r['chin_to_jaw'] <= 0.70: scores['Oval'] += 20
-            
-            # Square
-            if r['jaw_to_forehead'] > 0.95: scores['Square'] += 35
-            if r['jaw_to_cheekbone'] > 0.90: scores['Square'] += 25
-            if r['length_to_width'] < 1.20: scores['Square'] += 20
-            if r['chin_to_jaw'] < 0.55: scores['Square'] += 20
-            
-            # Heart
-            if r['jaw_to_forehead'] < 0.75: scores['Heart'] += 35
-            if r['chin_to_jaw'] < 0.45: scores['Heart'] += 30
-            if r['forehead_to_cheekbone'] > 1.02: scores['Heart'] += 20
-            if r['jaw_to_cheekbone'] < 0.85: scores['Heart'] += 15
-            
-            # Rectangle
-            if r['length_to_width'] > 1.45: scores['Rectangle'] += 40
+
+            # Round — short + wide + rounded chin
+            if r['length_to_width'] < 1.05: scores['Round'] += 40
+            elif r['length_to_width'] < 1.10: scores['Round'] += 20
+            if r['jaw_to_cheekbone'] > 0.90: scores['Round'] += 25
+            if r['chin_to_jaw'] > 0.70: scores['Round'] += 25
+            elif r['chin_to_jaw'] < 0.45: scores['Round'] -= 20
+            if r['jaw_to_forehead'] > 0.90: scores['Round'] += 10
+
+            # Oval — slightly longer, balanced, tapered jaw
+            if 1.10 <= r['length_to_width'] <= 1.45: scores['Oval'] += 40
+            if 0.75 <= r['jaw_to_forehead'] <= 0.92: scores['Oval'] += 25
+            if 0.88 <= r['forehead_to_cheekbone'] <= 1.02: scores['Oval'] += 20
+            if 0.48 <= r['chin_to_jaw'] <= 0.68: scores['Oval'] += 15
+
+            # Square — wide jaw close to forehead, short face, flat chin
+            if r['jaw_to_forehead'] > 0.92: scores['Square'] += 40
+            if r['jaw_to_cheekbone'] > 0.92: scores['Square'] += 25
+            if r['length_to_width'] < 1.15: scores['Square'] += 20
+            if r['chin_to_jaw'] < 0.50: scores['Square'] += 15
+
+            # Heart — wide forehead, narrow jaw, pointed chin
+            if r['jaw_to_forehead'] < 0.78: scores['Heart'] += 40
+            if r['chin_to_jaw'] < 0.42: scores['Heart'] += 40
+            elif r['chin_to_jaw'] < 0.48: scores['Heart'] += 30
+            if r['forehead_to_cheekbone'] > 1.00: scores['Heart'] += 20
+            if r['jaw_to_cheekbone'] < 0.82: scores['Heart'] += 10
+
+            # Rectangle — long face, parallel forehead and jaw
+            if r['length_to_width'] > 1.45: scores['Rectangle'] += 45
             if r['length_nasion_to_width'] > 1.30: scores['Rectangle'] += 25
-            if r['jaw_to_forehead'] < 1.0: scores['Rectangle'] += 20
-            if r['forehead_to_cheekbone'] < 1.0: scores['Rectangle'] += 15
+            if 0.88 <= r['jaw_to_forehead'] <= 1.05: scores['Rectangle'] += 20
+            if r['chin_to_jaw'] < 0.55: scores['Rectangle'] += 10
             
-            total = sum(scores.values())
-            if total > 0:
-                normalized = {s: round((sc / total) * 100, 1) for s, sc in scores.items()}
-            else:
-                normalized = {s: 20.0 for s in scores}
+            max_possible = {'Round': 100, 'Oval': 100, 'Square': 100, 'Heart': 100, 'Rectangle': 100}
+            normalized = {s: round((sc / max_possible[s]) * 100, 1) for s, sc in scores.items()}
             
             sorted_shapes = sorted(normalized.items(), key=lambda x: x[1], reverse=True)
             primary_shape = sorted_shapes[0][0]
