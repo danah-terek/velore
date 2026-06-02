@@ -8,6 +8,7 @@ import sizeguide from '../../assets/sizeguide.png'
 import { resolveImageUrl } from '../../shared/utils/imageUrl'
 import ProductReviews from './ProductReviews'
 import { useFavorites } from '../../shared/contexts'
+import { useCart } from '../../shared/contexts/CartContext'
 
 
 function AccordionItem({ title, children, defaultOpen = false }) {
@@ -193,6 +194,7 @@ export default function ProductDetail() {
   const [justAdded, setJustAdded] = useState(false)
   const [stockMessage, setStockMessage] = useState('')
   const [cartError, setCartError] = useState('')
+  const { addToCart, loadCart } = useCart()
   const [selectedVariant, setSelectedVariant] = useState(null)
   const [prescription, setPrescription] = useState({
     sph_r: '', sph_l: '',
@@ -201,7 +203,7 @@ export default function ProductDetail() {
     pd: '',
   })
   const [sizeGuideOpen, setSizeGuideOpen] = useState(false)
-   const [selectedPrescriptionId, setSelectedPrescriptionId] = useState(null)
+  const [selectedPrescriptionId, setSelectedPrescriptionId] = useState(null)
 
   useEffect(() => {
     loadProduct()
@@ -249,15 +251,43 @@ export default function ProductDetail() {
     const token = localStorage.getItem('token') || sessionStorage.getItem('token')
     setCartError('')
 
+    // Calculate available stock based on prescription
+    let availableStock = null
+    if (isLenses && selectedPrescriptionId) {
+      const allPrescriptions = []
+      product.product_variants?.forEach(variant => {
+        const rxs = variant.variant_prescriptions || []
+        rxs.forEach(rx => {
+          allPrescriptions.push({
+            ...rx,
+            variant_id: variant.variant_id,
+            variant: variant
+          })
+        })
+      })
+      const selectedRx = allPrescriptions.find(rx => rx.id === selectedPrescriptionId)
+      if (selectedRx) {
+        availableStock = selectedRx.stock_quantity || 0
+      }
+    } else {
+      availableStock = selectedVariant?.stock_quantity ?? null
+    }
+
+    // ✅ FIXED: Use underscore naming to match backend expectations
+    const itemData = {
+      product_id: product.product_id,
+      variant_id: selectedVariant?.variant_id,
+      quantity,
+      prescriptionData: prescription,
+      prescriptionId: isLenses ? selectedPrescriptionId : undefined,
+    }
+
+    console.log('Adding to cart:', itemData)
+
     if (token) {
       setAddingToCart(true)
       try {
-        await cartService.addItem({
-          productId,
-          variantId: selectedVariant?.variant_id,
-          quantity,
-          prescriptionData: prescription
-        })
+        await addToCart(itemData)
         setJustAdded(true)
         setTimeout(() => setJustAdded(false), 1200)
       } catch (error) {
@@ -267,41 +297,36 @@ export default function ProductDetail() {
         setAddingToCart(false)
       }
     } else {
+      // Guest cart logic...
       const localCart = JSON.parse(localStorage.getItem('guestCart') || '[]')
       const variantId = selectedVariant?.variant_id || null
-      const stockQty = selectedVariant?.stock_quantity
-      const maxQty = typeof stockQty === 'number' ? stockQty : null
+
+      const maxQty = typeof availableStock === 'number' ? availableStock : null
       if (maxQty !== null && quantity > maxQty) {
         setCartError(`Only ${maxQty} units available for ${product.name}.`)
         return
       }
 
-      const existing = localCart.find(item => item.productId === productId && (item.variantId || null) === (variantId || null))
+      // ✅ FIXED: Use underscore naming
+      const existing = localCart.find(item =>
+        item.product_id === productId && (item.variant_id || null) === (variantId || null)
+      )
+
       if (existing) {
-        const nextQty = existing.quantity + quantity
-        if (maxQty !== null && nextQty > maxQty) {
-          setCartError(`Only ${maxQty} units available for ${product.name}.`)
-          return
-        } else {
-          existing.quantity = nextQty
-        }
-        existing.prescriptionData = prescription
-        existing.variantId = variantId
-        existing.availableStock = maxQty
+        existing.quantity += quantity
       } else {
-        const firstImage = product.product_variants?.[0]?.images?.[0] || null
         localCart.push({
-          productId,
-          variantId,
+          product_id: product.product_id,
+          variant_id: selectedVariant?.variant_id,
           name: product.name,
           price: product.price,
-          image: firstImage || '',
           quantity,
-          availableStock: maxQty,
           prescriptionData: prescription,
+          prescriptionId: isLenses ? selectedPrescriptionId : undefined,
         })
       }
       localStorage.setItem('guestCart', JSON.stringify(localCart))
+      await loadCart()
       setJustAdded(true)
       setTimeout(() => setJustAdded(false), 1200)
     }
@@ -355,14 +380,43 @@ export default function ProductDetail() {
   const basePrice = parseFloat(product.price)
   const adjustment = parseFloat(selectedVariant?.price_adjustment || 0)
   const finalPrice = (basePrice + adjustment).toFixed(2)
-  const stockQty = selectedVariant?.stock_quantity ?? null
-  const canAdd = stockQty === null ? true : stockQty > 0
-  const maxQty = stockQty === null ? null : Math.max(0, Number(stockQty))
 
+  // ✅ MOVED THESE UP HERE (before stock calculation)
   const categoryName = product.categories?.name?.toLowerCase()
   const isLenses = categoryName === 'lenses' || categoryName === 'blue light glasses'
   const isGlasses = categoryName === 'eyeglasses' || categoryName === 'glasses' || categoryName === 'optical glasses'
   const isSunglasses = categoryName === 'sunglasses'
+
+  // For lenses, get stock from selected prescription instead of variant
+  // ✅ For lenses, get stock from the selected prescription
+  let stockQty = null
+  let maxQty = null
+
+  if (isLenses && selectedPrescriptionId) {
+    // Find the selected prescription's stock
+    const allPrescriptions = []
+    product.product_variants?.forEach(variant => {
+      const rxs = variant.variant_prescriptions || []
+      rxs.forEach(rx => {
+        allPrescriptions.push({
+          ...rx,
+          variant_id: variant.variant_id,
+          variant: variant
+        })
+      })
+    })
+    const selectedRx = allPrescriptions.find(rx => rx.id === selectedPrescriptionId)
+    if (selectedRx) {
+      stockQty = selectedRx.stock_quantity ?? 0
+      maxQty = stockQty
+    }
+  } else {
+    // For non-lens products, use variant stock
+    stockQty = selectedVariant?.stock_quantity ?? null
+    maxQty = stockQty === null ? null : Math.max(0, Number(stockQty))
+  }
+
+  const canAdd = stockQty === null ? true : stockQty > 0
 
   console.log('Product data:', product)
   console.log('Gender value:', product.gender, product.gender_id, product.specifications?.gender)
@@ -541,18 +595,31 @@ export default function ProductDetail() {
             )}
           </div>
 
-          {/* ✨ Virtual Try-On — Prominent CTA */}
-
-          {/* Stock Monitor Alert System */}
-          {stockQty !== null && !isLenses && (
+          {/* Stock display for non-lens products */}
+          {!isLenses && stockQty !== null && (
             <p className={`text-xs ${stockQty <= (selectedVariant?.low_stock_alert || 5) ? 'text-orange-500' : 'text-green-600'}`}>
               {stockQty === 0 ? 'Out of stock' : stockQty <= (selectedVariant?.low_stock_alert || 5) ? `Only ${stockQty} left` : 'In stock'}
             </p>
           )}
+
+          {/* Stock display for lens products - show selected prescription stock */}
+                    {/* Stock display for lens products - show prescription options count only */}
           {isLenses && (
-            <p className="text-xs text-green-600">
-              {selectedVariant?.variant_prescriptions?.reduce((sum, rx) => sum + (rx.stock_quantity || 0), 0) || 0} lenses in stock (across {selectedVariant?.variant_prescriptions?.length || 0} prescriptions)
-            </p>
+            (() => {
+              // Count total prescriptions for info
+              let totalPrescriptions = 0
+              product.product_variants?.forEach(variant => {
+                totalPrescriptions += (variant.variant_prescriptions?.length || 0)
+              })
+              
+              return (
+                <div className="mt-1">
+                  <p className="text-xs text-neutral-500">
+                    {totalPrescriptions} prescription {totalPrescriptions === 1 ? 'option' : 'options'} available
+                  </p>
+                </div>
+              )
+            })()
           )}
 
           {stockMessage && (
@@ -562,8 +629,7 @@ export default function ProductDetail() {
             <div className="text-sm text-red-600 bg-red-50/60 border border-red-100 px-4 py-2 rounded-xl">{cartError}</div>
           )}
 
-          {/* Adaptive Prescription Drawer Injection */}
-          {/* Prescription for Glasses — Keep the manual form */}
+          {/* Prescription for Glasses — manual form */}
           {isGlasses && (
             <PrescriptionSection
               isLenses={false}
@@ -572,7 +638,7 @@ export default function ProductDetail() {
             />
           )}
 
-          {/* Prescription for Lenses — Dropdown to select variant */}
+          {/* Prescription for Lenses — Dropdown to select prescription */}
           {isLenses && product.product_variants?.length > 0 && (
             <div className="border border-neutral-200/80 bg-neutral-50/30 rounded-2xl p-5 my-2">
               <p className="text-sm font-semibold text-neutral-800 mb-3">Select Your Prescription</p>

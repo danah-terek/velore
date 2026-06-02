@@ -377,6 +377,8 @@ const isLenses = useMemo(() => {
                     const variantPayload = buildVariantPayload(defaultVariant, uploadedPaths, uploadedTryOnImagePaths)
                     const variantRes = await adminProductService.createProductVariant(newIdStr, variantPayload)
                     const createdVariantId = variantRes?.data?.variant_id
+                    console.log('defaultVariant at create time:', JSON.stringify(defaultVariant))
+console.log('prescriptions:', defaultVariant.prescriptions)
                     if (defaultVariant.prescriptions?.length > 0) {
                       console.log('Creating prescriptions for variant:', createdVariantId, defaultVariant.prescriptions)
                       for (const rx of defaultVariant.prescriptions) {

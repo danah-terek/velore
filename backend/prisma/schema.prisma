@@ -112,14 +112,17 @@ model cart_items {
   product_id        BigInt
   variant_id        BigInt?
   quantity          Int?              @default(1)
+  prescription_id   BigInt?           // ← ADD THIS - links to variant_prescriptions
   prescription_data Json?
   carts             carts             @relation(fields: [cart_id], references: [carts_id], onDelete: Cascade, onUpdate: NoAction)
   products          products          @relation(fields: [product_id], references: [product_id], onDelete: Cascade, onUpdate: NoAction)
   product_variants  product_variants? @relation(fields: [variant_id], references: [variant_id], onDelete: NoAction, onUpdate: NoAction)
+  variant_prescriptions variant_prescriptions? @relation(fields: [prescription_id], references: [id], onDelete: SetNull, onUpdate: NoAction)
 
-  @@unique([cart_id, product_id, variant_id])
+  @@unique([cart_id, product_id, variant_id, prescription_id])  // ← UPDATE unique constraint
   @@index([cart_id], map: "idx_cart_items_cart")
   @@index([product_id], map: "idx_cart_items_product")
+  @@index([prescription_id], map: "idx_cart_items_prescription")  // ← ADD index for performance
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
@@ -463,4 +466,5 @@ model variant_prescriptions {
   dia             Float?
   stock_quantity  Int?               @default(0)
   product_variants product_variants  @relation(fields: [variant_id], references: [variant_id], onDelete: Cascade)
+  cart_items       cart_items[]
 }

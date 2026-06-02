@@ -851,16 +851,36 @@ export default function Checkout() {
                           <p className="text-sm font-medium truncate">{itemName}</p>
                           <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
                           {hasPrescription && (
-                            <div className="mt-1 p-1.5 bg-blue-50 rounded-sm border border-blue-100">
-                              <p className="text-xs font-medium text-blue-700">Prescription:</p>
-                              <div className="text-xs text-blue-600 space-y-0.5">
-                                {(prescription.sph_r || prescription.sph_l) && <p>SPH: R {prescription.sph_r || '0.00'} / L {prescription.sph_l || '0.00'}</p>}
-                                {(prescription.cyl_r || prescription.cyl_l) && <p>CYL: R {prescription.cyl_r || '0.00'} / L {prescription.cyl_l || '0.00'}</p>}
-                                {prescription.axis && <p>Axis: {prescription.axis}°</p>}
-                                {prescription.pd && <p>PD: {prescription.pd}mm</p>}
-                              </div>
-                            </div>
-                          )}
+  <div className="mt-1 p-1.5 bg-blue-50 rounded-sm border border-blue-100">
+    <p className="text-xs font-medium text-blue-700">Prescription:</p>
+    <div className="text-xs text-blue-600 space-y-0.5">
+      {prescription.sph !== undefined && prescription.sph !== null && (
+        <p>SPH: {prescription.sph}</p>
+      )}
+      {prescription.cyl !== undefined && prescription.cyl !== null && (
+        <p>CYL: {prescription.cyl}</p>
+      )}
+      {prescription.axis !== undefined && prescription.axis !== null && (
+        <p>Axis: {prescription.axis}°</p>
+      )}
+      {prescription.bc !== undefined && prescription.bc !== null && (
+        <p>BC: {prescription.bc}</p>
+      )}
+      {prescription.dia !== undefined && prescription.dia !== null && (
+        <p>DIA: {prescription.dia}</p>
+      )}
+      {/* Legacy format for glasses */}
+      {(prescription.sph_r || prescription.sph_l) && (
+        <>
+          <p>SPH: R {prescription.sph_r || '0.00'} / L {prescription.sph_l || '0.00'}</p>
+          <p>CYL: R {prescription.cyl_r || '0.00'} / L {prescription.cyl_l || '0.00'}</p>
+          {prescription.axis && <p>Axis: {prescription.axis}°</p>}
+          {prescription.pd && <p>PD: {prescription.pd}mm</p>}
+        </>
+      )}
+    </div>
+  </div>
+)}
                         </div>
                         <p className="text-sm font-semibold">{formatPrice(itemPrice * item.quantity)}</p>                      </div>
                     )
