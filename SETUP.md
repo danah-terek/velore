@@ -1,444 +1,266 @@
-# Velore Project Setup Guide
+# Velore – Setup Guide
 
-This repository is organized **by Git branches**. Each branch carries a different slice of the Velore eyewear e‑commerce project:
+## Table of Contents
 
-| Branch | Purpose |
-|--------|---------|
-| **main** | Landing / documentation branch only — **not** used to run the full application |
-| **backend** | Backend API only (`backend/`) |
-| **frontend** | Customer storefront only (`frontend/`) |
-| **crm** | Full CRM-ready prototype: `backend/`, `frontend/` (storefront + `/admin`), `docs/`, optional `ai-service/`, `docker-compose.yml`, etc. |
-
-**Important:** After cloning, **checkout the branch that matches what you want to run.** Files visible at the repo root change between branches (see [Branch layout verification](#branch-layout-verification)).
+- [Prerequisites](#prerequisites)
+- [Branch Structure](#branch-structure)
+- [External Services](#external-services)
+- [Backend Setup](#backend-setup)
+- [Frontend Setup](#frontend-setup)
+- [AI Service (Optional)](#ai-service-optional)
+- [Demo Credentials](#demo-credentials)
+- [Verification Checklist](#verification-checklist)
+- [Port Reference](#port-reference)
+- [Troubleshooting](#troubleshooting)
 
 ---
 
 ## Prerequisites
 
-Install or have access to:
+| Tool | Version | Check |
+|------|---------|-------|
+| Node.js | 20 LTS | `node --version` |
+| npm | 9+ | `npm --version` |
+| Git | Any | `git --version` |
 
-| Tool | Notes |
-|------|--------|
-| **Git** | Required |
-| **Node.js** | **Node.js 20 LTS** is recommended (matches root `README.md` on `main`). **Node.js 18+ or 20+** is acceptable if no `engines` field conflicts |
-| **npm** | Comes with Node |
-| **PostgreSQL** | Required for API + Prisma (local install or container) |
-| **Prisma CLI** | Used via `npx prisma …` from `backend/` (no global install required) |
-| **Modern browser** | Chrome, Firefox, Edge, or Safari |
-| **Docker Desktop** | *Optional* — useful if you use `docker-compose.yml` on the **crm** branch for Postgres |
-| **VS Code / Cursor** | *Optional* — recommended for editing |
+> No local PostgreSQL installation required. Velore uses **Neon** (cloud-hosted PostgreSQL) so the entire team shares one database automatically — no manual syncing needed.
 
 ---
 
-## Clone the repository
+## Branch Structure
+
+| Branch | Contents | Use When |
+|--------|---------|---------|
+| `main` | Documentation only | Reading project overview |
+| `backend` | API only | Developing the API independently |
+| `frontend` | Storefront only | Working on UI only |
+| `crm` | Full application — backend + frontend + admin | **Recommended for full setup** |
+
+Clone the repository and switch to the `crm` branch:
 
 ```bash
-git clone https://github.com/01samber/velore.git
+git clone https://github.com/danah-terek/velore.git
 cd velore
-```
-
-### List remote branches
-
-```bash
-git branch -a
-```
-
-### Checkout a branch
-
-```bash
-git checkout main
-git checkout backend
-git checkout frontend
 git checkout crm
 ```
 
 ---
 
-## Main branch setup
+## External Services
 
-The **main** branch is a **clean landing/documentation** branch. Use it to read project overview and setup instructions; **do not expect `backend/` or `frontend/` folders here.**
+Velore relies on two external services, both with free tiers sufficient for development.
 
-```bash
-git checkout main
-```
+| Service | Purpose | Free Tier |
+|---------|---------|-----------|
+| [Neon](https://neon.tech) | Cloud PostgreSQL database | 0.5 GB storage |
+| [Supabase](https://supabase.com) | Product image storage | 1 GB storage, 2 GB transfer |
+| [Stripe](https://stripe.com) | Payment processing (optional) | Test mode only |
 
-On **Windows** (PowerShell or CMD):
+**Why cloud services instead of local?**
 
-```bat
-dir
-```
-
-On **macOS / Linux**:
-
-```bash
-ls
-```
-
-**Typical files after this guide is merged:**
-
-- `README.md`
-- `SETUP.md`
-- `.gitignore`
+- **Neon**: A shared cloud database means both team members always work against the same data without any manual syncing.
+- **Supabase**: Product images are stored in the cloud with public URLs. Images uploaded by one teammate are immediately visible to the other — no file sharing or path configuration needed.
 
 ---
 
-## Backend branch setup
+### Neon – Cloud PostgreSQL
 
-Use this when you only need the REST API and database layer.
+1. Sign up at [neon.tech](https://neon.tech) (free tier)
+2. Create a new project and choose the region closest to you
+3. Once created, go to **Connection Details** and copy your connection string
 
-```bash
-git checkout backend
-cd backend
-npm install
+It will look like this:
+```
+postgresql://username:password@ep-xxxx.us-east-1.aws.neon.tech/neondb?sslmode=require
 ```
 
-### Environment variables
+> **Important:** Always keep `?sslmode=require` at the end — Neon requires SSL connections.
 
-1. **Prefer the checked-in template:** copy `backend/.env.example` to `backend/.env` when present:
+---
 
-   ```bash
-   cp .env.example .env
-   ```
+### Supabase – Image Storage
 
-   On Windows (PowerShell), if `cp` is unavailable:
+1. Sign up at [supabase.com](https://supabase.com) (free tier)
+2. Create a new project and wait for it to initialize (2–3 minutes)
+3. In the dashboard, go to **Storage** → **Create bucket**
+   - Name: `products`
+   - Toggle **Public bucket** ON
+   - Click **Create bucket**
+4. Go to **Project Settings → API** and copy:
+   - **Project URL** (e.g., `https://xxxxx.supabase.co`)
+   - **anon public key** (starts with `eyJ...`)
 
-   ```powershell
-   Copy-Item .env.example .env
-   ```
+---
 
-2. **Align values with your Postgres install.** The Velore example often uses a Docker-mapped port (for example **5433**) and user/password from compose — your machine may use **`localhost:5432`**.
+## Backend Setup
 
-**Illustrative placeholders** (adjust user, password, host, port, and database name):
+```bash
+cd backend
+cp .env.example .env
+```
+
+Open `backend/.env` and fill in your credentials:
 
 ```env
-DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/velore_db"
-JWT_SECRET="replace-with-secure-secret"
-ADMIN_JWT_SECRET="replace-with-secure-admin-secret"
+# Neon PostgreSQL
+DATABASE_URL="postgresql://USER:PASS@ep-xxxx.neon.tech/neondb?sslmode=require"
+DIRECT_URL="postgresql://USER:PASS@ep-xxxx.neon.tech/neondb?sslmode=require"
+
+# Supabase Storage
+SUPABASE_URL="https://your-project.supabase.co"
+SUPABASE_SERVICE_KEY="your-anon-public-key"
+SUPABASE_BUCKET="products"
+
+# Auth
+JWT_SECRET="your-secret-key"
+ADMIN_JWT_SECRET="your-admin-secret-key"
+
+# Optional
 PORT=3000
+FRONTEND_URL="http://localhost:5173"
 ```
 
-> **Always verify** `backend/.env.example` on your checked-out branch for exact keys. The Velore templates commonly use **`JWT_SECRET`** (and may not define a separate `ADMIN_JWT_SECRET`). The **crm** example also includes **`DIRECT_URL`**, **`FRONTEND_URL`**, **`JWT_EXPIRES_IN`**, and optional Stripe/email fields — copy those lines from `.env.example` rather than guessing.
-
-### Database setup
-
-1. Create an empty PostgreSQL database (e.g. `velore_db`).
-2. From `backend/`:
+Install dependencies, apply migrations, and seed the database:
 
 ```bash
-npx prisma validate
-npx prisma migrate status
-```
-
-Apply migrations for **local development**:
-
-```bash
-npx prisma migrate dev
-```
-
-> **Guidance:** Prefer `prisma migrate dev` so your schema stays aligned with migration history. Avoid `prisma db push` unless you intentionally bypass migrations (not recommended for team workflows).
-
-Optional but common before running:
-
-```bash
+npm install
 npx prisma generate
-```
-
-Seed demo data (if configured on your branch):
-
-```bash
+npx prisma migrate dev
 npx prisma db seed
-```
-
-### Start the backend
-
-```bash
 npm run dev
 ```
 
-**Expected:** API listens on **port 3000** unless `PORT` in `.env` says otherwise.
-
-### Health checks
-
-- `http://localhost:3000/health`
-- `http://localhost:3000/api/v1/test-db`
-
-### Tests and image verification
-
-```bash
-npm test
-npm run verify:images
+Verify the backend is running:
+```
+GET http://localhost:3000/health → { "status": "ok" }
 ```
 
 ---
 
-## Frontend branch setup
-
-Use this for the **customer storefront** only. It expects the **backend API** to be running separately for live data.
+## Frontend Setup
 
 ```bash
-git checkout frontend
-cd frontend
-npm install
+cd ../frontend
+cp .env.example .env
 ```
 
-### Environment variables
-
-Create `frontend/.env` if needed (copy from `frontend/.env.example` when available):
+Open `frontend/.env` and set the API URL:
 
 ```env
 VITE_API_URL=http://localhost:3000/api/v1
 ```
 
-The frontend branch **does not** include the backend — start **backend** on another checkout/terminal or another clone.
-
-### Run the dev server
-
 ```bash
+npm install
 npm run dev
 ```
 
-Open **http://localhost:5173**
-
-### Build and lint
-
-```bash
-npm run build
-npm run lint
-```
-
-**Note:** `npm run lint` may report existing React Hook dependency **warnings** (for example in checkout/shop/product screens). **Errors** should be resolved before submitting changes; warnings may remain per project policy.
+- Storefront: `http://localhost:5173`
+- Admin CRM: `http://localhost:5173/admin/login`
 
 ---
 
-## CRM branch setup
+## AI Service (Optional)
 
-The **crm** branch is the **full working prototype**: backend, storefront, admin CRM (`/admin`), product CRUD, uploads, variants, stock enforcement, documentation, optional `ai-service/`, and often **`docker-compose.yml`** for Postgres.
+Required only for the **Virtual Try-On** feature. Skip if you don't need it.
 
 ```bash
-git checkout crm
+cd ../ai-service
+python -m venv venv
+source venv/bin/activate        # Linux/macOS
+# or: venv\Scripts\activate     # Windows
+
+pip install -r requirements.txt
+uvicorn app:app --reload --port 5001
 ```
 
-### Terminal 1 — Backend
+---
+
+## Demo Credentials
+
+Seeded automatically when you run `npx prisma db seed`.
+
+| Role | Email | Password |
+|------|-------|----------|
+| Super Admin | superadmin@velore.local | SuperAdmin!123Demo |
+| Staff Admin | admin@velore.local | admin123!Demo |
+| Customer | customer1@velore.local | Customer123!Demo |
+| Customer | customer2@velore.local | Customer123!Demo |
+
+> If login fails, re-run `npx prisma db seed` and verify the users exist in your Neon database.
+
+---
+
+## Verification Checklist
+
+### Backend
+- [ ] `http://localhost:3000/health` returns `{"status":"ok"}`
+- [ ] `http://localhost:3000/api/v1/products` returns seeded products
+
+### Frontend
+- [ ] `http://localhost:5173` — homepage loads correctly
+- [ ] Search returns results (try "sunglasses")
+- [ ] Product images load from Supabase
+
+### Admin CRM
+- [ ] `http://localhost:5173/admin/login` — login page loads
+- [ ] Login with `admin@velore.local` works
+- [ ] Products list shows seeded data
+- [ ] Uploading a product image saves to Supabase bucket
+
+### Prescription Lenses (Core Feature)
+- [ ] Find a product in the "Lenses" category
+- [ ] Prescription dropdown appears on the product page
+- [ ] Selecting a prescription updates stock
+- [ ] Adding to cart shows prescription details in the cart
+
+### Team Collaboration
+- [ ] Image uploaded by one teammate appears for the other without any file sharing
+
+---
+
+## Port Reference
+
+| Service | Port | URL |
+|---------|------|-----|
+| Backend API | 3000 | `http://localhost:3000` |
+| Frontend | 5173 | `http://localhost:5173` |
+| Admin CRM | 5173 | `http://localhost:5173/admin` |
+| AI Service | 5001 | `http://localhost:5001` |
+| Neon PostgreSQL | Cloud | No local port |
+| Supabase Storage | Cloud | `https://[project].supabase.co/storage/v1/object/public/products/` |
+
+---
+
+## Troubleshooting
+
+| Problem | Solution |
+|---------|---------|
+| Database connection fails | Verify `DATABASE_URL` includes `?sslmode=require` at the end |
+| `Error: P1012` | Run `npx prisma generate` to regenerate the Prisma client |
+| Images not loading | Confirm the Supabase `products` bucket is set to public |
+| Image upload fails | Verify `SUPABASE_SERVICE_KEY` is the anon public key, not the service role key |
+| Frontend shows blank page | Check `VITE_API_URL` in `frontend/.env` — must end with `/api/v1` |
+| Admin login returns 401 | Re-run `npx prisma db seed` and confirm the user exists in Neon |
+| Prescriptions not showing | The product's category must be set to `Lenses` in the database |
+| Port 5173 already in use | Run `npm run dev -- --port 5174` |
+
+---
+
+### Test Your Neon Connection
 
 ```bash
 cd backend
-npm install
+npx prisma db pull --force
+# Success means your DATABASE_URL is correct
 ```
 
-Create **`backend/.env`** from **`backend/.env.example`** and edit `DATABASE_URL` / `DIRECT_URL` for your Postgres instance.
+### Test Your Supabase Connection
 
-Example shape (adjust to match `.env.example`):
-
-```env
-DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/velore_db"
-JWT_SECRET="replace-with-secure-secret"
-ADMIN_JWT_SECRET="replace-with-secure-admin-secret"
-PORT=3000
-```
-
-Then:
+Upload a test file to confirm your bucket and keys are configured correctly:
 
 ```bash
-npx prisma validate
-npx prisma migrate status
-npx prisma migrate dev
-npx prisma db seed
-npm run verify:images
-npm test
-npm run dev
+curl -X POST "https://[your-project].supabase.co/storage/v1/object/products/test.jpg" \
+  -H "apikey: YOUR_ANON_KEY" \
+  --data-binary @test.jpg
 ```
-
-### Terminal 2 — Frontend
-
-```bash
-cd frontend
-npm install
-```
-
-Create **`frontend/.env`** if needed:
-
-```env
-VITE_API_URL=http://localhost:3000/api/v1
-```
-
-```bash
-npm run dev
-```
-
-### URLs
-
-| Surface | URL |
-|---------|-----|
-| Storefront | http://localhost:5173 |
-| CRM login | http://localhost:5173/admin/login |
-
----
-
-## Demo credentials
-
-These match typical **seed** data but **may differ by branch or seed edits.**
-
-### Admin / CRM
-
-| Field | Value |
-|-------|--------|
-| Email | `admin@velore.local` |
-| Password | `Admin123!Demo` |
-
-### Customers (if seeded)
-
-| Email | Password |
-|-------|----------|
-| `customer1@velore.local` | `Customer123!Demo` |
-| `customer2@velore.local` | `Customer123!Demo` |
-| `customer3@velore.local` | `Customer123!Demo` |
-
-> **If login fails:** Inspect `backend/prisma/seed.js` (or equivalent) and the `users` / admin tables in PostgreSQL. Seed scripts and roles can vary between branches.
-
----
-
-## CRM and storefront — manual test checklist
-
-### CRM (`/admin`)
-
-- [ ] Log in at `/admin/login`
-- [ ] Open dashboard
-- [ ] Open products list
-- [ ] Add a product
-- [ ] Upload one or more product images
-- [ ] Create or edit a **variant** (SKU, stock, images)
-- [ ] Set **stock quantity** / low-stock threshold as applicable
-- [ ] Open **inventory** and confirm stock summary updates
-- [ ] Confirm **staff vs super admin** restrictions if multiple accounts exist
-
-### Storefront
-
-- [ ] Open a product detail page
-- [ ] Add to cart
-- [ ] Attempt quantity **greater than available stock** — UI should limit or backend should reject
-- [ ] Checkout a **valid** quantity — order should succeed when stock allows
-- [ ] Confirm stock decreases after successful checkout
-- [ ] Attempt another purchase when stock is insufficient — should fail or show out-of-stock behavior
-
-### Stock scenario (example)
-
-If **stock = 5**:
-
-1. Quantity **6** → blocked or rejected  
-2. Checkout **5** → succeeds  
-3. Stock becomes **0**  
-4. Further orders → rejected / out of stock  
-
----
-
-## Branch layout verification
-
-Current organization (high level):
-
-| Branch | Typical root contents |
-|--------|----------------------|
-| **main** | `README.md`, `SETUP.md`, `.gitignore` |
-| **backend** | `backend/`, `.gitignore` |
-| **frontend** | `frontend/`, `.gitignore` |
-| **crm** | `backend/`, `frontend/`, `docs/`, `docker-compose.yml`, optional `ai-service/`, `README.md`, `.gitignore`, etc. |
-
-Useful Git commands:
-
-```bash
-git branch -vv
-git ls-tree --name-only origin/main
-git ls-tree --name-only origin/backend
-git ls-tree --name-only origin/frontend
-git ls-tree --name-only origin/crm
-```
-
-**Expected names only** (exact list may gain files over time):
-
-**main**
-
-- `.gitignore`
-- `README.md`
-- `SETUP.md`
-
-**backend**
-
-- `.gitignore`
-- `backend`
-
-**frontend**
-
-- `.gitignore`
-- `frontend`
-
-**crm**
-
-- `.gitignore`
-- `README.md` (when present)
-- `ai-service` (when present)
-- `backend`
-- `docker-compose.yml` (when present)
-- `docs`
-- `frontend`
-
----
-
-## Common problems
-
-### 1. Backend cannot connect to the database
-
-- Confirm PostgreSQL is running  
-- Verify `DATABASE_URL` (and `DIRECT_URL` if present) host, port, user, password, database name  
-- Create the database if it does not exist  
-- Run `npx prisma validate` from `backend/`
-
-### 2. Prisma migration issues
-
-- Run `npx prisma migrate status`  
-- Prefer `npx prisma migrate dev` locally  
-- Avoid `prisma db push` unless you mean to skip migrations  
-
-### 3. Frontend cannot reach the backend
-
-- Ensure backend is running (`/health`)  
-- Check `VITE_API_URL` matches API base (e.g. `http://localhost:3000/api/v1`)  
-- Confirm CORS / `FRONTEND_URL` on backend if requests are blocked  
-
-### 4. Images not loading
-
-- Confirm backend serves uploaded files (e.g. under `/uploads`)  
-- Run `npm run verify:images` in `backend/`  
-- Check stored paths (often under `/uploads/products/…`)
-
-### 5. CRM login fails
-
-- Confirm seed ran and admin user exists  
-- Check admin login API responses (network tab)  
-- Verify separate admin token handling vs customer JWT as implemented on your branch  
-
-### 6. Stock does not update
-
-- Use the **crm** branch for the full stock workflow  
-- Confirm variants have `stock_quantity` (or equivalent) set  
-- Complete a real checkout and re-fetch inventory  
-- Run backend tests: `npm test`  
-
-### 7. “Missing” folders after clone
-
-Each branch only contains **its** tree. If `backend/` or `frontend/` is missing, you are not on **crm** (or **backend** / **frontend**). Run:
-
-```bash
-git checkout crm
-```
-
-(or `backend` / `frontend` as needed).
-
----
-
-## Summary
-
-- Clone once, then **`git checkout`** the branch you need.  
-- **main** → read docs only.  
-- **backend** / **frontend** → run API or UI in isolation.  
-- **crm** → full demo including admin CRM and stock-aware flows.  
-
-For API contracts and deeper architecture, see files under `docs/` on branches that include documentation (especially **crm**).
